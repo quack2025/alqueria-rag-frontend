@@ -1,13 +1,13 @@
 // components/Campaign/PersonaSettings.tsx - Configuración avanzada de personas sintéticas
 
-// import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Settings, Save, X, Sliders, Users, Brain, 
   ChevronDown, ChevronUp, AlertCircle
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import type { SyntheticPersona, PersonaCharacteristics } from '../../types/persona.types';
-import { TigoArchetype, ARCHETYPE_TEMPLATES } from '../../types/persona.types';
+import { UnileverArchetype, ARCHETYPE_TEMPLATES } from '../../types/persona.types';
 
 interface PersonaSettingsProps {
   isOpen: boolean;
@@ -15,7 +15,7 @@ interface PersonaSettingsProps {
   onSave?: () => void;
 }
 
-type CharacteristicCategory = keyof Partial<PersonaCharacteristics>;
+type CharacteristicCategory = keyof PersonaCharacteristics;
 
 const PersonaSettings: React.FC<PersonaSettingsProps> = ({ 
   isOpen, 
@@ -35,7 +35,7 @@ const PersonaSettings: React.FC<PersonaSettingsProps> = ({
   }, [isOpen]);
 
   const loadPersonas = () => {
-    const saved = localStorage.getItem('tigo_campaign_personas');
+    const saved = localStorage.getItem('unilever_campaign_personas');
     if (saved) {
       const loadedPersonas = JSON.parse(saved);
       setPersonas(loadedPersonas);
@@ -48,7 +48,7 @@ const PersonaSettings: React.FC<PersonaSettingsProps> = ({
   const createDefaultPersonas = () => {
     const defaultPersonas: SyntheticPersona[] = [];
     
-    Object.values(TigoArchetype).forEach(archetype => {
+    Object.values(UnileverArchetype).forEach(archetype => {
       const template = ARCHETYPE_TEMPLATES[archetype];
       const persona: SyntheticPersona = {
         id: `persona-default-${archetype}`,
@@ -68,7 +68,7 @@ const PersonaSettings: React.FC<PersonaSettingsProps> = ({
             children_count: 2,
             location_type: template.demographics?.location_type || 'urban',
             housing_type: template.demographics?.housing_type || 'rented',
-            vehicle_ownership: template.demographics?.vehicle_ownership || 'none',
+            vehicle_ownership: template.demographics?.vehicle_ownership || 'moderate',
             language_primary: 'spanish',
             language_secondary: 'english',
             disability_status: 'none',
@@ -88,40 +88,40 @@ const PersonaSettings: React.FC<PersonaSettingsProps> = ({
             social_influence_susceptibility: 55,
             decision_making_style: template.psychographics?.decision_making_style || 'rational',
             time_orientation: template.psychographics?.time_orientation || 'present',
-            achievement_orientation: template.psychographics?.achievement_orientation || 60,
+            achievement_orientation: template.psychographics?.achievement_orientation || 40,
             security_values: template.psychographics?.security_values || 65,
             hedonism_values: template.psychographics?.hedonism_values || 45,
-            tradition_values: template.psychographics?.tradition_values || 60,
+            tradition_values: template.psychographics?.tradition_values || 40,
             benevolence_values: 70,
             power_values: 40,
             self_direction_values: template.psychographics?.self_direction_values || 55,
           },
-          fmcg: {
-            monthly_grocery_spend: template.fmcg?.monthly_grocery_spend || 500,
-            shopping_frequency: template.fmcg?.shopping_frequency || 'prepaid',
-            weekly_shopping_trips: template.fmcg?.weekly_shopping_trips || 10,
-            voice_minutes: 300,
-            sms_frequency: 'rarely',
-            preferred_store_type: template.fmcg?.preferred_store_type || 'Samsung',
-            brand_loyalty_score: template.fmcg?.brand_loyalty_score || 18,
-            upgrade_frequency: 24,
-            price_sensitivity: template.fmcg?.price_sensitivity || 75,
+          telecom: {
+            monthly_fmcg_spend: template.telecom?.monthly_fmcg_spend || 15000,
+            shopping_frequency: template.telecom?.shopping_frequency || 'weekly',
+            shopping_trips_per_week: template.telecom?.shopping_trips_per_week || 3,
+            grocery_budget_weekly: 300,
+            coupon_usage_frequency: 'rarely',
+            preferred_store_chain: template.telecom?.preferred_store_chain || 'Walmart',
+            brand_switching_frequency: template.telecom?.brand_switching_frequency || 1,
+            new_product_trial_frequency: 24,
+            product_quality_importance: template.telecom?.product_quality_importance || 85,
             customer_service_experience: 'neutral',
-            bundling_preferences: ['data', 'voice'],
+            product_bundling_preferences: ['dairy', 'produce'],
             payment_method: 'cash',
-            promotion_responsiveness: template.fmcg?.promotion_responsiveness || 'on_time',
-            roaming_usage: 'rarely',
-            bulk_buying_behavior: template.fmcg?.bulk_buying_behavior || false,
+            payment_timing_preference: template.telecom?.payment_timing_preference || 'weekly',
+            organic_product_preference: 'rarely',
+            bulk_buying_status: template.telecom?.bulk_buying_status || true,
             loyalty_program_engagement: 'medium',
             complaint_frequency: 2,
-            innovation_adoption: template.fmcg?.innovation_adoption || 30,
+            brand_switching_consideration: template.telecom?.brand_switching_consideration || 25,
             referral_behavior: 'passive',
-            feature_usage_priority: ['WhatsApp', 'Facebook', 'YouTube'],
-            data_sharing_behavior: 'family',
-            wifi_dependency: template.fmcg?.wifi_dependency || 60,
-            mobile_banking_usage: template.fmcg?.mobile_banking_usage || false,
-            streaming_habits: template.fmcg?.streaming_habits || ['YouTube'],
-            gaming_mobile_usage: template.fmcg?.gaming_mobile_usage || 'none',
+            category_priority: ['Snacks', 'Beverages', 'Dairy'],
+            product_sharing_behavior: 'family',
+            online_shopping_dependency: template.telecom?.online_shopping_dependency || 40,
+            digital_payment_usage: template.telecom?.digital_payment_usage || true,
+            media_consumption_habits: template.telecom?.media_consumption_habits || ['TV', 'Social Media'],
+            social_media_usage: template.telecom?.social_media_usage || 'moderate',
           },
           sociocultural: {
             cultural_identity_strength: 75,
@@ -156,7 +156,7 @@ const PersonaSettings: React.FC<PersonaSettingsProps> = ({
           social_circle: 'Familia y amigos',
           media_consumption: ['TV', 'Radio', 'Redes sociales'],
           brand_relationships: {
-            'Tigo': 'Usuario actual',
+            'Unilever': 'Usuario actual',
             'Claro': 'Conocido',
             'Hondutel': 'Conocido'
           }
@@ -198,30 +198,30 @@ const PersonaSettings: React.FC<PersonaSettingsProps> = ({
 
   const getDefaultName = (archetype: string): string => {
     const names = {
-      [TigoArchetype.PROFESIONAL]: 'Carlos Eduardo Martínez',
-      [TigoArchetype.CONTROLADOR]: 'María Elena Rodríguez',
-      [TigoArchetype.EMPRENDEDOR]: 'José Antonio Mejía',
-      [TigoArchetype.GOMOSO_EXPLORADOR]: 'Andrea Sofia Castillo',
-      [TigoArchetype.PRAGMATICO]: 'Luis Fernando Paz',
-      [TigoArchetype.RESIGNADO]: 'Pedro José Martínez'
+      [UnileverArchetype.PROFESIONAL]: 'Carlos Eduardo Martínez',
+      [UnileverArchetype.CONTROLADOR]: 'María Elena Rodríguez',
+      [UnileverArchetype.EMPRENDEDOR]: 'José Antonio Mejía',
+      [UnileverArchetype.GOMOSO_EXPLORADOR]: 'Andrea Sofia Castillo',
+      [UnileverArchetype.PRAGMATICO]: 'Luis Fernando Paz',
+      [UnileverArchetype.RESIGNADO]: 'Pedro José Martínez'
     };
     return names[archetype as keyof typeof names] || 'Persona Sin Nombre';
   };
 
   const getDefaultLocation = (archetype: string): any => {
     const locations = {
-      [TigoArchetype.PROFESIONAL]: { city: 'Tegucigalpa', department: 'Francisco Morazán', neighborhood: 'Col. Lomas del Guijarro' },
-      [TigoArchetype.CONTROLADOR]: { city: 'San Pedro Sula', department: 'Cortés', neighborhood: 'Col. Jardines del Valle' },
-      [TigoArchetype.EMPRENDEDOR]: { city: 'Choloma', department: 'Cortés', neighborhood: 'Barrio El Centro' },
-      [TigoArchetype.GOMOSO_EXPLORADOR]: { city: 'Tegucigalpa', department: 'Francisco Morazán', neighborhood: 'Col. Palmira' },
-      [TigoArchetype.PRAGMATICO]: { city: 'La Ceiba', department: 'Atlántida', neighborhood: 'Barrio La Isla' },
-      [TigoArchetype.RESIGNADO]: { city: 'Juticalpa', department: 'Olancho', neighborhood: 'Barrio El Centro' }
+      [UnileverArchetype.PROFESIONAL]: { city: 'Tegucigalpa', department: 'Francisco Morazán', neighborhood: 'Col. Lomas del Guijarro' },
+      [UnileverArchetype.CONTROLADOR]: { city: 'San Pedro Sula', department: 'Cortés', neighborhood: 'Col. Jardines del Valle' },
+      [UnileverArchetype.EMPRENDEDOR]: { city: 'Choloma', department: 'Cortés', neighborhood: 'Barrio El Centro' },
+      [UnileverArchetype.GOMOSO_EXPLORADOR]: { city: 'Tegucigalpa', department: 'Francisco Morazán', neighborhood: 'Col. Palmira' },
+      [UnileverArchetype.PRAGMATICO]: { city: 'La Ceiba', department: 'Atlántida', neighborhood: 'Barrio La Isla' },
+      [UnileverArchetype.RESIGNADO]: { city: 'Juticalpa', department: 'Olancho', neighborhood: 'Barrio El Centro' }
     };
     return locations[archetype as keyof typeof locations] || { city: 'Tegucigalpa', department: 'Francisco Morazán', neighborhood: 'Centro' };
   };
 
   const savePersonas = (personasToSave: SyntheticPersona[]) => {
-    localStorage.setItem('tigo_campaign_personas', JSON.stringify(personasToSave));
+    localStorage.setItem('unilever_campaign_personas', JSON.stringify(personasToSave));
     setHasChanges(false);
   };
 
@@ -266,7 +266,7 @@ const PersonaSettings: React.FC<PersonaSettingsProps> = ({
   const categoryLabels = {
     demographics: { label: 'Demografía', icon: Users, count: 15 },
     psychographics: { label: 'Psicografía', icon: Brain, count: 20 },
-    fmcg: { label: 'Telecomunicaciones', icon: Settings, count: 25 },
+    telecom: { label: 'Telecomunicaciones', icon: Settings, count: 25 },
     sociocultural: { label: 'Sociocultural', icon: Users, count: 15 },
     economic: { label: 'Económico', icon: Settings, count: 5 }
   };

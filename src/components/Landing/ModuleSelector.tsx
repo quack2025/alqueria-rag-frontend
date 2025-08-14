@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-// import { Bot, Sparkles, Users, LogOut, Settings, BarChart3, User, Brain, FileText, Video, TrendingUp } from 'lucide-react';
+import { Bot, Sparkles, Users, LogOut, Settings, BarChart3, User, Brain, FileText, Video, TrendingUp } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 import { cn } from '../../lib/utils';
 

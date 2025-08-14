@@ -5,7 +5,7 @@ import {
   LANGUAGE_PATTERNS
 } from '../data/hondurasKnowledgeBase';
 import type { CampaignConcept, VariableReaction, EvaluationVariable } from '../types/campaign.types';
-import { TigoArchetype } from '../types/persona.types';
+import { UnileverArchetype } from '../types/persona.types';
 
 interface PersonaProfile {
   archetype: string;
@@ -89,7 +89,7 @@ export class AuthenticConversationEngine {
     let sentiment: any = 'neutral';
     let improvementSuggestion = '';
 
-    if (archetype === TigoArchetype.PROFESIONAL) {
+    if (archetype === UnileverArchetype.PROFESIONAL) {
       const professionalWords = ['pro', 'premium', 'business', 'ejecutivo', 'profesional'];
       const hasMatch = professionalWords.some(word => concept.name.toLowerCase().includes(word));
       
@@ -116,7 +116,7 @@ export class AuthenticConversationEngine {
         
         improvementSuggestion = 'Considerar términos como "Pro", "Business", "Enterprise" o "Premium" que generen mayor credibilidad en el entorno corporativo hondureño.';
       }
-    } else if (archetype === TigoArchetype.CONTROLADOR) {
+    } else if (archetype === UnileverArchetype.CONTROLADOR) {
       const familyWords = ['familia', 'hogar', 'control', 'seguro', 'confiable'];
       const hasMatch = familyWords.some(word => concept.name.toLowerCase().includes(word));
       
@@ -143,7 +143,7 @@ export class AuthenticConversationEngine {
         
         improvementSuggestion = 'Incluir elementos que evoquen familia, hogar, control o confiabilidad para conectar mejor con este segmento tradicionalmente familiar.';
       }
-    } else if (archetype === TigoArchetype.GOMOSO_EXPLORADOR) {
+    } else if (archetype === UnileverArchetype.GOMOSO_EXPLORADOR) {
       const coolWords = ['smart', 'pro', 'plus', 'max', 'ultra', '5g', 'digital'];
       const hasMatch = coolWords.some(word => concept.name.toLowerCase().includes(word));
       
@@ -199,7 +199,7 @@ export class AuthenticConversationEngine {
     const incomeRange = economicData.monthly_income_range;
     const averageIncome = (incomeRange[0] + incomeRange[1]) / 2;
     const pricePercentage = (price / averageIncome) * 100;
-    const currentSpendRange = economicData.typical_grocery_spend;
+    const currentSpendRange = economicData.typical_telecom_spend;
     const currentSpendAvg = (currentSpendRange[0] + currentSpendRange[1]) / 2;
     const priceIncrease = ((price - currentSpendAvg) / currentSpendAvg) * 100;
 
@@ -209,10 +209,10 @@ export class AuthenticConversationEngine {
     let sentiment: any = 'neutral';
     let improvementSuggestion = '';
 
-    if (archetype === TigoArchetype.CONTROLADOR) {
-      reactionText = `${this.getRandomExpression(languagePatterns.formal_expressions)}, ${price.toLocaleString()} mensuales... déjeme hacer cuentas. Eso son ${(price * 12).toLocaleString()} al año, y con mi ingreso familiar de unos ${averageIncome.toLocaleString()} mensuales, serían como ${pricePercentage.toFixed(1)}% de nuestros ingresos solo en internet.
+    if (archetype === UnileverArchetype.CONTROLADOR) {
+      reactionText = `${this.getRandomExpression(languagePatterns.formal_expressions)}, L${price.toLocaleString()} mensuales... déjeme hacer cuentas. Eso son L${(price * 12).toLocaleString()} al año, y con mi ingreso familiar de unos L${averageIncome.toLocaleString()} mensuales, serían como ${pricePercentage.toFixed(1)}% de nuestros ingresos solo en internet.
 
-      Actualmente gasto unos ${currentSpendAvg.toLocaleString()} en Tigo, entonces esto sería un aumento de ${priceIncrease > 0 ? `${priceIncrease.toFixed(0)}%` : 'prácticamente igual'}. ${this.getRandomExpression(languagePatterns.price_related)} Para una familia como la nuestra, cada peso cuenta.
+      Actualmente gasto unos L${currentSpendAvg.toLocaleString()} en Unilever, entonces esto sería un aumento de ${priceIncrease > 0 ? `${priceIncrease.toFixed(0)}%` : 'prácticamente igual'}. ${this.getRandomExpression(languagePatterns.price_related)} Para una familia como la nuestra, cada lempira cuenta.
 
       ${priceIncrease > 50 ? 
         `${this.getRandomExpression(languagePatterns.skepticism_expressions)} ¿Realmente vale la pena ese aumento? Necesito ver beneficios muy claros que justifiquen gastar tanto más. Con ese dinero extra podría comprar útiles escolares para los muchachos o ahorrar para emergencias.` :
@@ -260,7 +260,7 @@ export class AuthenticConversationEngine {
     let sentiment: any = 'neutral';
     let improvementSuggestion = '';
 
-    if (archetype === TigoArchetype.PROFESIONAL) {
+    if (archetype === UnileverArchetype.PROFESIONAL) {
       const hasBusinessTerms = concept.description && (
         concept.description.toLowerCase().includes('productividad') ||
         concept.description.toLowerCase().includes('eficiencia') ||
@@ -290,7 +290,7 @@ ${this.getRandomExpression(languagePatterns.technology_related)}, entonces neces
         specificFeedback = 'La descripción carece de elementos específicos para el segmento profesional. No comunica claramente los beneficios de productividad o eficiencia empresarial.';
         improvementSuggestion = 'Incluir términos específicos sobre productividad, eficiencia, herramientas corporativas y beneficios medibles para profesionales.';
       }
-    } else if (archetype === TigoArchetype.CONTROLADOR) {
+    } else if (archetype === UnileverArchetype.CONTROLADOR) {
       const hasSimpleLanguage = concept.description && (
         !concept.description.includes('tecnología avanzada') &&
         !concept.description.includes('innovador') &&
@@ -319,7 +319,7 @@ Prefiero cosas más claras y directas. ¿No tienen una explicación más sencill
         specificFeedback = 'La descripción es demasiado técnica o compleja para el segmento controlador, que prefiere explicaciones simples y directas.';
         improvementSuggestion = 'Simplificar el lenguaje, usar términos familiares y enfocarse en beneficios claros para la familia.';
       }
-    } else if (archetype === TigoArchetype.GOMOSO_EXPLORADOR) {
+    } else if (archetype === UnileverArchetype.GOMOSO_EXPLORADOR) {
       const hasModernTerms = concept.description && (
         concept.description.toLowerCase().includes('smart') ||
         concept.description.toLowerCase().includes('innovador') ||
@@ -370,7 +370,7 @@ Para mi contenido en redes necesito algo que sea más wow, más actual. Esta des
     let sentiment: any = 'neutral';
     let improvementSuggestion = '';
 
-    if (archetype === TigoArchetype.EMPRENDEDOR) {
+    if (archetype === UnileverArchetype.EMPRENDEDOR) {
       const businessBenefits = benefits.filter(benefit => 
         benefit.toLowerCase().includes('negocio') ||
         benefit.toLowerCase().includes('ventas') ||
@@ -401,7 +401,7 @@ ${this.getRandomExpression(languagePatterns.formal_expressions)}, yo necesito he
         specificFeedback = 'Los beneficios no abordan específicamente las necesidades empresariales del segmento emprendedor.';
         improvementSuggestion = 'Enfatizar beneficios relacionados con WhatsApp Business, redes sociales, herramientas de pago y comunicación con clientes.';
       }
-    } else if (archetype === TigoArchetype.PRAGMATICO) {
+    } else if (archetype === UnileverArchetype.PRAGMATICO) {
       const essentialBenefits = benefits.filter(benefit => 
         benefit.toLowerCase().includes('básico') ||
         benefit.toLowerCase().includes('esencial') ||
@@ -452,7 +452,7 @@ ${this.getRandomExpression(languagePatterns.formal_expressions)} no necesito tan
     let sentiment: any = 'neutral';
     let improvementSuggestion = '';
 
-    if (archetype === TigoArchetype.GOMOSO_EXPLORADOR) {
+    if (archetype === UnileverArchetype.GOMOSO_EXPLORADOR) {
       const hasInnovation = concept.differentiation && (
         concept.differentiation.toLowerCase().includes('único') ||
         concept.differentiation.toLowerCase().includes('exclusivo') ||
@@ -483,7 +483,7 @@ ${this.getRandomExpression(languagePatterns.formal_expressions)}, siempre estoy 
         specificFeedback = 'La diferenciación no es suficientemente fuerte para captar el interés del segmento joven que busca exclusividad e innovación.';
         improvementSuggestion = 'Enfatizar aspectos únicos, exclusivos o de primera mover advantage que generen sentido de pertenencia especial.';
       }
-    } else if (archetype === TigoArchetype.RESIGNADO) {
+    } else if (archetype === UnileverArchetype.RESIGNADO) {
       // Para este arquetipo, la diferenciación importa menos
       score = 45 + Math.random() * 20;
       sentiment = 'neutral';
@@ -494,7 +494,7 @@ ${this.getRandomExpression(languagePatterns.informal_expressions)} Mientras me s
 ${this.getRandomExpression(languagePatterns.decision_expressions)} Lo que sí necesito es que sea confiable y que no me traiga problemas.`;
       
       specificFeedback = 'El segmento resignado valora menos la diferenciación, priorizando confiabilidad y simplicidad sobre innovación.';
-    } else if (archetype === TigoArchetype.PROFESIONAL) {
+    } else if (archetype === UnileverArchetype.PROFESIONAL) {
       const hasProfessionalDiff = concept.differentiation && (
         concept.differentiation.toLowerCase().includes('productividad') ||
         concept.differentiation.toLowerCase().includes('eficiencia') ||
@@ -547,7 +547,7 @@ ${this.getRandomExpression(languagePatterns.formal_expressions)} necesito difere
     const targetAudience = concept.target_audience?.toLowerCase() || '';
     let isIncluded = false;
     
-    if (archetype === TigoArchetype.PROFESIONAL) {
+    if (archetype === UnileverArchetype.PROFESIONAL) {
       isIncluded = targetAudience.includes('profesional') || 
                    targetAudience.includes('ejecutivo') || 
                    targetAudience.includes('empresa') ||
@@ -576,7 +576,7 @@ Necesitaría ver una versión que esté claramente dirigida al segmento empresar
         specificFeedback = 'El público objetivo no incluye claramente al segmento profesional, generando desconexión.';
         improvementSuggestion = 'Incluir específicamente a profesionales, ejecutivos y usuarios corporativos en el público objetivo.';
       }
-    } else if (archetype === TigoArchetype.CONTROLADOR) {
+    } else if (archetype === UnileverArchetype.CONTROLADOR) {
       isIncluded = targetAudience.includes('familia') || 
                    targetAudience.includes('hogar') || 
                    targetAudience.includes('madre') ||
@@ -605,7 +605,7 @@ ${this.getRandomExpression(languagePatterns.formal_expressions)} prefiero produc
         specificFeedback = 'El público objetivo no es suficientemente específico sobre orientación familiar.';
         improvementSuggestion = 'Mencionar específicamente familias, hogares o administradores del presupuesto familiar.';
       }
-    } else if (archetype === TigoArchetype.GOMOSO_EXPLORADOR) {
+    } else if (archetype === UnileverArchetype.GOMOSO_EXPLORADOR) {
       isIncluded = targetAudience.includes('joven') || 
                    targetAudience.includes('millennial') || 
                    targetAudience.includes('creativo') ||
@@ -656,7 +656,7 @@ Esto no me da la sensación de que sea para jóvenes creativos como yo.`;
 
     const channel = concept.channel?.toLowerCase() || '';
     
-    if (archetype === TigoArchetype.GOMOSO_EXPLORADOR) {
+    if (archetype === UnileverArchetype.GOMOSO_EXPLORADOR) {
       const digitalChannels = ['instagram', 'tiktok', 'youtube', 'facebook', 'redes sociales', 'influencer', 'digital'];
       const hasDigitalChannel = digitalChannels.some(ch => channel.includes(ch));
       
@@ -682,7 +682,7 @@ ${this.getRandomExpression(languagePatterns.formal_expressions)}, siempre me inf
         specificFeedback = 'Los canales no conectan con los hábitos digitales del segmento joven.';
         improvementSuggestion = 'Incluir canales digitales como Instagram, TikTok, YouTube e influencers para conectar con el segmento joven.';
       }
-    } else if (archetype === TigoArchetype.RESIGNADO) {
+    } else if (archetype === UnileverArchetype.RESIGNADO) {
       const traditionalChannels = ['radio', 'televisión', 'tv', 'punto de venta', 'familia', 'recomendación', 'boca a boca'];
       const hasTraditionalChannel = traditionalChannels.some(ch => channel.includes(ch));
       
@@ -708,7 +708,7 @@ ${this.getRandomExpression(languagePatterns.formal_expressions)} prefiero los ca
         specificFeedback = 'Los canales no son accesibles para el segmento resignado que prefiere medios tradicionales.';
         improvementSuggestion = 'Incluir canales tradicionales como radio, televisión, puntos de venta y recomendaciones familiares.';
       }
-    } else if (archetype === TigoArchetype.CONTROLADOR) {
+    } else if (archetype === UnileverArchetype.CONTROLADOR) {
       const familyChannels = ['familia', 'recomendación', 'boca a boca', 'punto de venta', 'call center'];
       const trustChannels = familyChannels.some(ch => channel.includes(ch));
       
@@ -734,7 +734,7 @@ ${this.getRandomExpression(languagePatterns.formal_expressions)} necesito poder 
         specificFeedback = 'Los canales no proporcionan la validación y confianza que busca el segmento controlador.';
         improvementSuggestion = 'Incluir puntos de venta físicos, call center y enfatizar recomendaciones familiares para generar confianza.';
       }
-    } else if (archetype === TigoArchetype.PROFESIONAL) {
+    } else if (archetype === UnileverArchetype.PROFESIONAL) {
       const professionalChannels = ['linkedin', 'email', 'digital', 'presentaciones', 'webinar', 'sitio web'];
       const hasProfessionalChannel = professionalChannels.some(ch => channel.includes(ch));
       
@@ -781,7 +781,7 @@ ${this.getRandomExpression(languagePatterns.formal_expressions)} prefiero canale
 
     const tone = concept.tone?.toLowerCase() || '';
     
-    if (archetype === TigoArchetype.PROFESIONAL) {
+    if (archetype === UnileverArchetype.PROFESIONAL) {
       const professionalTones = ['profesional', 'serio', 'confiable', 'corporativo', 'formal', 'técnico'];
       const hasProfessionalTone = professionalTones.some(t => tone.includes(t));
       
@@ -807,7 +807,7 @@ ${this.getRandomExpression(languagePatterns.formal_expressions)} necesito un ton
         specificFeedback = 'El tono no es apropiado para el segmento profesional que requiere seriedad y credibilidad corporativa.';
         improvementSuggestion = 'Usar un tono más profesional, serio y confiable que sea apropiado para entornos corporativos.';
       }
-    } else if (archetype === TigoArchetype.GOMOSO_EXPLORADOR) {
+    } else if (archetype === UnileverArchetype.GOMOSO_EXPLORADOR) {
       const coolTones = ['divertido', 'cool', 'trendy', 'joven', 'fresco', 'moderno', 'creativo', 'dinámico'];
       const hasCoolTone = coolTones.some(t => tone.includes(t));
       
@@ -833,7 +833,7 @@ Necesitan más personalidad, más energía. Algo que realmente conecte con mi ge
         specificFeedback = 'El tono no captura la energía y personalidad que busca el segmento joven y digital.';
         improvementSuggestion = 'Usar un tono más fresco, dinámico y con personalidad que conecte con el segmento joven.';
       }
-    } else if (archetype === TigoArchetype.CONTROLADOR) {
+    } else if (archetype === UnileverArchetype.CONTROLADOR) {
       const trustingTones = ['honesto', 'transparente', 'claro', 'directo', 'familiar', 'cercano', 'confiable'];
       const hasTrustingTone = trustingTones.some(t => tone.includes(t));
       
@@ -880,7 +880,7 @@ ${this.getRandomExpression(languagePatterns.formal_expressions)} necesito que me
 
     const cta = concept.call_to_action?.toLowerCase() || '';
     
-    if (archetype === TigoArchetype.CONTROLADOR) {
+    if (archetype === UnileverArchetype.CONTROLADOR) {
       const lowPressureCTAs = ['consulta', 'infórmate', 'compara', 'pregunta', 'visita', 'llama para más información'];
       const hasLowPressureCTA = lowPressureCTAs.some(c => cta.includes(c));
       const hasHighPressure = cta.includes('compra ya') || cta.includes('ahora') || cta.includes('oferta limitada') || cta.includes('solo hoy');
@@ -907,7 +907,7 @@ Este tipo de call to action me hace dudar de si realmente es una buena oferta.`;
         specificFeedback = 'El CTA de alta presión genera desconfianza en el segmento controlador que valora decisiones meditadas.';
         improvementSuggestion = 'Usar CTAs más consultivos como "Infórmate", "Consulta" o "Compara" que respeten el proceso de evaluación.';
       }
-    } else if (archetype === TigoArchetype.GOMOSO_EXPLORADOR) {
+    } else if (archetype === UnileverArchetype.GOMOSO_EXPLORADOR) {
       const excitingCTAs = ['pruébalo ya', 'descúbrelo', 'vive la experiencia', 'sé el primero', 'consíguelo ahora'];
       const hasExcitingCTA = excitingCTAs.some(c => cta.includes(c));
       
@@ -933,7 +933,7 @@ Necesitan algo más wow, más emocionante que me haga querer probarlo ya.`;
         specificFeedback = 'El CTA carece de la energía y emoción que busca el segmento joven para motivar la acción inmediata.';
         improvementSuggestion = 'Usar CTAs más emocionantes como "Pruébalo ya", "Sé el primero" o "Vive la experiencia" que generen excitement.';
       }
-    } else if (archetype === TigoArchetype.PROFESIONAL) {
+    } else if (archetype === UnileverArchetype.PROFESIONAL) {
       const professionalCTAs = ['solicita una demo', 'agenda una reunión', 'descarga el brochure', 'contáctanos', 'evalúa la solución'];
       const hasProfessionalCTA = professionalCTAs.some(c => cta.includes(c));
       
@@ -959,7 +959,7 @@ ${this.getRandomExpression(languagePatterns.formal_expressions)} necesito un pro
         specificFeedback = 'El CTA no está optimizado para el proceso de decisión corporativa que requiere evaluación estructurada.';
         improvementSuggestion = 'Usar CTAs más corporativos como "Solicita demo", "Agenda reunión" o "Descarga información técnica".';
       }
-    } else if (archetype === TigoArchetype.EMPRENDEDOR) {
+    } else if (archetype === UnileverArchetype.EMPRENDEDOR) {
       const businessCTAs = ['mejora tu negocio', 'aumenta tus ventas', 'haz crecer tu empresa', 'optimiza tu negocio'];
       const hasBusinessCTA = businessCTAs.some(c => cta.includes(c));
       

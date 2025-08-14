@@ -1,6 +1,6 @@
 // App.tsx - Componente principal de la aplicación
 
-// import React, { useEffect } from 'react';
+import { useEffect } from "react";';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './lib/auth';
 import LoginPage from './components/Auth/LoginPage';

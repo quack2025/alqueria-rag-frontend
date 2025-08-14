@@ -1,7 +1,7 @@
 // types/persona.types.ts - Definición completa del sistema de personas sintéticas
 
-// Los 6 Arquetipos de Tigo Honduras
-export const TigoArchetype = {
+// Los 6 Arquetipos de Unilever Honduras
+export const UnileverArchetype = {
   PROFESIONAL: 'PROFESIONAL',
   CONTROLADOR: 'CONTROLADOR',
   EMPRENDEDOR: 'EMPRENDEDOR',
@@ -10,7 +10,7 @@ export const TigoArchetype = {
   RESIGNADO: 'RESIGNADO'
 } as const;
 
-export type TigoArchetype = typeof TigoArchetype[keyof typeof TigoArchetype];
+export type UnileverArchetype = typeof UnileverArchetype[keyof typeof UnileverArchetype];
 
 // Sistema de 80 Características Configurables
 export interface PersonaCharacteristics {
@@ -57,33 +57,33 @@ export interface PersonaCharacteristics {
     self_direction_values: number;
   };
 
-  // FMCG-Specific (25)
-  fmcg: {
-    monthly_fmcg_spend: number; // in pesos
-    shopping_frequency: 'daily' | 'few_times_week' | 'weekly' | 'biweekly' | 'monthly';
-    primary_shopping_channel: 'supermarket' | 'convenience_store' | 'traditional_market' | 'online' | 'warehouse_club';
-    secondary_shopping_channels: string[];
-    brand_loyalty_level: 'very_high' | 'high' | 'medium' | 'low' | 'very_low';
-    price_sensitivity: 'very_high' | 'high' | 'medium' | 'low' | 'very_low';
-    promotion_responsiveness: number; // 0-100
-    bulk_buying_behavior: 'never' | 'sometimes' | 'often' | 'always';
-    private_label_acceptance: 'never' | 'some_categories' | 'many_categories' | 'all_categories';
-    organic_natural_preference: number; // 0-100
-    health_consciousness: number; // 0-100
-    convenience_importance: number; // 0-100
-    packaging_influence: number; // 0-100
-    social_media_influence: number; // 0-100
-    influencer_trust_level: number; // 0-100
-    innovation_adoption: 'laggard' | 'late_majority' | 'early_majority' | 'early_adopter' | 'innovator';
-    eco_sustainability_concern: number; // 0-100
-    local_brand_preference: number; // 0-100
-    quality_vs_price_priority: 'price_first' | 'balanced' | 'quality_first';
-    shopping_planning_style: 'impulse' | 'mixed' | 'planned';
-    family_decision_influence: 'individual' | 'spouse_shared' | 'family_consensus' | 'others_decide';
-    category_expertise: string[]; // categories they know well
-    payment_preference: 'cash' | 'debit_card' | 'credit_card' | 'digital_wallet' | 'mixed';
-    online_grocery_adoption: 'never' | 'tried_once' | 'occasional' | 'regular' | 'primary';
-    stockpiling_tendency: number; // 0-100
+  // Telecom-Specific (25)
+  telecom: {
+    monthly_fmcg_spend: number; // in Lempiras
+    shopping_frequency: 'prepaid' | 'postpaid' | 'hybrid';
+    shopping_trips_per_week: number;
+    grocery_budget_weekly: number;
+    coupon_usage_frequency: 'never' | 'rarely' | 'sometimes' | 'often' | 'always';
+    preferred_store_chain: string;
+    brand_switching_frequency: number; // in months
+    new_product_trial_frequency: number; // months between upgrades
+    product_quality_importance: number; // 0-100
+    customer_service_experience: 'very_poor' | 'poor' | 'neutral' | 'good' | 'excellent';
+    product_bundling_preferences: string[];
+    payment_method: 'cash' | 'card' | 'bank_transfer' | 'mobile_money' | 'other';
+    payment_timing_preference: 'early' | 'on_time' | 'late' | 'very_late';
+    organic_product_preference: 'never' | 'rarely' | 'sometimes' | 'often';
+    bulk_buying_status: boolean;
+    loyalty_program_engagement: 'none' | 'low' | 'medium' | 'high';
+    complaint_frequency: number; // per year
+    brand_switching_consideration: number; // 0-100 likelihood
+    referral_behavior: 'detractor' | 'passive' | 'promoter';
+    category_priority: string[];
+    product_sharing_behavior: 'never' | 'family' | 'friends' | 'anyone';
+    online_shopping_dependency: number; // 0-100
+    digital_payment_usage: boolean;
+    media_consumption_habits: string[];
+    social_media_usage: 'none' | 'casual' | 'regular' | 'heavy';
   };
 
   // Honduras Sociocultural (15)
@@ -119,7 +119,7 @@ export interface PersonaCharacteristics {
 export interface SyntheticPersona {
   // Identificación
   id: string;
-  archetype: TigoArchetype;
+  archetype: UnileverArchetype;
   variant_id: string; // Para A/B testing
   
   // Información básica
@@ -183,7 +183,7 @@ export interface SyntheticPersona {
 
 // Configuración para generación de personas
 export interface PersonaGenerationConfig {
-  archetype: TigoArchetype;
+  archetype: UnileverArchetype;
   count: number;
   diversity_requirements: {
     gender_distribution: Record<string, number>;
@@ -201,8 +201,8 @@ export interface PersonaGenerationConfig {
 }
 
 // Plantillas base de arquetipos
-export const ARCHETYPE_TEMPLATES: Record<TigoArchetype, Partial<PersonaCharacteristics>> = {
-  [TigoArchetype.PROFESIONAL]: {
+export const ARCHETYPE_TEMPLATES: Record<UnileverArchetype, Partial<PersonaCharacteristics>> = {
+  [UnileverArchetype.PROFESIONAL]: {
     demographics: {
       age: 38,
       gender: 'male',
@@ -219,18 +219,15 @@ export const ARCHETYPE_TEMPLATES: Record<TigoArchetype, Partial<PersonaCharacter
       achievement_orientation: 90,
       time_orientation: 'future',
     } as any,
-    fmcg: {
-      monthly_fmcg_spend: 25000,
-      shopping_frequency: 'weekly',
-      primary_shopping_channel: 'supermarket',
-      brand_loyalty_level: 'high',
-      price_sensitivity: 'medium',
-      innovation_adoption: 'early_adopter',
-      quality_vs_price_priority: 'quality_first',
+    telecom: {
+      shopping_frequency: 'postpaid',
+      monthly_fmcg_spend: 1500,
+      product_quality_importance: 95,
+      preferred_store_chain: 'iPhone',
     } as any,
   },
   
-  [TigoArchetype.CONTROLADOR]: {
+  [UnileverArchetype.CONTROLADOR]: {
     demographics: {
       age: 42,
       gender: 'female',
@@ -246,18 +243,15 @@ export const ARCHETYPE_TEMPLATES: Record<TigoArchetype, Partial<PersonaCharacter
       security_values: 85,
       tradition_values: 75,
     } as any,
-    fmcg: {
-      monthly_fmcg_spend: 18000,
-      shopping_frequency: 'weekly',
-      primary_shopping_channel: 'supermarket',
-      brand_loyalty_level: 'very_high',
-      price_sensitivity: 'high',
-      shopping_planning_style: 'planned',
-      quality_vs_price_priority: 'balanced',
+    telecom: {
+      shopping_frequency: 'postpaid',
+      monthly_fmcg_spend: 800,
+      bulk_buying_status: true,
+      payment_timing_preference: 'on_time',
     } as any,
   },
   
-  [TigoArchetype.EMPRENDEDOR]: {
+  [UnileverArchetype.EMPRENDEDOR]: {
     demographics: {
       age: 32,
       gender: 'male',
@@ -272,18 +266,15 @@ export const ARCHETYPE_TEMPLATES: Record<TigoArchetype, Partial<PersonaCharacter
       self_direction_values: 80,
       innovation_adoption: 'early_majority',
     } as any,
-    fmcg: {
-      monthly_fmcg_spend: 15000,
-      shopping_frequency: 'biweekly',
-      primary_shopping_channel: 'convenience_store',
-      brand_loyalty_level: 'medium',
-      price_sensitivity: 'medium',
-      innovation_adoption: 'early_majority',
-      shopping_planning_style: 'mixed',
+    telecom: {
+      shopping_frequency: 'hybrid',
+      monthly_fmcg_spend: 600,
+      shopping_trips_per_week: 15,
+      digital_payment_usage: true,
     } as any,
   },
   
-  [TigoArchetype.GOMOSO_EXPLORADOR]: {
+  [UnileverArchetype.GOMOSO_EXPLORADOR]: {
     demographics: {
       age: 26,
       gender: 'female',
@@ -298,15 +289,15 @@ export const ARCHETYPE_TEMPLATES: Record<TigoArchetype, Partial<PersonaCharacter
       hedonism_values: 75,
       innovation_adoption: 'innovator',
     } as any,
-    fmcg: {
+    telecom: {
       shopping_frequency: 'postpaid',
-      weekly_shopping_trips: 30,
-      streaming_habits: ['Netflix', 'Spotify', 'TikTok', 'Instagram'],
-      gaming_mobile_usage: 'regular',
+      shopping_trips_per_week: 30,
+      media_consumption_habits: ['Netflix', 'Spotify', 'TikTok', 'Instagram'],
+      social_media_usage: 'regular',
     } as any,
   },
   
-  [TigoArchetype.PRAGMATICO]: {
+  [UnileverArchetype.PRAGMATICO]: {
     demographics: {
       age: 35,
       gender: 'male',
@@ -319,14 +310,14 @@ export const ARCHETYPE_TEMPLATES: Record<TigoArchetype, Partial<PersonaCharacter
       convenience_preference: 75,
       decision_making_style: 'rational',
     } as any,
-    fmcg: {
+    telecom: {
       shopping_frequency: 'prepaid',
-      monthly_grocery_spend: 400,
-      wifi_dependency: 70,
+      monthly_fmcg_spend: 400,
+      online_shopping_dependency: 70,
     } as any,
   },
   
-  [TigoArchetype.RESIGNADO]: {
+  [UnileverArchetype.RESIGNADO]: {
     demographics: {
       age: 48,
       gender: 'male',
@@ -340,11 +331,11 @@ export const ARCHETYPE_TEMPLATES: Record<TigoArchetype, Partial<PersonaCharacter
       tradition_values: 85,
       innovation_adoption: 'laggard',
     } as any,
-    fmcg: {
+    telecom: {
       shopping_frequency: 'prepaid',
-      monthly_grocery_spend: 200,
-      brand_loyalty_score: 36,
-      innovation_adoption: 10,
+      monthly_fmcg_spend: 200,
+      brand_switching_frequency: 36,
+      brand_switching_consideration: 10,
     } as any,
   },
 };

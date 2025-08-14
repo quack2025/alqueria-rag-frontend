@@ -1,8 +1,8 @@
 // components/Chat/ChatPage.tsx - Página principal de chat RAG
 
-// import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-// import { Send, LogOut, Bot, Settings, Trash2, BarChart3, Filter, Search, Users } from 'lucide-react';
+import { Send, LogOut, Bot, Settings, Trash2, BarChart3, Filter, Search, Users } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 import { cn, generateId } from '../../lib/utils';
 import type { ChatMessage, RAGResponse } from '../../types';
@@ -116,7 +116,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ className }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('tigo_auth_token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('unilever_auth_token')}`,
         },
         body: JSON.stringify({
           messages: [{ role: 'user', content: userMessage }],
@@ -204,7 +204,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ className }) => {
             </div>
             <div>
               <h1 className="text-xl font-semibold text-gray-900">
-                Tigo RAG System
+                Unilever RAG System
               </h1>
               <p className="text-sm text-gray-500">
                 Bienvenido, {user?.username || 'Usuario'}
@@ -378,10 +378,10 @@ const ChatPage: React.FC<ChatPageProps> = ({ className }) => {
               </h4>
               <div className="grid gap-2 md:grid-cols-2">
                 {[
-                  '¿Cuál es la percepción de marca de Tigo en Honduras?',
-                  '¿Cómo se compara Tigo con la competencia?',
+                  '¿Cuál es la percepción de marca de Unilever en Honduras?',
+                  '¿Cómo se compara Unilever con la competencia?',
                   'Muéstrame datos de participación de mercado',
-                  '¿Qué dicen los estudios sobre la cobertura de Tigo?',
+                  '¿Qué dicen los estudios sobre la cobertura de Unilever?',
                 ].map((question, index) => (
                   <button
                     key={index}
@@ -536,13 +536,13 @@ const ChatPage: React.FC<ChatPageProps> = ({ className }) => {
 **Perfil**: ${persona.characteristics.demographics.age} años, ${persona.characteristics.demographics.gender === 'female' ? 'mujer' : 'hombre'}, ${persona.characteristics.demographics.marital_status === 'married' ? 'casado(a)' : 'soltero(a)'}
 **Ocupación**: ${persona.characteristics.demographics.employment_status}
 **NSE**: ${persona.characteristics.demographics.income_bracket}
-**Plan actual**: ${persona.characteristics.fmcg.shopping_frequency} - L${persona.characteristics.fmcg.monthly_grocery_spend}/mes
+**Plan actual**: ${persona.characteristics.telecom.shopping_frequency} - L${persona.characteristics.telecom.monthly_fmcg_spend}/mes
 **Personalidad**: ${persona.conversation_style.dialect_markers.join(', ')} son palabras que usa frecuentemente
 
 ${persona.background.life_story}
 
 Puedes preguntarle sobre:
-- Su experiencia con Tigo vs competencia
+- Su experiencia con Unilever vs competencia
 - Problemas que enfrenta: ${persona.background.pain_points.join(', ')}
 - Lo que más valora en un servicio móvil
 - Su opinión sobre nuevos servicios o promociones`;

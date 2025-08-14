@@ -1,6 +1,6 @@
 // components/Auth/LoginPage.tsx - Página de login segura
 
-// import React, { useState, useEffect } from 'react';
+import { useState } from "react";';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, Loader2, Shield, Zap } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
