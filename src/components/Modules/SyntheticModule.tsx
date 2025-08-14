@@ -242,7 +242,7 @@ const SyntheticModule: React.FC = () => {
                     age: reaction.persona_context.age,
                     location: reaction.persona_context.city,
                     segment: reaction.archetype,
-                    personality_traits: [reaction.persona_context.characteristics?.psychographics],
+                    personality_traits: [reaction.persona_context],
                     evaluation_context: reaction, // Incluir contexto de evaluación
                     concept: currentSession.concept // Incluir el concepto evaluado
                   }));

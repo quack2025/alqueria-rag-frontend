@@ -234,7 +234,7 @@ const GeneralModule: React.FC = () => {
         citations: data.citations || [],
         metadata: data.metadata || {},
         visualization: data.visualization || null,
-        hasVisualizations: data.has_visualization || false
+        visualization: data.has_visualization || false
       };
 
       const updatedMessages = chatStorage.updateLastMessage('general', updates);

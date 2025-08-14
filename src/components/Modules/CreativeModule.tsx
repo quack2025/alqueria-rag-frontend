@@ -244,9 +244,7 @@ const CreativeModule: React.FC = () => {
           role: 'assistant',
           content: `🎨 **Imagen generada**: ${prompt}`,
           mode: 'creative',
-          timestamp: new Date(),
-          imagePrompt: prompt
-        };
+          timestamp: new Date()};
 
         const updatedMessages = chatStorage.addMessage('creative', imageMessage);
         setMessages(updatedMessages);
