@@ -199,7 +199,7 @@ export class AuthenticConversationEngine {
     const incomeRange = economicData.monthly_income_range;
     const averageIncome = (incomeRange[0] + incomeRange[1]) / 2;
     const pricePercentage = (price / averageIncome) * 100;
-    const currentSpendRange = economicData.typical_telecom_spend;
+    const currentSpendRange = economicData.typical_grocery_spend;
     const currentSpendAvg = (currentSpendRange[0] + currentSpendRange[1]) / 2;
     const priceIncrease = ((price - currentSpendAvg) / currentSpendAvg) * 100;
 

@@ -1,7 +1,7 @@
 // components/Personas/PersonaManager.tsx - Gestión de Personas Sintéticas
 
-import React, { useState, useEffect } from 'react';
-import { Users, UserPlus, MessageSquare, FileText, Activity, RefreshCw, Download, CheckCircle, AlertCircle } from 'lucide-react';
+// import React, { useState, useEffect } from 'react';
+// import { Users, UserPlus, MessageSquare, FileText, Activity, RefreshCw, Download, CheckCircle, AlertCircle } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 interface Persona {

@@ -1,7 +1,7 @@
 // components/Filters/AdvancedFilters.tsx - Filtros avanzados para búsqueda RAG Enterprise
 
 import React, { useState } from 'react';
-import { Filter, Calendar, MapPin, BookOpen, TrendingUp, X, Search } from 'lucide-react';
+// // import { Filter, Calendar, MapPin, BookOpen, TrendingUp, X, Search } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 interface FilterState {

@@ -1,8 +1,8 @@
 // components/Chat/ChatPage.tsx - Página principal de chat RAG
 
-import React, { useState, useRef, useEffect } from 'react';
+// import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Send, LogOut, Bot, Settings, Trash2, BarChart3, Filter, Search, Users } from 'lucide-react';
+// import { Send, LogOut, Bot, Settings, Trash2, BarChart3, Filter, Search, Users } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 import { cn, generateId } from '../../lib/utils';
 import type { ChatMessage, RAGResponse } from '../../types';
@@ -536,7 +536,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ className }) => {
 **Perfil**: ${persona.characteristics.demographics.age} años, ${persona.characteristics.demographics.gender === 'female' ? 'mujer' : 'hombre'}, ${persona.characteristics.demographics.marital_status === 'married' ? 'casado(a)' : 'soltero(a)'}
 **Ocupación**: ${persona.characteristics.demographics.employment_status}
 **NSE**: ${persona.characteristics.demographics.income_bracket}
-**Plan actual**: ${persona.characteristics.telecom.plan_type} - L${persona.characteristics.telecom.monthly_spend}/mes
+**Plan actual**: ${persona.characteristics.fmcg.shopping_frequency} - L${persona.characteristics.fmcg.monthly_grocery_spend}/mes
 **Personalidad**: ${persona.conversation_style.dialect_markers.join(', ')} son palabras que usa frecuentemente
 
 ${persona.background.life_story}

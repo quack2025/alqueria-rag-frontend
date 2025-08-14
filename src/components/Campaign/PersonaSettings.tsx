@@ -1,6 +1,6 @@
 // components/Campaign/PersonaSettings.tsx - Configuración avanzada de personas sintéticas
 
-import React, { useState, useEffect } from 'react';
+// import React, { useState, useEffect } from 'react';
 import { 
   Settings, Save, X, Sliders, Users, Brain, 
   ChevronDown, ChevronUp, AlertCircle
@@ -15,7 +15,7 @@ interface PersonaSettingsProps {
   onSave?: () => void;
 }
 
-type CharacteristicCategory = keyof PersonaCharacteristics;
+type CharacteristicCategory = keyof Partial<PersonaCharacteristics>;
 
 const PersonaSettings: React.FC<PersonaSettingsProps> = ({ 
   isOpen, 
@@ -96,32 +96,32 @@ const PersonaSettings: React.FC<PersonaSettingsProps> = ({
             power_values: 40,
             self_direction_values: template.psychographics?.self_direction_values || 55,
           },
-          telecom: {
-            monthly_spend: template.telecom?.monthly_spend || 500,
-            plan_type: template.telecom?.plan_type || 'prepaid',
-            data_usage_gb: template.telecom?.data_usage_gb || 10,
+          fmcg: {
+            monthly_grocery_spend: template.fmcg?.monthly_grocery_spend || 500,
+            shopping_frequency: template.fmcg?.shopping_frequency || 'prepaid',
+            weekly_shopping_trips: template.fmcg?.weekly_shopping_trips || 10,
             voice_minutes: 300,
             sms_frequency: 'rarely',
-            device_brand: template.telecom?.device_brand || 'Samsung',
-            device_age: template.telecom?.device_age || 18,
+            preferred_store_type: template.fmcg?.preferred_store_type || 'Samsung',
+            brand_loyalty_score: template.fmcg?.brand_loyalty_score || 18,
             upgrade_frequency: 24,
-            network_quality_importance: template.telecom?.network_quality_importance || 75,
+            price_sensitivity: template.fmcg?.price_sensitivity || 75,
             customer_service_experience: 'neutral',
             bundling_preferences: ['data', 'voice'],
             payment_method: 'cash',
-            bill_payment_timing: template.telecom?.bill_payment_timing || 'on_time',
+            promotion_responsiveness: template.fmcg?.promotion_responsiveness || 'on_time',
             roaming_usage: 'rarely',
-            family_plan_status: template.telecom?.family_plan_status || false,
+            bulk_buying_behavior: template.fmcg?.bulk_buying_behavior || false,
             loyalty_program_engagement: 'medium',
             complaint_frequency: 2,
-            switching_consideration: template.telecom?.switching_consideration || 30,
+            innovation_adoption: template.fmcg?.innovation_adoption || 30,
             referral_behavior: 'passive',
             feature_usage_priority: ['WhatsApp', 'Facebook', 'YouTube'],
             data_sharing_behavior: 'family',
-            wifi_dependency: template.telecom?.wifi_dependency || 60,
-            mobile_banking_usage: template.telecom?.mobile_banking_usage || false,
-            streaming_habits: template.telecom?.streaming_habits || ['YouTube'],
-            gaming_mobile_usage: template.telecom?.gaming_mobile_usage || 'none',
+            wifi_dependency: template.fmcg?.wifi_dependency || 60,
+            mobile_banking_usage: template.fmcg?.mobile_banking_usage || false,
+            streaming_habits: template.fmcg?.streaming_habits || ['YouTube'],
+            gaming_mobile_usage: template.fmcg?.gaming_mobile_usage || 'none',
           },
           sociocultural: {
             cultural_identity_strength: 75,
@@ -266,7 +266,7 @@ const PersonaSettings: React.FC<PersonaSettingsProps> = ({
   const categoryLabels = {
     demographics: { label: 'Demografía', icon: Users, count: 15 },
     psychographics: { label: 'Psicografía', icon: Brain, count: 20 },
-    telecom: { label: 'Telecomunicaciones', icon: Settings, count: 25 },
+    fmcg: { label: 'Telecomunicaciones', icon: Settings, count: 25 },
     sociocultural: { label: 'Sociocultural', icon: Users, count: 15 },
     economic: { label: 'Económico', icon: Settings, count: 5 }
   };

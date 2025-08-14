@@ -123,7 +123,7 @@ export class CampaignEvaluator {
     const personaContext = {
       ...basePersonaContext,
       archetype,
-      current_telecom_spend: ECONOMIC_SEGMENTS[this.mapNSEToSegment(basePersonaContext.nse)].typical_telecom_spend[0]
+      current_telecom_spend: ECONOMIC_SEGMENTS[this.mapNSEToSegment(basePersonaContext.nse)].typical_grocery_spend[0]
     };
 
     // Simular tiempo de procesamiento
@@ -346,7 +346,7 @@ export class CampaignEvaluator {
     
     // Sugerencias específicas por arquetipo y contexto económico
     if (archetype === TigoArchetype.CONTROLADOR) {
-      if (concept.monthly_price && concept.monthly_price > economicData.typical_telecom_spend[1]) {
+      if (concept.monthly_price && concept.monthly_price > economicData.typical_grocery_spend[1]) {
         suggestions.push('Ofrecer planes familiares con descuentos o opciones de financiamiento');
       }
       suggestions.push('Incluir garantía de satisfacción y política de cancelación flexible');

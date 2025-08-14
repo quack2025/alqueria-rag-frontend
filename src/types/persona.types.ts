@@ -299,8 +299,8 @@ export const ARCHETYPE_TEMPLATES: Record<TigoArchetype, Partial<PersonaCharacter
       innovation_adoption: 'innovator',
     } as any,
     fmcg: {
-      plan_type: 'postpaid',
-      data_usage_gb: 30,
+      shopping_frequency: 'postpaid',
+      weekly_shopping_trips: 30,
       streaming_habits: ['Netflix', 'Spotify', 'TikTok', 'Instagram'],
       gaming_mobile_usage: 'regular',
     } as any,
@@ -320,8 +320,8 @@ export const ARCHETYPE_TEMPLATES: Record<TigoArchetype, Partial<PersonaCharacter
       decision_making_style: 'rational',
     } as any,
     fmcg: {
-      plan_type: 'prepaid',
-      monthly_spend: 400,
+      shopping_frequency: 'prepaid',
+      monthly_grocery_spend: 400,
       wifi_dependency: 70,
     } as any,
   },
@@ -341,10 +341,10 @@ export const ARCHETYPE_TEMPLATES: Record<TigoArchetype, Partial<PersonaCharacter
       innovation_adoption: 'laggard',
     } as any,
     fmcg: {
-      plan_type: 'prepaid',
-      monthly_spend: 200,
-      device_age: 36,
-      switching_consideration: 10,
+      shopping_frequency: 'prepaid',
+      monthly_grocery_spend: 200,
+      brand_loyalty_score: 36,
+      innovation_adoption: 10,
     } as any,
   },
 };

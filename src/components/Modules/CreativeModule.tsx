@@ -1,6 +1,6 @@
 // components/Modules/CreativeModule.tsx - Módulo RAG Creativo
 
-import React, { useState, useRef, useEffect } from 'react';
+// import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Sparkles, Palette, TrendingUp, Download, Settings, 
@@ -29,7 +29,7 @@ const CreativeModule: React.FC = () => {
   
   // Daily limits
   const DAILY_USER_LIMIT = 10;
-  const DAILY_SYSTEM_LIMIT = 50;
+  // const DAILY_SYSTEM_LIMIT = 50;
   
   // Referencias
   const messagesEndRef = useRef<HTMLDivElement>(null);

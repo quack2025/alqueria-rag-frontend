@@ -1,7 +1,7 @@
 // components/Config/ConfigurationPanel.tsx - Panel de configuración avanzada
 
-import React, { useState, useEffect } from 'react';
-import { Settings, Save, RotateCcw, Download, AlertCircle, CheckCircle } from 'lucide-react';
+// import React, { useState, useEffect } from 'react';
+// import { Settings, Save, RotateCcw, Download, AlertCircle, CheckCircle } from 'lucide-react';
 import type { ConfigOption } from '../../types';
 import { cn } from '../../lib/utils';
 
