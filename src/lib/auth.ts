@@ -14,7 +14,7 @@ export const useAuth = () => {
   const login = async (username: string, password: string): Promise<LoginResponse> => {
     try {
       // Fallback authentication for Unilever
-      const fallbackAuth = {
+      const fallbackAuth: { [key: string]: string } = {
         'admin': 'admin123',
         'user': 'user123',
         'unilever': 'unilever2024',
