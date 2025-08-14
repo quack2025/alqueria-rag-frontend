@@ -1,11 +1,11 @@
 // components/Analytics/DashboardModule.tsx - Dashboard Ejecutivo con métricas en tiempo real
 
-import React, { useState } from "react";
-import { useState } from "react";
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
   BarChart3, 
+  TrendingUp, 
   Users, 
   Target, 
   DollarSign, 
@@ -173,7 +173,7 @@ const DashboardModule: React.FC = () => {
                   metric.trend === 'down' && "text-red-600",
                   metric.trend === 'stable' && "text-gray-600"
                 )}>
-                  < className={cn(
+                  <TrendingUp className={cn(
                     "h-3 w-3",
                     metric.trend === 'down' && "rotate-180"
                   )} />

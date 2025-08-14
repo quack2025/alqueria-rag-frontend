@@ -1,11 +1,10 @@
 // components/Modules/CreativeModule.tsx - Módulo RAG Creativo
 
-import React, { useState, useEffect, useRef } from "react";
-import { useState } from "react";
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  ArrowLeft, Sparkles, Palette, Download, Settings, 
-  Trash2, BarChart3, Lightbulb, Clock, Zap, Image as ImageIcon
+  ArrowLeft, Sparkles, Palette, TrendingUp, Download, Settings, 
+  Trash2, BarChart3, Lightbulb, Clock, Zap, Image as ImageIcon, AlertCircle
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 import { cn, generateId } from '../../lib/utils';
@@ -30,7 +29,7 @@ const CreativeModule: React.FC = () => {
   
   // Daily limits
   const DAILY_USER_LIMIT = 10;
-  // const DAILY_SYSTEM_LIMIT = 50;
+  const DAILY_SYSTEM_LIMIT = 50;
   
   // Referencias
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -249,7 +248,9 @@ const CreativeModule: React.FC = () => {
           content: `🎨 **Imagen generada**: ${prompt}`,
           mode: 'creative',
           timestamp: new Date(),
-          // };
+          imageUrl: data.image_url,
+          imagePrompt: prompt
+        };
 
         const updatedMessages = chatStorage.addMessage('creative', imageMessage);
         setMessages(updatedMessages);
@@ -397,7 +398,7 @@ const CreativeModule: React.FC = () => {
             <div className="grid gap-3 md:grid-cols-2 max-w-4xl mx-auto">
               {[
                 {
-                  icon:,
+                  icon: TrendingUp,
                   title: 'Análisis Predictivo',
                   prompt: 'Genera predicciones sobre el comportamiento del consumidor hondureño en 2025'
                 },

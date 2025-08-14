@@ -1,11 +1,12 @@
 // components/Campaign/ArchetypeSelector.tsx - Selector de arquetipos para evaluación
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import { 
-  Users, Play, CheckCircle, AlertTriangle, Info, Target
+  Users, Play, CheckCircle, AlertTriangle, Info, 
+  TrendingUp, Target
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { UnileverArchetype } from '../../types/persona.types';
+import { TigoArchetype } from '../../types/persona.types';
 import type { CampaignConcept } from '../../types/campaign.types';
 
 interface ArchetypeSelectorProps {
@@ -24,7 +25,7 @@ const ArchetypeSelector: React.FC<ArchetypeSelectorProps> = ({
 
   // Información detallada de cada arquetipo
   const archetypeDetails = {
-    [UnileverArchetype.PROFESIONAL]: {
+    [TigoArchetype.PROFESIONAL]: {
       name: 'Profesional',
       icon: '💼',
       description: 'Ejecutivos y profesionales de clase media-alta',
@@ -34,7 +35,7 @@ const ArchetypeSelector: React.FC<ArchetypeSelectorProps> = ({
       insights: ['Sensible a beneficios funcionales', 'Valora prestigio de marca', 'Prefiere canales digitales'],
       concerns: ['Tiempo de implementación', 'Compatibilidad con herramientas actuales']
     },
-    [UnileverArchetype.CONTROLADOR]: {
+    [TigoArchetype.CONTROLADOR]: {
       name: 'Controlador',
       icon: '📊',
       description: 'Administradores del hogar, decisores familiares',
@@ -44,7 +45,7 @@ const ArchetypeSelector: React.FC<ArchetypeSelectorProps> = ({
       insights: ['Muy sensible al precio', 'Necesita garantías claras', 'Influye en decisiones familiares'],
       concerns: ['Costos ocultos', 'Cambios en términos y condiciones']
     },
-    [UnileverArchetype.EMPRENDEDOR]: {
+    [TigoArchetype.EMPRENDEDOR]: {
       name: 'Emprendedor',
       icon: '🚀',
       description: 'Dueños de pequeños negocios y comerciantes',
@@ -54,7 +55,7 @@ const ArchetypeSelector: React.FC<ArchetypeSelectorProps> = ({
       insights: ['Enfoque en beneficios de negocio', 'Valora escalabilidad', 'Aprecia soporte personalizado'],
       concerns: ['Interrupciones de servicio', 'Complejidad de implementación']
     },
-    [UnileverArchetype.GOMOSO_EXPLORADOR]: {
+    [TigoArchetype.GOMOSO_EXPLORADOR]: {
       name: 'Gomoso/Explorador',
       icon: '🎨',
       description: 'Jóvenes trendy, early adopters, influencers',
@@ -64,7 +65,7 @@ const ArchetypeSelector: React.FC<ArchetypeSelectorProps> = ({
       insights: ['Atraído por innovación', 'Importante el factor "cool"', 'Influye en redes sociales'],
       concerns: ['Que se vea "mainstream"', 'Limitaciones de personalización']
     },
-    [UnileverArchetype.PRAGMATICO]: {
+    [TigoArchetype.PRAGMATICO]: {
       name: 'Pragmático',
       icon: '⚡',
       description: 'Buscan soluciones simples y efectivas',
@@ -74,7 +75,7 @@ const ArchetypeSelector: React.FC<ArchetypeSelectorProps> = ({
       insights: ['Valora simplicidad sobre características', 'Precio-calidad es clave', 'Prefiere lo probado'],
       concerns: ['Complejidad innecesaria', 'Precios que no justifiquen el valor']
     },
-    [UnileverArchetype.RESIGNADO]: {
+    [TigoArchetype.RESIGNADO]: {
       name: 'Resignado',
       icon: '🌾',
       description: 'Usuarios tradicionales, resistentes al cambio',
@@ -95,7 +96,7 @@ const ArchetypeSelector: React.FC<ArchetypeSelectorProps> = ({
   };
 
   const selectAll = () => {
-    setSelectedArchetypes(Object.values(UnileverArchetype));
+    setSelectedArchetypes(Object.values(TigoArchetype));
   };
 
   const clearAll = () => {
@@ -231,7 +232,7 @@ const ArchetypeSelector: React.FC<ArchetypeSelectorProps> = ({
               {/* Insights rápidos */}
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-xs">
-                  < className="h-3 w-3 text-green-600" />
+                  <TrendingUp className="h-3 w-3 text-green-600" />
                   <span className="text-gray-600 truncate">{archetype.insights[0]}</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs">

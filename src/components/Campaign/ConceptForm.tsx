@@ -1,6 +1,6 @@
 // components/Campaign/ConceptForm.tsx - Formulario para crear conceptos/campañas
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import { 
   Plus, Minus, Save, Lightbulb, DollarSign, 
   Megaphone, Settings

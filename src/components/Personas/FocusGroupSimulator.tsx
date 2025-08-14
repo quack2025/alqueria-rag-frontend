@@ -1,7 +1,6 @@
 // components/Personas/FocusGroupSimulator.tsx - Simulador de Focus Groups
 
-import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { useState } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Users, Play, Pause, Download, MessageCircle, User, Mic } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { llmChatService } from '../../services/llmChatService';
@@ -329,7 +328,7 @@ const FocusGroupSimulator: React.FC<FocusGroupSimulatorProps> = ({ isOpen, onClo
       Perfil del Participante:
       - Estilo de opinión: ${participant.opinion_style}
       - Segmento: ${participant.segment}
-      - Personalidad: ${participant.characteristics.psychographics}
+      - Personalidad: ${participant.personality}
       
       ${evaluationContext ? `
       Evaluación previa:

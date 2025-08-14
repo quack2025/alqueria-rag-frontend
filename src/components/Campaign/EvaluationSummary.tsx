@@ -4,7 +4,7 @@ import React from 'react';
 import { 
   AlertTriangle, CheckCircle, 
   XCircle, Target, DollarSign, Users, MessageSquare,
-  BarChart3, Lightbulb
+  BarChart3, Lightbulb, AlertCircle
 } from 'lucide-react';
 import type { SegmentReaction } from '../../types/campaign.types';
 
@@ -64,7 +64,7 @@ const EvaluationSummary: React.FC<EvaluationSummaryProps> = ({
     const avg = metrics.overallAverage;
     if (avg >= 75) return { text: 'LISTO PARA LANZAR', color: 'green', icon: CheckCircle };
     if (avg >= 60) return { text: 'REQUIERE AJUSTES MENORES', color: 'yellow', icon: AlertTriangle };
-    if (avg >= 40) return { text: 'REQUIERE AJUSTES MAYORES', color: 'orange', icon: };
+    if (avg >= 40) return { text: 'REQUIERE AJUSTES MAYORES', color: 'orange', icon: AlertCircle };
     return { text: 'NO RECOMENDADO', color: 'red', icon: XCircle };
   };
 
@@ -259,7 +259,7 @@ const EvaluationSummary: React.FC<EvaluationSummaryProps> = ({
       {/* Preocupaciones Consolidadas */}
       <div className="bg-yellow-50 rounded-xl p-6 border border-yellow-200">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-yellow-800">
-          < className="h-5 w-5" />
+          <AlertCircle className="h-5 w-5" />
           Preocupaciones Principales
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

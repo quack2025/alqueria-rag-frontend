@@ -1,8 +1,7 @@
 // components/Config/ConfigurationPanel.tsx - Panel de configuración avanzada
 
-import React, { useState, useEffect } from "react";
-import { useState } from "react";
-import { Settings, Save, RotateCcw, Download, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Settings, Save, RotateCcw, Download, AlertCircle, CheckCircle } from 'lucide-react';
 import type { ConfigOption } from '../../types';
 import { cn } from '../../lib/utils';
 
@@ -318,7 +317,7 @@ const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({ isOpen, onClose
               {message.type === 'success' ? (
                 <CheckCircle className="h-4 w-4" />
               ) : (
-                < className="h-4 w-4" />
+                <AlertCircle className="h-4 w-4" />
               )}
               {message.text}
             </div>

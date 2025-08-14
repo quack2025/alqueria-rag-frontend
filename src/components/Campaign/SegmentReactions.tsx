@@ -1,14 +1,15 @@
 // components/Campaign/SegmentReactions.tsx - Muestra reacciones detalladas por segmento
 
-import React, { useState } from "react";
-import {, CheckCircle, 
+import React, { useState } from 'react';
+import { 
+  AlertCircle, CheckCircle, 
   MessageCircle, Lightbulb, ThumbsUp, ThumbsDown, Star,
   BarChart3, Eye, ArrowRight, Target
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import type { SegmentReaction, CampaignConcept, EvaluationVariable } from '../../types/campaign.types';
 import { EVALUATION_VARIABLES } from '../../types/campaign.types';
-import { UnileverArchetype } from '../../types/persona.types';
+import { TigoArchetype } from '../../types/persona.types';
 
 interface SegmentReactionsProps {
   concept: CampaignConcept;
@@ -30,12 +31,12 @@ const SegmentReactions: React.FC<SegmentReactionsProps> = ({
 
   // Mapeo de arquetipos a nombres y colores
   const archetypeInfo = {
-    [UnileverArchetype.PROFESIONAL]: { name: 'Profesional', color: 'blue', icon: '💼' },
-    [UnileverArchetype.CONTROLADOR]: { name: 'Controlador', color: 'green', icon: '📊' },
-    [UnileverArchetype.EMPRENDEDOR]: { name: 'Emprendedor', color: 'orange', icon: '🚀' },
-    [UnileverArchetype.GOMOSO_EXPLORADOR]: { name: 'Gomoso/Explorador', color: 'purple', icon: '🎨' },
-    [UnileverArchetype.PRAGMATICO]: { name: 'Pragmático', color: 'yellow', icon: '⚡' },
-    [UnileverArchetype.RESIGNADO]: { name: 'Resignado', color: 'gray', icon: '🌾' }
+    [TigoArchetype.PROFESIONAL]: { name: 'Profesional', color: 'blue', icon: '💼' },
+    [TigoArchetype.CONTROLADOR]: { name: 'Controlador', color: 'green', icon: '📊' },
+    [TigoArchetype.EMPRENDEDOR]: { name: 'Emprendedor', color: 'orange', icon: '🚀' },
+    [TigoArchetype.GOMOSO_EXPLORADOR]: { name: 'Gomoso/Explorador', color: 'purple', icon: '🎨' },
+    [TigoArchetype.PRAGMATICO]: { name: 'Pragmático', color: 'yellow', icon: '⚡' },
+    [TigoArchetype.RESIGNADO]: { name: 'Resignado', color: 'gray', icon: '🌾' }
   };
 
   const getSentimentIcon = (sentiment: string) => {
@@ -43,7 +44,7 @@ const SegmentReactions: React.FC<SegmentReactionsProps> = ({
       case 'muy_positivo': return <ThumbsUp className="h-4 w-4 text-green-600" />;
       case 'positivo': return <CheckCircle className="h-4 w-4 text-green-500" />;
       case 'neutral': return <Eye className="h-4 w-4 text-gray-500" />;
-      case 'negativo': return < className="h-4 w-4 text-orange-500" />;
+      case 'negativo': return <AlertCircle className="h-4 w-4 text-orange-500" />;
       case 'muy_negativo': return <ThumbsDown className="h-4 w-4 text-red-600" />;
       default: return <Eye className="h-4 w-4 text-gray-400" />;
     }
@@ -398,7 +399,7 @@ const SegmentReactions: React.FC<SegmentReactionsProps> = ({
 
               <div className="bg-white rounded-lg border border-gray-200 p-6">
                 <h5 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                  < className="h-4 w-4 text-orange-600" />
+                  <AlertCircle className="h-4 w-4 text-orange-600" />
                   Preocupaciones
                 </h5>
                 <ul className="space-y-2">

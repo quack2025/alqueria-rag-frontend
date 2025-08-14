@@ -1,7 +1,6 @@
 // components/Auth/LoginPage.tsx - Página de login segura
 
-import React, { useState, useEffect } from "react";
-import { useState } from "react";
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, Loader2, Shield, Zap } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
@@ -63,7 +62,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ className }) => {
             <Shield className="h-8 w-8 text-white" />
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            RAG System
+            Unilever Unilever RAG System
           </h2>
           <p className="text-gray-600">
             Sistema de análisis de mercado con IA
@@ -100,7 +99,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ className }) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="admin, user, o tigo"
+                  placeholder="admin, user, o unilever"
                   disabled={isLoading}
                   required
                 />
@@ -169,7 +168,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ className }) => {
             <div className="text-xs text-gray-600 space-y-1">
               <div><strong>admin</strong> / admin123</div>
               <div><strong>user</strong> / user123</div>
-              <div><strong>tigo</strong> / tigo2024</div>
+              <div><strong>unilever</strong> / unilever2024</div>
             </div>
           </div>
 
@@ -183,7 +182,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ className }) => {
 
         {/* Footer */}
         <div className="text-center text-sm text-gray-500">
-          <p>Sistema RAG v1.0</p>
+          <p>Unilever Honduras - Sistema RAG v1.0</p>
           <p className="mt-1">Solo personal autorizado</p>
         </div>
       </div>

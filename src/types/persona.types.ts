@@ -1,7 +1,7 @@
 // types/persona.types.ts - Definición completa del sistema de personas sintéticas
 
-// Los 6 Arquetipos de Unilever Honduras
-export const UnileverArchetype = {
+// Los 6 Arquetipos de Tigo Honduras
+export const TigoArchetype = {
   PROFESIONAL: 'PROFESIONAL',
   CONTROLADOR: 'CONTROLADOR',
   EMPRENDEDOR: 'EMPRENDEDOR',
@@ -10,7 +10,7 @@ export const UnileverArchetype = {
   RESIGNADO: 'RESIGNADO'
 } as const;
 
-export type UnileverArchetype = typeof UnileverArchetype[keyof typeof UnileverArchetype];
+export type TigoArchetype = typeof TigoArchetype[keyof typeof TigoArchetype];
 
 // Sistema de 80 Características Configurables
 export interface PersonaCharacteristics {
@@ -68,16 +68,16 @@ export interface PersonaCharacteristics {
     device_age: number; // in months
     upgrade_frequency: number; // months between upgrades
     network_quality_importance: number; // 0-100
-    | 'poor' | 'neutral' | 'good' | 'excellent';
+    customer_service_experience: 'very_poor' | 'poor' | 'neutral' | 'good' | 'excellent';
     bundling_preferences: string[];
-    | 'card' | 'bank_transfer' | 'mobile_money' | 'other';
+    payment_method: 'cash' | 'card' | 'bank_transfer' | 'mobile_money' | 'other';
     bill_payment_timing: 'early' | 'on_time' | 'late' | 'very_late';
     roaming_usage: 'never' | 'rarely' | 'sometimes' | 'often';
     family_plan_status: boolean;
-    | 'low' | 'medium' | 'high';
+    loyalty_program_engagement: 'none' | 'low' | 'medium' | 'high';
     complaint_frequency: number; // per year
     switching_consideration: number; // 0-100 likelihood
-    | 'passive' | 'promoter';
+    referral_behavior: 'detractor' | 'passive' | 'promoter';
     feature_usage_priority: string[];
     data_sharing_behavior: 'never' | 'family' | 'friends' | 'anyone';
     wifi_dependency: number; // 0-100
@@ -119,7 +119,7 @@ export interface PersonaCharacteristics {
 export interface SyntheticPersona {
   // Identificación
   id: string;
-  archetype: UnileverArchetype;
+  archetype: TigoArchetype;
   variant_id: string; // Para A/B testing
   
   // Información básica
@@ -183,7 +183,7 @@ export interface SyntheticPersona {
 
 // Configuración para generación de personas
 export interface PersonaGenerationConfig {
-  archetype: UnileverArchetype;
+  archetype: TigoArchetype;
   count: number;
   diversity_requirements: {
     gender_distribution: Record<string, number>;
@@ -201,8 +201,8 @@ export interface PersonaGenerationConfig {
 }
 
 // Plantillas base de arquetipos
-export const ARCHETYPE_TEMPLATES: Record<UnileverArchetype, Partial<PersonaCharacteristics>> = {
-  [UnileverArchetype.PROFESIONAL]: {
+export const ARCHETYPE_TEMPLATES: Record<TigoArchetype, Partial<PersonaCharacteristics>> = {
+  [TigoArchetype.PROFESIONAL]: {
     demographics: {
       age: 38,
       gender: 'male',
@@ -227,7 +227,7 @@ export const ARCHETYPE_TEMPLATES: Record<UnileverArchetype, Partial<PersonaChara
     } as any,
   },
   
-  [UnileverArchetype.CONTROLADOR]: {
+  [TigoArchetype.CONTROLADOR]: {
     demographics: {
       age: 42,
       gender: 'female',
@@ -251,7 +251,7 @@ export const ARCHETYPE_TEMPLATES: Record<UnileverArchetype, Partial<PersonaChara
     } as any,
   },
   
-  [UnileverArchetype.EMPRENDEDOR]: {
+  [TigoArchetype.EMPRENDEDOR]: {
     demographics: {
       age: 32,
       gender: 'male',
@@ -274,7 +274,7 @@ export const ARCHETYPE_TEMPLATES: Record<UnileverArchetype, Partial<PersonaChara
     } as any,
   },
   
-  [UnileverArchetype.GOMOSO_EXPLORADOR]: {
+  [TigoArchetype.GOMOSO_EXPLORADOR]: {
     demographics: {
       age: 26,
       gender: 'female',
@@ -297,7 +297,7 @@ export const ARCHETYPE_TEMPLATES: Record<UnileverArchetype, Partial<PersonaChara
     } as any,
   },
   
-  [UnileverArchetype.PRAGMATICO]: {
+  [TigoArchetype.PRAGMATICO]: {
     demographics: {
       age: 35,
       gender: 'male',
@@ -317,7 +317,7 @@ export const ARCHETYPE_TEMPLATES: Record<UnileverArchetype, Partial<PersonaChara
     } as any,
   },
   
-  [UnileverArchetype.RESIGNADO]: {
+  [TigoArchetype.RESIGNADO]: {
     demographics: {
       age: 48,
       gender: 'male',

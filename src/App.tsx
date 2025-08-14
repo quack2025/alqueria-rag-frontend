@@ -1,7 +1,6 @@
 // App.tsx - Componente principal de la aplicación
 
-import React, { useEffect } from "react";
-import { useEffect } from "react";
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './lib/auth';
 import LoginPage from './components/Auth/LoginPage';
@@ -49,17 +48,17 @@ const App: React.FC = () => {
 
   useEffect(() => {
     // Log de inicialización
-    console.log('🚀 RAG Frontend iniciado');
+    console.log('🚀 Unilever RAG Frontend iniciado');
     console.log('🔐 Usuario autenticado:', isAuthenticated());
     
     // Configurar título de la página
-    document.title = 'RAG System';
+    document.title = 'Unilever Unilever RAG System';
     
     // Agregar clase al body para estilos globales
-    document.body.classList.add('rag-app');
+    document.body.classList.add('unilever-rag-app');
     
     return () => {
-      document.body.classList.remove('rag-app');
+      document.body.classList.remove('unilever-rag-app');
     };
   }, [isAuthenticated]);
 

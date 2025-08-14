@@ -1,6 +1,6 @@
 // components/Personas/AdvancedPersonaManager.tsx - Sistema Avanzado de Personas Sintéticas
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import { 
   Users, UserPlus, Edit3, Save, X, AlertTriangle, CheckCircle, 
   Sliders, BarChart3, Brain
@@ -10,7 +10,7 @@ import type {
   SyntheticPersona, 
   PersonaCharacteristics
 } from '../../types/persona.types';
-import { UnileverArchetype, ARCHETYPE_TEMPLATES } from '../../types/persona.types';
+import { TigoArchetype, ARCHETYPE_TEMPLATES } from '../../types/persona.types';
 
 interface AdvancedPersonaManagerProps {
   isOpen: boolean;
@@ -36,7 +36,7 @@ const AdvancedPersonaManager: React.FC<AdvancedPersonaManagerProps> = ({
   
   // Configuración de generación
   const [generationConfig, setGenerationConfig] = useState({
-    archetype: UnileverArchetype.PROFESIONAL as UnileverArchetype,
+    archetype: TigoArchetype.PROFESIONAL as TigoArchetype,
     count: 10,
     diversityMode: 'balanced',
     includeCounterStereotypical: true,
@@ -45,42 +45,42 @@ const AdvancedPersonaManager: React.FC<AdvancedPersonaManagerProps> = ({
 
   // Descripciones de arquetipos
   const archetypeDescriptions = {
-    [UnileverArchetype.PROFESIONAL]: {
+    [TigoArchetype.PROFESIONAL]: {
       name: 'Profesional',
       example: 'Carlos Eduardo Hernández',
       description: '38 años, Gerente de Ventas en Tegucigalpa. Valora la eficiencia, calidad y tecnología de punta.',
       icon: '💼',
       color: 'blue'
     },
-    [UnileverArchetype.CONTROLADOR]: {
+    [TigoArchetype.CONTROLADOR]: {
       name: 'Controlador',
       example: 'María Elena Rodríguez',
       description: '42 años, Administradora del Hogar en San Pedro Sula. Busca control, seguridad y valor por su dinero.',
       icon: '📊',
       color: 'green'
     },
-    [UnileverArchetype.EMPRENDEDOR]: {
+    [TigoArchetype.EMPRENDEDOR]: {
       name: 'Emprendedor',
       example: 'José Antonio Mejía',
       description: '32 años, Dueño de Taller Mecánico en Choloma. Necesita flexibilidad y herramientas para su negocio.',
       icon: '🚀',
       color: 'orange'
     },
-    [UnileverArchetype.GOMOSO_EXPLORADOR]: {
+    [TigoArchetype.GOMOSO_EXPLORADOR]: {
       name: 'Gomoso/Explorador',
       example: 'Andrea Sofia Castillo',
       description: '26 años, Diseñadora en Tegucigalpa. Busca lo último en tecnología y tendencias.',
       icon: '🎨',
       color: 'purple'
     },
-    [UnileverArchetype.PRAGMATICO]: {
+    [TigoArchetype.PRAGMATICO]: {
       name: 'Pragmático',
       example: 'Luis Fernando Paz',
       description: '35 años, Técnico en La Ceiba. Busca soluciones prácticas y buen precio-calidad.',
       icon: '⚡',
       color: 'yellow'
     },
-    [UnileverArchetype.RESIGNADO]: {
+    [TigoArchetype.RESIGNADO]: {
       name: 'Resignado',
       example: 'Pedro José Martínez',
       description: '48 años, Agricultor en Olancho. Usa servicios básicos, resistente al cambio.',
@@ -97,7 +97,7 @@ const AdvancedPersonaManager: React.FC<AdvancedPersonaManagerProps> = ({
   }, [isOpen]);
 
   const loadPersonas = () => {
-    const saved = localStorage.getItem('unilever_advanced_personas');
+    const saved = localStorage.getItem('tigo_advanced_personas');
     if (saved) {
       setPersonas(JSON.parse(saved));
     }
@@ -105,11 +105,11 @@ const AdvancedPersonaManager: React.FC<AdvancedPersonaManagerProps> = ({
 
   const savePersonas = (newPersonas: SyntheticPersona[]) => {
     setPersonas(newPersonas);
-    localStorage.setItem('unilever_advanced_personas', JSON.stringify(newPersonas));
+    localStorage.setItem('tigo_advanced_personas', JSON.stringify(newPersonas));
   };
 
   // Generar persona base desde arquetipo
-  const generatePersonaFromArchetype = (archetype: UnileverArchetype, variant?: any): SyntheticPersona => {
+  const generatePersonaFromArchetype = (archetype: TigoArchetype, variant?: any): SyntheticPersona => {
     const template = ARCHETYPE_TEMPLATES[archetype];
     const archetypeInfo = archetypeDescriptions[archetype];
     
@@ -126,7 +126,7 @@ const AdvancedPersonaManager: React.FC<AdvancedPersonaManagerProps> = ({
         children_count: 2,
         location_type: template.demographics?.location_type || 'urban',
         housing_type: template.demographics?.housing_type || 'rented',
-        vehicle_ownership: template.demographics?.vehicle_ownership || 'moderate',
+        vehicle_ownership: template.demographics?.vehicle_ownership || 'none',
         language_primary: 'spanish',
         language_secondary: 'english',
         disability_status: 'none',
@@ -146,28 +146,40 @@ const AdvancedPersonaManager: React.FC<AdvancedPersonaManagerProps> = ({
         social_influence_susceptibility: 55,
         decision_making_style: template.psychographics?.decision_making_style || 'rational',
         time_orientation: template.psychographics?.time_orientation || 'present',
-        achievement_orientation: template.psychographics?.achievement_orientation || 40,
+        achievement_orientation: template.psychographics?.achievement_orientation || 60,
         security_values: template.psychographics?.security_values || 65,
         hedonism_values: template.psychographics?.hedonism_values || 45,
-        tradition_values: template.psychographics?.tradition_values || 40,
+        tradition_values: template.psychographics?.tradition_values || 60,
         benevolence_values: 70,
         power_values: 40,
         self_direction_values: template.psychographics?.self_direction_values || 55,
       },
       telecom: {
-        monthly_spend: template.telecom?.monthly_spend || 15000,
-        plan_type: template.telecom?.plan_type || 'weekly',
-        data_usage_gb: template.telecom?.data_usage_gb || 3,
-        network_preference: template.telecom?.network_preference || 'Walmart',
-        switching_frequency: template.telecom?.switching_frequency || 1,
-        service_quality_importance: template.telecom?.service_quality_importance || 85,
-        payment_timing: template.telecom?.payment_timing || 'weekly',
-        bundling_preference: template.telecom?.bundling_preference || true,
-        switching_consideration: template.telecom?.switching_consideration || 25,
-        digital_service_usage: template.telecom?.digital_service_usage || 40,
-        autopay_preference: template.telecom?.autopay_preference || true,
-        streaming_service_usage: template.telecom?.streaming_service_usage || ['TV', 'Social Media'],
-        social_media_usage: template.telecom?.social_media_usage || 'moderate',
+        monthly_spend: template.telecom?.monthly_spend || 500,
+        plan_type: template.telecom?.plan_type || 'prepaid',
+        data_usage_gb: template.telecom?.data_usage_gb || 10,
+        voice_minutes: 300,
+        sms_frequency: 'rarely',
+        device_brand: template.telecom?.device_brand || 'Samsung',
+        device_age: template.telecom?.device_age || 18,
+        upgrade_frequency: 24,
+        network_quality_importance: template.telecom?.network_quality_importance || 75,
+        customer_service_experience: 'neutral',
+        bundling_preferences: ['data', 'voice'],
+        payment_method: 'cash',
+        bill_payment_timing: template.telecom?.bill_payment_timing || 'on_time',
+        roaming_usage: 'rarely',
+        family_plan_status: template.telecom?.family_plan_status || false,
+        loyalty_program_engagement: 'medium',
+        complaint_frequency: 2,
+        switching_consideration: template.telecom?.switching_consideration || 30,
+        referral_behavior: 'passive',
+        feature_usage_priority: ['WhatsApp', 'Facebook', 'YouTube'],
+        data_sharing_behavior: 'family',
+        wifi_dependency: template.telecom?.wifi_dependency || 60,
+        mobile_banking_usage: template.telecom?.mobile_banking_usage || false,
+        streaming_habits: template.telecom?.streaming_habits || ['YouTube'],
+        gaming_mobile_usage: template.telecom?.gaming_mobile_usage || 'none',
       },
       sociocultural: {
         cultural_identity_strength: 75,
@@ -232,7 +244,7 @@ const AdvancedPersonaManager: React.FC<AdvancedPersonaManagerProps> = ({
         social_circle: 'Familia, compañeros de trabajo, vecinos',
         media_consumption: ['TV nacional', 'Facebook', 'WhatsApp', 'Radio HRN'],
         brand_relationships: {
-          'Unilever': 'Usuario actual, 3 años',
+          'Tigo': 'Usuario actual, 3 años',
           'Claro': 'Usuario anterior',
           'Hondutel': 'Nunca usado'
         }
@@ -261,7 +273,7 @@ const AdvancedPersonaManager: React.FC<AdvancedPersonaManagerProps> = ({
         updated_at: new Date(),
         created_by: 'system',
         version: 1,
-        tags: [archetype, 'honduras', 'unilever']
+        tags: [archetype, 'honduras', 'tigo']
       }
     };
 
@@ -287,7 +299,7 @@ const AdvancedPersonaManager: React.FC<AdvancedPersonaManagerProps> = ({
       if (generationConfig.includeCounterStereotypical && Math.random() < generationConfig.counterStereotypicalPercentage / 100) {
         // Invertir algunas características esperadas
         persona.characteristics.psychographics.innovation_adoption = 
-          persona.archetype === UnileverArchetype.RESIGNADO ? 'early_adopter' : 'laggard';
+          persona.archetype === TigoArchetype.RESIGNADO ? 'early_adopter' : 'laggard';
         persona.validation.is_counter_stereotypical = true;
       }
       
@@ -425,7 +437,7 @@ const AdvancedPersonaManager: React.FC<AdvancedPersonaManagerProps> = ({
             <Users className="h-6 w-6 text-blue-600" />
             <div>
               <h2 className="text-xl font-semibold text-gray-900">
-                Sistema Avanzado de Personas Sintéticas - Unilever Honduras
+                Sistema Avanzado de Personas Sintéticas - Tigo Honduras
               </h2>
               <p className="text-sm text-gray-600">
                 6 Arquetipos • 80 Características • Validación Ética
@@ -481,7 +493,7 @@ const AdvancedPersonaManager: React.FC<AdvancedPersonaManagerProps> = ({
                   <p className="text-sm text-gray-600 mb-3">{archetype.description}</p>
                   <button
                     onClick={() => {
-                      setGenerationConfig(prev => ({ ...prev, archetype: key as UnileverArchetype }));
+                      setGenerationConfig(prev => ({ ...prev, archetype: key as TigoArchetype }));
                       setActiveTab('generator');
                     }}
                     className="w-full px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
@@ -517,7 +529,7 @@ const AdvancedPersonaManager: React.FC<AdvancedPersonaManagerProps> = ({
                     value={generationConfig.count}
                     onChange={(e) => setGenerationConfig(prev => ({ 
                       ...prev, 
-                      count: parseInt(e.target.value) || 3 
+                      count: parseInt(e.target.value) || 10 
                     }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                   />
@@ -534,7 +546,7 @@ const AdvancedPersonaManager: React.FC<AdvancedPersonaManagerProps> = ({
                     value={generationConfig.counterStereotypicalPercentage}
                     onChange={(e) => setGenerationConfig(prev => ({ 
                       ...prev, 
-                      counterStereotypicalPercentage: Math.max(30, parseInt(e.target.value) || 25)
+                      counterStereotypicalPercentage: Math.max(30, parseInt(e.target.value) || 30)
                     }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                   />
@@ -732,7 +744,7 @@ const AdvancedPersonaManager: React.FC<AdvancedPersonaManagerProps> = ({
               <div>
                 <h3 className="font-medium text-gray-900 mb-3">Distribución por Arquetipo</h3>
                 <div className="space-y-2">
-                  {Object.values(UnileverArchetype).map(archetype => {
+                  {Object.values(TigoArchetype).map(archetype => {
                     const count = personas.filter(p => p.archetype === archetype).length;
                     const percentage = personas.length > 0 ? (count / personas.length) * 100 : 0;
                     

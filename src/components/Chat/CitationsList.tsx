@@ -1,6 +1,6 @@
 // components/Chat/CitationsList.tsx - Componente para mostrar citas y fuentes
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import { BookOpen, ChevronDown, ChevronUp, FileText, Calendar } from 'lucide-react';
 import type { Citation } from '../../types';
 import { cn } from '../../lib/utils';

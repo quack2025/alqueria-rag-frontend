@@ -1,13 +1,13 @@
 // utils/campaignEvaluator.ts - Generador de evaluaciones de campaña por arquetipo
 
 import type { CampaignConcept, SegmentReaction, VariableReaction } from '../types/campaign.types';
-import { UnileverArchetype } from '../types/persona.types';
+import { TigoArchetype } from '../types/persona.types';
 import { AuthenticConversationEngine } from './authenticConversationEngine';
 import { ECONOMIC_SEGMENTS } from '../data/hondurasKnowledgeBase';
 
 // Base de conocimiento de cada arquetipo
 const ARCHETYPE_PROFILES = {
-  [UnileverArchetype.PROFESIONAL]: {
+  [TigoArchetype.PROFESIONAL]: {
     name_preferences: ['profesional', 'empresarial', 'premium', 'pro', 'ejecutivo'],
     price_sensitivity: 0.3, // Baja sensibilidad al precio
     innovation_openness: 0.8, // Alta apertura a innovación  
@@ -16,7 +16,7 @@ const ARCHETYPE_PROFILES = {
     preferred_channels: ['digital', 'email', 'LinkedIn'],
     decision_factors: ['eficiencia', 'calidad', 'prestigio', 'funcionalidad avanzada']
   },
-  [UnileverArchetype.CONTROLADOR]: {
+  [TigoArchetype.CONTROLADOR]: {
     name_preferences: ['familia', 'hogar', 'control', 'seguro', 'confiable'],
     price_sensitivity: 0.8, // Alta sensibilidad al precio
     innovation_openness: 0.4, // Moderada apertura
@@ -25,7 +25,7 @@ const ARCHETYPE_PROFILES = {
     preferred_channels: ['punto de venta', 'call center', 'familiar'],
     decision_factors: ['precio', 'transparencia', 'garantías', 'control']
   },
-  [UnileverArchetype.EMPRENDEDOR]: {
+  [TigoArchetype.EMPRENDEDOR]: {
     name_preferences: ['negocio', 'empresario', 'growth', 'flex', 'pro'],
     price_sensitivity: 0.6, // Moderada sensibilidad
     innovation_openness: 0.7, // Buena apertura
@@ -34,7 +34,7 @@ const ARCHETYPE_PROFILES = {
     preferred_channels: ['digital', 'WhatsApp Business', 'redes sociales'],
     decision_factors: ['flexibilidad', 'herramientas de negocio', 'escalabilidad', 'soporte']
   },
-  [UnileverArchetype.GOMOSO_EXPLORADOR]: {
+  [TigoArchetype.GOMOSO_EXPLORADOR]: {
     name_preferences: ['cool', 'trendy', 'smart', 'new', 'style'],
     price_sensitivity: 0.5, // Moderada sensibilidad
     innovation_openness: 0.9, // Muy alta apertura
@@ -43,7 +43,7 @@ const ARCHETYPE_PROFILES = {
     preferred_channels: ['Instagram', 'TikTok', 'influencers', 'stories'],
     decision_factors: ['innovación', 'estética', 'compartibilidad', 'tendencia']
   },
-  [UnileverArchetype.PRAGMATICO]: {
+  [TigoArchetype.PRAGMATICO]: {
     name_preferences: ['simple', 'básico', 'esencial', 'fácil', 'directo'],
     price_sensitivity: 0.9, // Muy alta sensibilidad
     innovation_openness: 0.3, // Baja apertura
@@ -52,7 +52,7 @@ const ARCHETYPE_PROFILES = {
     preferred_channels: ['punto de venta', 'radio', 'recomendación'],
     decision_factors: ['simplicidad', 'precio', 'utilidad clara', 'confiabilidad']
   },
-  [UnileverArchetype.RESIGNADO]: {
+  [TigoArchetype.RESIGNADO]: {
     name_preferences: ['tradicional', 'conocido', 'familiar', 'simple'],
     price_sensitivity: 0.95, // Extrema sensibilidad
     innovation_openness: 0.1, // Muy baja apertura
@@ -65,32 +65,32 @@ const ARCHETYPE_PROFILES = {
 
 // Nombres y contextos realistas para cada arquetipo (basado en datos RAG)
 const PERSONA_CONTEXTS = {
-  [UnileverArchetype.PROFESIONAL]: [
+  [TigoArchetype.PROFESIONAL]: [
     { name: 'Carlos Eduardo Martínez', age: 38, city: 'Tegucigalpa', occupation: 'Gerente de Ventas', nse: 'C+', monthly_income: 22000 },
     { name: 'María José Restrepo', age: 42, city: 'San Pedro Sula', occupation: 'Directora Financiera', nse: 'B', monthly_income: 35000 },
     { name: 'Roberto Antonio Díaz', age: 35, city: 'Tegucigalpa', occupation: 'Consultor IT', nse: 'C+', monthly_income: 28000 }
   ],
-  [UnileverArchetype.CONTROLADOR]: [
+  [TigoArchetype.CONTROLADOR]: [
     { name: 'Ana Isabel Rodríguez', age: 45, city: 'San Pedro Sula', occupation: 'Administradora del Hogar', nse: 'C', monthly_income: 12000 },
     { name: 'Patricia Elena Flores', age: 38, city: 'Comayagua', occupation: 'Contadora', nse: 'C+', monthly_income: 18000 },
     { name: 'Carmen Leticia Torres', age: 52, city: 'La Ceiba', occupation: 'Supervisora Administrativa', nse: 'C', monthly_income: 14000 }
   ],
-  [UnileverArchetype.EMPRENDEDOR]: [
+  [TigoArchetype.EMPRENDEDOR]: [
     { name: 'José Manuel Mejía', age: 33, city: 'Choloma', occupation: 'Dueño de Taller Mecánico', nse: 'C', monthly_income: 13000 },
     { name: 'Sandra Gabriela López', age: 29, city: 'El Progreso', occupation: 'Propietaria de Boutique', nse: 'C+', monthly_income: 16000 },
     { name: 'Luis Fernando Castro', age: 41, city: 'Danlí', occupation: 'Distribuidor de Productos', nse: 'C', monthly_income: 11000 }
   ],
-  [UnileverArchetype.GOMOSO_EXPLORADOR]: [
+  [TigoArchetype.GOMOSO_EXPLORADOR]: [
     { name: 'Andrea Sofia Castillo', age: 24, city: 'Tegucigalpa', occupation: 'Diseñadora Gráfica', nse: 'C+', monthly_income: 17000 },
     { name: 'Kevin Alexander Morales', age: 27, city: 'San Pedro Sula', occupation: 'Content Creator', nse: 'C', monthly_income: 12000 },
     { name: 'Melissa Paola Hernández', age: 22, city: 'La Ceiba', occupation: 'Estudiante de Marketing', nse: 'C-', monthly_income: 8000 }
   ],
-  [UnileverArchetype.PRAGMATICO]: [
+  [TigoArchetype.PRAGMATICO]: [
     { name: 'Luis Fernando Paz', age: 36, city: 'Santa Rosa de Copán', occupation: 'Técnico Electricista', nse: 'C-', monthly_income: 9000 },
     { name: 'Gloria María Sánchez', age: 43, city: 'Siguatepeque', occupation: 'Secretaria', nse: 'C', monthly_income: 11000 },
     { name: 'Mario Roberto Aguilar', age: 39, city: 'Puerto Cortés', occupation: 'Conductor', nse: 'C-', monthly_income: 8500 }
   ],
-  [UnileverArchetype.RESIGNADO]: [
+  [TigoArchetype.RESIGNADO]: [
     { name: 'Pedro José Martínez', age: 58, city: 'Juticalpa', occupation: 'Agricultor', nse: 'D', monthly_income: 6000 },
     { name: 'Rosa Amelia González', age: 62, city: 'Catacamas', occupation: 'Ama de Casa', nse: 'D', monthly_income: 5500 },
     { name: 'Francisco Javier Urbina', age: 55, city: 'Yoro', occupation: 'Comerciante', nse: 'D', monthly_income: 6500 }
@@ -123,7 +123,7 @@ export class CampaignEvaluator {
     const personaContext = {
       ...basePersonaContext,
       archetype,
-      current_telecom_spend: ECONOMIC_SEGMENTS[this.mapNSEToSegment(basePersonaContext.nse)].monthly_spend[0]
+      current_telecom_spend: ECONOMIC_SEGMENTS[this.mapNSEToSegment(basePersonaContext.nse)].typical_telecom_spend[0]
     };
 
     // Simular tiempo de procesamiento
@@ -250,29 +250,29 @@ export class CampaignEvaluator {
     insights.push(`Su fortaleza principal es ${highestVar}: conecta muy bien con este segmento`);
     
     // Insights específicos por arquetipo basados en datos reales RAG
-    if (archetype === UnileverArchetype.PROFESIONAL) {
+    if (archetype === TigoArchetype.PROFESIONAL) {
       insights.push(`Con ingresos de L${economicData.monthly_income_range[0].toLocaleString()}-${economicData.monthly_income_range[1].toLocaleString()}, valora eficiencia sobre precio`);
       insights.push('Prefiere canales digitales profesionales como LinkedIn y email corporativo');
       if (concept.monthly_price && concept.monthly_price > 1000) {
         insights.push('El precio está dentro del rango aceptable para su perfil de alta productividad');
       }
-    } else if (archetype === UnileverArchetype.CONTROLADOR) {
+    } else if (archetype === TigoArchetype.CONTROLADOR) {
       insights.push(`Administra un presupuesto familiar promedio de L${economicData.monthly_income_range[0].toLocaleString()}-${economicData.monthly_income_range[1].toLocaleString()}`);
       insights.push('La transparencia en precios y términos es fundamental para su decisión');
       insights.push('Las garantías y políticas de cancelación flexibles generan confianza');
-    } else if (archetype === UnileverArchetype.EMPRENDEDOR) {
+    } else if (archetype === TigoArchetype.EMPRENDEDOR) {
       insights.push(`Busca herramientas que generen ROI directo en su negocio (ingresos L${economicData.monthly_income_range[0].toLocaleString()}-${economicData.monthly_income_range[1].toLocaleString()})`);
       insights.push('WhatsApp Business y redes sociales son canales críticos para su operación');
       insights.push('Evalúa todo en términos de impacto en ventas y atención al cliente');
-    } else if (archetype === UnileverArchetype.GOMOSO_EXPLORADOR) {
+    } else if (archetype === TigoArchetype.GOMOSO_EXPLORADOR) {
       insights.push('Busca exclusividad y factor "wow" para compartir en redes sociales');
       insights.push('Es early adopter y influencer en su círculo social digital');
       insights.push('Instagram, TikTok y YouTube son sus canales naturales de validación');
-    } else if (archetype === UnileverArchetype.PRAGMATICO) {
+    } else if (archetype === TigoArchetype.PRAGMATICO) {
       insights.push(`Con presupuesto limitado (L${economicData.monthly_income_range[0].toLocaleString()}-${economicData.monthly_income_range[1].toLocaleString()}), prioriza funcionalidad básica`);
       insights.push('Prefiere servicios simples sin complejidades técnicas');
       insights.push('WhatsApp y llamadas son sus necesidades principales');
-    } else if (archetype === UnileverArchetype.RESIGNADO) {
+    } else if (archetype === TigoArchetype.RESIGNADO) {
       insights.push(`Muy sensible al precio con ingresos limitados (L${economicData.monthly_income_range[0].toLocaleString()}-${economicData.monthly_income_range[1].toLocaleString()})`); 
       insights.push('Requiere soporte familiar en decisiones tecnológicas');
       insights.push('Radio, TV y recomendaciones familiares son sus fuentes de información');
@@ -301,7 +301,7 @@ export class CampaignEvaluator {
         concerns.push(`El precio (L${concept.monthly_price}) representa ${pricePercentage.toFixed(1)}% de su ingreso mensual`);
       }
       
-      if (archetype === UnileverArchetype.CONTROLADOR && pricePercentage > 4) {
+      if (archetype === TigoArchetype.CONTROLADOR && pricePercentage > 4) {
         concerns.push('Preocupación por incrementos futuros no informados');
       }
     }
@@ -312,11 +312,11 @@ export class CampaignEvaluator {
     }
     
     // Preocupaciones específicas por arquetipo
-    if (archetype === UnileverArchetype.PROFESIONAL) {
+    if (archetype === TigoArchetype.PROFESIONAL) {
       concerns.push('Tiempo de implementación y compatibilidad con sistemas existentes');
-    } else if (archetype === UnileverArchetype.RESIGNADO) {
+    } else if (archetype === TigoArchetype.RESIGNADO) {
       concerns.push('Complejidad de uso y necesidad de soporte técnico');
-    } else if (archetype === UnileverArchetype.GOMOSO_EXPLORADOR) {
+    } else if (archetype === TigoArchetype.GOMOSO_EXPLORADOR) {
       concerns.push('Que el producto se vuelva mainstream y pierda exclusividad');
     }
     
@@ -345,21 +345,21 @@ export class CampaignEvaluator {
     });
     
     // Sugerencias específicas por arquetipo y contexto económico
-    if (archetype === UnileverArchetype.CONTROLADOR) {
-      if (concept.monthly_price && concept.monthly_price > economicData.monthly_spend[1]) {
+    if (archetype === TigoArchetype.CONTROLADOR) {
+      if (concept.monthly_price && concept.monthly_price > economicData.typical_telecom_spend[1]) {
         suggestions.push('Ofrecer planes familiares con descuentos o opciones de financiamiento');
       }
       suggestions.push('Incluir garantía de satisfacción y política de cancelación flexible');
-    } else if (archetype === UnileverArchetype.PROFESIONAL) {
+    } else if (archetype === TigoArchetype.PROFESIONAL) {
       suggestions.push('Desarrollar caso de negocio específico con métricas de ROI y productividad');
       suggestions.push('Ofrecer período de prueba gratuito para evaluación corporativa');
-    } else if (archetype === UnileverArchetype.EMPRENDEDOR) {
+    } else if (archetype === TigoArchetype.EMPRENDEDOR) {
       suggestions.push('Mostrar casos de éxito de otros emprendedores hondureños');
       suggestions.push('Incluir herramientas específicas de WhatsApp Business y pagos móviles');
-    } else if (archetype === UnileverArchetype.GOMOSO_EXPLORADOR) {
+    } else if (archetype === TigoArchetype.GOMOSO_EXPLORADOR) {
       suggestions.push('Crear programa de early adopters con beneficios exclusivos');
       suggestions.push('Desarrollar contenido específico para Instagram Stories y TikTok');
-    } else if (archetype === UnileverArchetype.PRAGMATICO) {
+    } else if (archetype === TigoArchetype.PRAGMATICO) {
       suggestions.push('Simplificar la oferta enfocándose solo en beneficios esenciales');
       suggestions.push('Ofrecer versión básica más económica sin funciones avanzadas');
     }

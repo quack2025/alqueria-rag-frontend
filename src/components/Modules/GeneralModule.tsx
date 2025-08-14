@@ -1,10 +1,9 @@
 // components/Modules/GeneralModule.tsx - Módulo RAG General
 
-import React, { useState, useEffect, useRef } from "react";
-import { useState } from "react";
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  ArrowLeft, Bot, Send, Filter, Download, Settings, 
+  ArrowLeft, Bot, Send, Filter, Search, Download, Settings, 
   Trash2, BarChart3, FileText, Clock, Image, Paperclip, Sliders
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
@@ -14,7 +13,7 @@ import { chatStorage } from '../../lib/chatStorage';
 import MarkdownRenderer from '../Chat/MarkdownRenderer';
 import CitationsList from '../Chat/CitationsList';
 import AdvancedFilters from '../Filters/AdvancedFilters';
-import ChatHistory from '..//ChatHistory';
+import ChatHistorySearch from '../Search/ChatHistorySearch';
 
 const GeneralModule: React.FC = () => {
   const navigate = useNavigate();
@@ -26,7 +25,7 @@ const GeneralModule: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [show, setShow] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
   const [activeFilters, setActiveFilters] = useState<any>(null);
@@ -234,8 +233,8 @@ const GeneralModule: React.FC = () => {
         content: data.answer || data.content || 'Respuesta recibida',
         citations: data.citations || [],
         metadata: data.metadata || {},
-        visualization: data.visualization || null,
-        visualization: data.visualization || false
+        visualizations: data.visualizations || null,
+        hasVisualizations: data.has_visualizations || false
       };
 
       const updatedMessages = chatStorage.updateLastMessage('general', updates);
@@ -335,13 +334,13 @@ const GeneralModule: React.FC = () => {
               )}
             </div>
 
-            {/* */}
+            {/* Search */}
             <button
-              onClick={() => setShow(true)}
+              onClick={() => setShowSearch(true)}
               className="p-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50"
               title="Buscar en historial"
             >
-              < className="h-4 w-4" />
+              <Search className="h-4 w-4" />
             </button>
 
             {/* Export */}
@@ -487,9 +486,9 @@ const GeneralModule: React.FC = () => {
                   {message.role === 'assistant' ? (
                     <div>
                       <MarkdownRenderer content={message.content} />
-                      {message.visualization && (
+                      {message.visualizations && (
                         <div className="mt-4 space-y-4">
-                          {Object.entries(message.visualization).map(([type, charts]: [string, any]) => (
+                          {Object.entries(message.visualizations).map(([type, charts]: [string, any]) => (
                             charts && Array.isArray(charts) && charts.map((chart: any, index: number) => (
                               <div key={`${type}-${index}`} className="p-4 bg-gray-50 rounded-lg border">
                                 <h4 className="text-sm font-medium text-gray-700 mb-2 capitalize">
@@ -666,9 +665,9 @@ const GeneralModule: React.FC = () => {
         }}
       />
 
-      <ChatHistory
-        isOpen={show}
-        onClose={() => setShow(false)}
+      <ChatHistorySearch
+        isOpen={showSearch}
+        onClose={() => setShowSearch(false)}
         onSelectMessage={() => {
           // Ya estamos en el modo correcto
         }}

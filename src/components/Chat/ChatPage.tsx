@@ -1,8 +1,8 @@
 // components/Chat/ChatPage.tsx - Página principal de chat RAG
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Send, LogOut, Bot, Settings, Trash2, BarChart3, Filter, Users } from 'lucide-react';
+import { Send, LogOut, Bot, Settings, Trash2, BarChart3, Filter, Search, Users } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 import { cn, generateId } from '../../lib/utils';
 import type { ChatMessage, RAGResponse } from '../../types';
@@ -12,7 +12,7 @@ import MarkdownRenderer from './MarkdownRenderer';
 import CitationsList from './CitationsList';
 import ConfigurationPanel from '../Config/ConfigurationPanel';
 import AdvancedFilters from '../Filters/AdvancedFilters';
-import ChatHistory from '..//ChatHistory';
+import ChatHistorySearch from '../Search/ChatHistorySearch';
 import AdvancedPersonaManager from '../Personas/AdvancedPersonaManager';
 import FocusGroupSimulator from '../Personas/FocusGroupSimulator';
 
@@ -35,7 +35,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ className }) => {
   const [error, setError] = useState<string | null>(null);
   const [showConfig, setShowConfig] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [show, setShow] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
   const [showPersonas, setShowPersonas] = useState(false);
   const [showFocusGroup, setShowFocusGroup] = useState(false);
   const [activeFilters, setActiveFilters] = useState<any>(null);
@@ -116,7 +116,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ className }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('unilever_auth_token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('tigo_auth_token')}`,
         },
         body: JSON.stringify({
           messages: [{ role: 'user', content: userMessage }],
@@ -204,7 +204,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ className }) => {
             </div>
             <div>
               <h1 className="text-xl font-semibold text-gray-900">
-                Unilever RAG System
+                Tigo RAG System
               </h1>
               <p className="text-sm text-gray-500">
                 Bienvenido, {user?.username || 'Usuario'}
@@ -271,11 +271,11 @@ const ChatPage: React.FC<ChatPageProps> = ({ className }) => {
             </button>
 
             <button
-              onClick={() => setShow(true)}
+              onClick={() => setShowSearch(true)}
               className="p-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50"
               title="Buscar en historial"
             >
-              < className="h-4 w-4" />
+              <Search className="h-4 w-4" />
             </button>
 
             <div className="relative">
@@ -378,10 +378,10 @@ const ChatPage: React.FC<ChatPageProps> = ({ className }) => {
               </h4>
               <div className="grid gap-2 md:grid-cols-2">
                 {[
-                  '¿Cuál es la percepción de marca de Unilever en Honduras?',
-                  '¿Cómo se compara Unilever con la competencia?',
+                  '¿Cuál es la percepción de marca de Tigo en Honduras?',
+                  '¿Cómo se compara Tigo con la competencia?',
                   'Muéstrame datos de participación de mercado',
-                  '¿Qué dicen los estudios sobre la cobertura de Unilever?',
+                  '¿Qué dicen los estudios sobre la cobertura de Tigo?',
                 ].map((question, index) => (
                   <button
                     key={index}
@@ -512,10 +512,10 @@ const ChatPage: React.FC<ChatPageProps> = ({ className }) => {
         }}
       />
 
-      {/* Chat History */}
-      <ChatHistory
-        isOpen={show}
-        onClose={() => setShow(false)}
+      {/* Chat History Search */}
+      <ChatHistorySearch
+        isOpen={showSearch}
+        onClose={() => setShowSearch(false)}
         onSelectMessage={(_, mode) => {
           // Cambiar al modo correcto y mostrar el mensaje
           setCurrentMode(mode as ChatMode);
@@ -542,7 +542,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ className }) => {
 ${persona.background.life_story}
 
 Puedes preguntarle sobre:
-- Su experiencia con Unilever vs competencia
+- Su experiencia con Tigo vs competencia
 - Problemas que enfrenta: ${persona.background.pain_points.join(', ')}
 - Lo que más valora en un servicio móvil
 - Su opinión sobre nuevos servicios o promociones`;

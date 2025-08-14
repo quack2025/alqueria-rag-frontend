@@ -1,13 +1,13 @@
 // components/Campaign/PersonaSettings.tsx - Configuración avanzada de personas sintéticas
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import { 
   Settings, Save, X, Sliders, Users, Brain, 
-  ChevronDown, ChevronUp
+  ChevronDown, ChevronUp, AlertCircle
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import type { SyntheticPersona, PersonaCharacteristics } from '../../types/persona.types';
-import { UnileverArchetype, ARCHETYPE_TEMPLATES } from '../../types/persona.types';
+import { TigoArchetype, ARCHETYPE_TEMPLATES } from '../../types/persona.types';
 
 interface PersonaSettingsProps {
   isOpen: boolean;
@@ -35,7 +35,7 @@ const PersonaSettings: React.FC<PersonaSettingsProps> = ({
   }, [isOpen]);
 
   const loadPersonas = () => {
-    const saved = localStorage.getItem('unilever_campaign_personas');
+    const saved = localStorage.getItem('tigo_campaign_personas');
     if (saved) {
       const loadedPersonas = JSON.parse(saved);
       setPersonas(loadedPersonas);
@@ -48,7 +48,7 @@ const PersonaSettings: React.FC<PersonaSettingsProps> = ({
   const createDefaultPersonas = () => {
     const defaultPersonas: SyntheticPersona[] = [];
     
-    Object.values(UnileverArchetype).forEach(archetype => {
+    Object.values(TigoArchetype).forEach(archetype => {
       const template = ARCHETYPE_TEMPLATES[archetype];
       const persona: SyntheticPersona = {
         id: `persona-default-${archetype}`,
@@ -68,7 +68,7 @@ const PersonaSettings: React.FC<PersonaSettingsProps> = ({
             children_count: 2,
             location_type: template.demographics?.location_type || 'urban',
             housing_type: template.demographics?.housing_type || 'rented',
-            vehicle_ownership: template.demographics?.vehicle_ownership || 'moderate',
+            vehicle_ownership: template.demographics?.vehicle_ownership || 'none',
             language_primary: 'spanish',
             language_secondary: 'english',
             disability_status: 'none',
@@ -88,28 +88,40 @@ const PersonaSettings: React.FC<PersonaSettingsProps> = ({
             social_influence_susceptibility: 55,
             decision_making_style: template.psychographics?.decision_making_style || 'rational',
             time_orientation: template.psychographics?.time_orientation || 'present',
-            achievement_orientation: template.psychographics?.achievement_orientation || 40,
+            achievement_orientation: template.psychographics?.achievement_orientation || 60,
             security_values: template.psychographics?.security_values || 65,
             hedonism_values: template.psychographics?.hedonism_values || 45,
-            tradition_values: template.psychographics?.tradition_values || 40,
+            tradition_values: template.psychographics?.tradition_values || 60,
             benevolence_values: 70,
             power_values: 40,
             self_direction_values: template.psychographics?.self_direction_values || 55,
           },
           telecom: {
-            monthly_spend: template.telecom?.monthly_spend || 15000,
-            plan_type: template.telecom?.plan_type || 'weekly',
-            data_usage_gb: template.telecom?.data_usage_gb || 3,
-            network_preference: template.telecom?.network_preference || 'Walmart',
-            switching_frequency: template.telecom?.switching_frequency || 1,
-            service_quality_importance: template.telecom?.service_quality_importance || 85,
-            payment_timing: template.telecom?.payment_timing || 'weekly',
-            bundling_preference: template.telecom?.bundling_preference || true,
-            switching_consideration: template.telecom?.switching_consideration || 25,
-            digital_service_usage: template.telecom?.digital_service_usage || 40,
-            autopay_preference: template.telecom?.autopay_preference || true,
-            streaming_service_usage: template.telecom?.streaming_service_usage || ['TV', 'Social Media'],
-            social_media_usage: template.telecom?.social_media_usage || 'moderate',
+            monthly_spend: template.telecom?.monthly_spend || 500,
+            plan_type: template.telecom?.plan_type || 'prepaid',
+            data_usage_gb: template.telecom?.data_usage_gb || 10,
+            voice_minutes: 300,
+            sms_frequency: 'rarely',
+            device_brand: template.telecom?.device_brand || 'Samsung',
+            device_age: template.telecom?.device_age || 18,
+            upgrade_frequency: 24,
+            network_quality_importance: template.telecom?.network_quality_importance || 75,
+            customer_service_experience: 'neutral',
+            bundling_preferences: ['data', 'voice'],
+            payment_method: 'cash',
+            bill_payment_timing: template.telecom?.bill_payment_timing || 'on_time',
+            roaming_usage: 'rarely',
+            family_plan_status: template.telecom?.family_plan_status || false,
+            loyalty_program_engagement: 'medium',
+            complaint_frequency: 2,
+            switching_consideration: template.telecom?.switching_consideration || 30,
+            referral_behavior: 'passive',
+            feature_usage_priority: ['WhatsApp', 'Facebook', 'YouTube'],
+            data_sharing_behavior: 'family',
+            wifi_dependency: template.telecom?.wifi_dependency || 60,
+            mobile_banking_usage: template.telecom?.mobile_banking_usage || false,
+            streaming_habits: template.telecom?.streaming_habits || ['YouTube'],
+            gaming_mobile_usage: template.telecom?.gaming_mobile_usage || 'none',
           },
           sociocultural: {
             cultural_identity_strength: 75,
@@ -144,7 +156,7 @@ const PersonaSettings: React.FC<PersonaSettingsProps> = ({
           social_circle: 'Familia y amigos',
           media_consumption: ['TV', 'Radio', 'Redes sociales'],
           brand_relationships: {
-            'Unilever': 'Usuario actual',
+            'Tigo': 'Usuario actual',
             'Claro': 'Conocido',
             'Hondutel': 'Conocido'
           }
@@ -186,30 +198,30 @@ const PersonaSettings: React.FC<PersonaSettingsProps> = ({
 
   const getDefaultName = (archetype: string): string => {
     const names = {
-      [UnileverArchetype.PROFESIONAL]: 'Carlos Eduardo Martínez',
-      [UnileverArchetype.CONTROLADOR]: 'María Elena Rodríguez',
-      [UnileverArchetype.EMPRENDEDOR]: 'José Antonio Mejía',
-      [UnileverArchetype.GOMOSO_EXPLORADOR]: 'Andrea Sofia Castillo',
-      [UnileverArchetype.PRAGMATICO]: 'Luis Fernando Paz',
-      [UnileverArchetype.RESIGNADO]: 'Pedro José Martínez'
+      [TigoArchetype.PROFESIONAL]: 'Carlos Eduardo Martínez',
+      [TigoArchetype.CONTROLADOR]: 'María Elena Rodríguez',
+      [TigoArchetype.EMPRENDEDOR]: 'José Antonio Mejía',
+      [TigoArchetype.GOMOSO_EXPLORADOR]: 'Andrea Sofia Castillo',
+      [TigoArchetype.PRAGMATICO]: 'Luis Fernando Paz',
+      [TigoArchetype.RESIGNADO]: 'Pedro José Martínez'
     };
     return names[archetype as keyof typeof names] || 'Persona Sin Nombre';
   };
 
   const getDefaultLocation = (archetype: string): any => {
     const locations = {
-      [UnileverArchetype.PROFESIONAL]: { city: 'Tegucigalpa', department: 'Francisco Morazán', neighborhood: 'Col. Lomas del Guijarro' },
-      [UnileverArchetype.CONTROLADOR]: { city: 'San Pedro Sula', department: 'Cortés', neighborhood: 'Col. Jardines del Valle' },
-      [UnileverArchetype.EMPRENDEDOR]: { city: 'Choloma', department: 'Cortés', neighborhood: 'Barrio El Centro' },
-      [UnileverArchetype.GOMOSO_EXPLORADOR]: { city: 'Tegucigalpa', department: 'Francisco Morazán', neighborhood: 'Col. Palmira' },
-      [UnileverArchetype.PRAGMATICO]: { city: 'La Ceiba', department: 'Atlántida', neighborhood: 'Barrio La Isla' },
-      [UnileverArchetype.RESIGNADO]: { city: 'Juticalpa', department: 'Olancho', neighborhood: 'Barrio El Centro' }
+      [TigoArchetype.PROFESIONAL]: { city: 'Tegucigalpa', department: 'Francisco Morazán', neighborhood: 'Col. Lomas del Guijarro' },
+      [TigoArchetype.CONTROLADOR]: { city: 'San Pedro Sula', department: 'Cortés', neighborhood: 'Col. Jardines del Valle' },
+      [TigoArchetype.EMPRENDEDOR]: { city: 'Choloma', department: 'Cortés', neighborhood: 'Barrio El Centro' },
+      [TigoArchetype.GOMOSO_EXPLORADOR]: { city: 'Tegucigalpa', department: 'Francisco Morazán', neighborhood: 'Col. Palmira' },
+      [TigoArchetype.PRAGMATICO]: { city: 'La Ceiba', department: 'Atlántida', neighborhood: 'Barrio La Isla' },
+      [TigoArchetype.RESIGNADO]: { city: 'Juticalpa', department: 'Olancho', neighborhood: 'Barrio El Centro' }
     };
     return locations[archetype as keyof typeof locations] || { city: 'Tegucigalpa', department: 'Francisco Morazán', neighborhood: 'Centro' };
   };
 
   const savePersonas = (personasToSave: SyntheticPersona[]) => {
-    localStorage.setItem('unilever_campaign_personas', JSON.stringify(personasToSave));
+    localStorage.setItem('tigo_campaign_personas', JSON.stringify(personasToSave));
     setHasChanges(false);
   };
 
@@ -421,7 +433,7 @@ const PersonaSettings: React.FC<PersonaSettingsProps> = ({
           <div className="flex items-center gap-2">
             {hasChanges && (
               <div className="flex items-center gap-2 text-orange-600 text-sm">
-                < className="h-4 w-4" />
+                <AlertCircle className="h-4 w-4" />
                 <span>Cambios sin guardar</span>
               </div>
             )}
