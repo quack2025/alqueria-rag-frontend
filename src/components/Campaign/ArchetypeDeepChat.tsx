@@ -1,5 +1,6 @@
 // components/Campaign/ArchetypeDeepChat.tsx - Chat profundo con arquetipos
 
+import React, { useState, useEffect, useRef } from "react";
 import { useState } from "react";
 import { 
   MessageSquare, Send, X, User, Bot, 

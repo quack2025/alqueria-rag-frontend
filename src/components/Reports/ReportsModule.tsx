@@ -1,6 +1,6 @@
 // components/Reports/ReportsModule.tsx - Generación Automática de Reportes con DALL-E 3
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 

@@ -1,5 +1,5 @@
 // components/Campaign/PersonaVariableConfig.tsx
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { Plus, Trash2, Edit3, Save, X } from 'lucide-react';
 
 interface PersonaVariable {

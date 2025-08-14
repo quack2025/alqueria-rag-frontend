@@ -1,6 +1,6 @@
 // components/Personas/AdvancedPersonaManager.tsx - Sistema Avanzado de Personas Sintéticas
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { 
   Users, UserPlus, Edit3, Save, X, AlertTriangle, CheckCircle, 
   Sliders, BarChart3, Brain

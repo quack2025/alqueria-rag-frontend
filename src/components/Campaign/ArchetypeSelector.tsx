@@ -1,12 +1,12 @@
 // components/Campaign/ArchetypeSelector.tsx - Selector de arquetipos para evaluación
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { 
   Users, Play, CheckCircle, AlertTriangle, Info, 
   TrendingUp, Target
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { TigoArchetype } from '../../types/persona.types';
+import { UnileverArchetype } from '../../types/persona.types';
 import type { CampaignConcept } from '../../types/campaign.types';
 
 interface ArchetypeSelectorProps {
@@ -25,7 +25,7 @@ const ArchetypeSelector: React.FC<ArchetypeSelectorProps> = ({
 
   // Información detallada de cada arquetipo
   const archetypeDetails = {
-    [TigoArchetype.PROFESIONAL]: {
+    [UnileverArchetype.PROFESIONAL]: {
       name: 'Profesional',
       icon: '💼',
       description: 'Ejecutivos y profesionales de clase media-alta',
@@ -35,7 +35,7 @@ const ArchetypeSelector: React.FC<ArchetypeSelectorProps> = ({
       insights: ['Sensible a beneficios funcionales', 'Valora prestigio de marca', 'Prefiere canales digitales'],
       concerns: ['Tiempo de implementación', 'Compatibilidad con herramientas actuales']
     },
-    [TigoArchetype.CONTROLADOR]: {
+    [UnileverArchetype.CONTROLADOR]: {
       name: 'Controlador',
       icon: '📊',
       description: 'Administradores del hogar, decisores familiares',
@@ -45,7 +45,7 @@ const ArchetypeSelector: React.FC<ArchetypeSelectorProps> = ({
       insights: ['Muy sensible al precio', 'Necesita garantías claras', 'Influye en decisiones familiares'],
       concerns: ['Costos ocultos', 'Cambios en términos y condiciones']
     },
-    [TigoArchetype.EMPRENDEDOR]: {
+    [UnileverArchetype.EMPRENDEDOR]: {
       name: 'Emprendedor',
       icon: '🚀',
       description: 'Dueños de pequeños negocios y comerciantes',
@@ -55,7 +55,7 @@ const ArchetypeSelector: React.FC<ArchetypeSelectorProps> = ({
       insights: ['Enfoque en beneficios de negocio', 'Valora escalabilidad', 'Aprecia soporte personalizado'],
       concerns: ['Interrupciones de servicio', 'Complejidad de implementación']
     },
-    [TigoArchetype.GOMOSO_EXPLORADOR]: {
+    [UnileverArchetype.GOMOSO_EXPLORADOR]: {
       name: 'Gomoso/Explorador',
       icon: '🎨',
       description: 'Jóvenes trendy, early adopters, influencers',
@@ -65,7 +65,7 @@ const ArchetypeSelector: React.FC<ArchetypeSelectorProps> = ({
       insights: ['Atraído por innovación', 'Importante el factor "cool"', 'Influye en redes sociales'],
       concerns: ['Que se vea "mainstream"', 'Limitaciones de personalización']
     },
-    [TigoArchetype.PRAGMATICO]: {
+    [UnileverArchetype.PRAGMATICO]: {
       name: 'Pragmático',
       icon: '⚡',
       description: 'Buscan soluciones simples y efectivas',
@@ -75,7 +75,7 @@ const ArchetypeSelector: React.FC<ArchetypeSelectorProps> = ({
       insights: ['Valora simplicidad sobre características', 'Precio-calidad es clave', 'Prefiere lo probado'],
       concerns: ['Complejidad innecesaria', 'Precios que no justifiquen el valor']
     },
-    [TigoArchetype.RESIGNADO]: {
+    [UnileverArchetype.RESIGNADO]: {
       name: 'Resignado',
       icon: '🌾',
       description: 'Usuarios tradicionales, resistentes al cambio',
@@ -96,7 +96,7 @@ const ArchetypeSelector: React.FC<ArchetypeSelectorProps> = ({
   };
 
   const selectAll = () => {
-    setSelectedArchetypes(Object.values(TigoArchetype));
+    setSelectedArchetypes(Object.values(UnileverArchetype));
   };
 
   const clearAll = () => {

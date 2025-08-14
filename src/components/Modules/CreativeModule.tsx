@@ -1,5 +1,6 @@
 // components/Modules/CreativeModule.tsx - Módulo RAG Creativo
 
+import React, { useState, useEffect, useRef } from "react";
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -248,7 +249,7 @@ const CreativeModule: React.FC = () => {
           content: `🎨 **Imagen generada**: ${prompt}`,
           mode: 'creative',
           timestamp: new Date(),
-          imageUrl: data.image_url,
+          // imageUrl: data.image_url,
           imagePrompt: prompt
         };
 

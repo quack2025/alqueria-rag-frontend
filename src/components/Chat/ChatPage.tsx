@@ -1,6 +1,6 @@
 // components/Chat/ChatPage.tsx - Página principal de chat RAG
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 import { Send, LogOut, Bot, Settings, Trash2, BarChart3, Filter, Search, Users } from 'lucide-react';
 import { useAuth } from '../../lib/auth';

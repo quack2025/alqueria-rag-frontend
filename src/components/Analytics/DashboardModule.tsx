@@ -1,5 +1,6 @@
 // components/Analytics/DashboardModule.tsx - Dashboard Ejecutivo con métricas en tiempo real
 
+import React, { useState } from "react";
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { 

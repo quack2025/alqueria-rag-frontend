@@ -59,31 +59,31 @@ export interface PersonaCharacteristics {
 
   // Telecom-Specific (25)
   telecom: {
-    monthly_fmcg_spend: number; // in Lempiras
-    shopping_frequency: 'prepaid' | 'postpaid' | 'hybrid';
-    shopping_trips_per_week: number;
-    grocery_budget_weekly: number;
-    coupon_usage_frequency: 'never' | 'rarely' | 'sometimes' | 'often' | 'always';
-    preferred_store_chain: string;
-    brand_switching_frequency: number; // in months
-    new_product_trial_frequency: number; // months between upgrades
-    product_quality_importance: number; // 0-100
+    monthly_spend: number; // in Lempiras
+    plan_type: 'prepaid' | 'postpaid' | 'hybrid';
+    data_usage_gb: number;
+    voice_minutes: number;
+    sms_frequency: 'never' | 'rarely' | 'sometimes' | 'often' | 'always';
+    device_brand: string;
+    device_age: number; // in months
+    upgrade_frequency: number; // months between upgrades
+    network_quality_importance: number; // 0-100
     customer_service_experience: 'very_poor' | 'poor' | 'neutral' | 'good' | 'excellent';
-    product_bundling_preferences: string[];
+    bundling_preferences: string[];
     payment_method: 'cash' | 'card' | 'bank_transfer' | 'mobile_money' | 'other';
-    payment_timing_preference: 'early' | 'on_time' | 'late' | 'very_late';
-    organic_product_preference: 'never' | 'rarely' | 'sometimes' | 'often';
-    bulk_buying_status: boolean;
+    bill_payment_timing: 'early' | 'on_time' | 'late' | 'very_late';
+    roaming_usage: 'never' | 'rarely' | 'sometimes' | 'often';
+    family_plan_status: boolean;
     loyalty_program_engagement: 'none' | 'low' | 'medium' | 'high';
     complaint_frequency: number; // per year
-    brand_switching_consideration: number; // 0-100 likelihood
+    switching_consideration: number; // 0-100 likelihood
     referral_behavior: 'detractor' | 'passive' | 'promoter';
-    category_priority: string[];
-    product_sharing_behavior: 'never' | 'family' | 'friends' | 'anyone';
-    online_shopping_dependency: number; // 0-100
-    digital_payment_usage: boolean;
-    media_consumption_habits: string[];
-    social_media_usage: 'none' | 'casual' | 'regular' | 'heavy';
+    feature_usage_priority: string[];
+    data_sharing_behavior: 'never' | 'family' | 'friends' | 'anyone';
+    wifi_dependency: number; // 0-100
+    mobile_banking_usage: boolean;
+    streaming_habits: string[];
+    gaming_mobile_usage: 'none' | 'casual' | 'regular' | 'heavy';
   };
 
   // Honduras Sociocultural (15)
@@ -220,10 +220,10 @@ export const ARCHETYPE_TEMPLATES: Record<UnileverArchetype, Partial<PersonaChara
       time_orientation: 'future',
     } as any,
     telecom: {
-      shopping_frequency: 'postpaid',
-      monthly_fmcg_spend: 1500,
-      product_quality_importance: 95,
-      preferred_store_chain: 'iPhone',
+      plan_type: 'postpaid',
+      monthly_spend: 1500,
+      network_quality_importance: 95,
+      device_brand: 'iPhone',
     } as any,
   },
   
@@ -244,10 +244,10 @@ export const ARCHETYPE_TEMPLATES: Record<UnileverArchetype, Partial<PersonaChara
       tradition_values: 75,
     } as any,
     telecom: {
-      shopping_frequency: 'postpaid',
-      monthly_fmcg_spend: 800,
-      bulk_buying_status: true,
-      payment_timing_preference: 'on_time',
+      plan_type: 'postpaid',
+      monthly_spend: 800,
+      family_plan_status: true,
+      bill_payment_timing: 'on_time',
     } as any,
   },
   
@@ -267,10 +267,10 @@ export const ARCHETYPE_TEMPLATES: Record<UnileverArchetype, Partial<PersonaChara
       innovation_adoption: 'early_majority',
     } as any,
     telecom: {
-      shopping_frequency: 'hybrid',
-      monthly_fmcg_spend: 600,
-      shopping_trips_per_week: 15,
-      digital_payment_usage: true,
+      plan_type: 'hybrid',
+      monthly_spend: 600,
+      data_usage_gb: 15,
+      mobile_banking_usage: true,
     } as any,
   },
   
@@ -290,10 +290,10 @@ export const ARCHETYPE_TEMPLATES: Record<UnileverArchetype, Partial<PersonaChara
       innovation_adoption: 'innovator',
     } as any,
     telecom: {
-      shopping_frequency: 'postpaid',
-      shopping_trips_per_week: 30,
-      media_consumption_habits: ['Netflix', 'Spotify', 'TikTok', 'Instagram'],
-      social_media_usage: 'regular',
+      plan_type: 'postpaid',
+      data_usage_gb: 30,
+      streaming_habits: ['Netflix', 'Spotify', 'TikTok', 'Instagram'],
+      gaming_mobile_usage: 'regular',
     } as any,
   },
   
@@ -311,9 +311,9 @@ export const ARCHETYPE_TEMPLATES: Record<UnileverArchetype, Partial<PersonaChara
       decision_making_style: 'rational',
     } as any,
     telecom: {
-      shopping_frequency: 'prepaid',
-      monthly_fmcg_spend: 400,
-      online_shopping_dependency: 70,
+      plan_type: 'prepaid',
+      monthly_spend: 400,
+      wifi_dependency: 70,
     } as any,
   },
   
@@ -332,10 +332,10 @@ export const ARCHETYPE_TEMPLATES: Record<UnileverArchetype, Partial<PersonaChara
       innovation_adoption: 'laggard',
     } as any,
     telecom: {
-      shopping_frequency: 'prepaid',
-      monthly_fmcg_spend: 200,
-      brand_switching_frequency: 36,
-      brand_switching_consideration: 10,
+      plan_type: 'prepaid',
+      monthly_spend: 200,
+      device_age: 36,
+      switching_consideration: 10,
     } as any,
   },
 };

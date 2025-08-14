@@ -1,6 +1,6 @@
 // components/ML/PredictorModule.tsx - Predictor ML de Éxito de Campañas
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 

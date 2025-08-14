@@ -1,6 +1,6 @@
 // components/Campaign/PersonaSettings.tsx - Configuración avanzada de personas sintéticas
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { 
   Settings, Save, X, Sliders, Users, Brain, 
   ChevronDown, ChevronUp, AlertCircle
