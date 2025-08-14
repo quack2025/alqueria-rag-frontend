@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { 
   Settings, Save, X, Sliders, Users, Brain, 
-  ChevronDown, ChevronUp, AlertCircle
+  ChevronDown, ChevronUp
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import type { SyntheticPersona, PersonaCharacteristics } from '../../types/persona.types';
@@ -97,30 +97,18 @@ const PersonaSettings: React.FC<PersonaSettingsProps> = ({
             self_direction_values: template.psychographics?.self_direction_values || 55,
           },
           telecom: {
-            monthly_fmcg_spend: template.telecom?.monthly_fmcg_spend || 15000,
-            shopping_frequency: template.telecom?.shopping_frequency || 'weekly',
-            shopping_trips_per_week: template.telecom?.shopping_trips_per_week || 3,
-            grocery_budget_weekly: 300,
-            coupon_usage_frequency: 'rarely',
-            preferred_store_chain: template.telecom?.preferred_store_chain || 'Walmart',
-            brand_switching_frequency: template.telecom?.brand_switching_frequency || 1,
-            new_product_trial_frequency: 24,
-            product_quality_importance: template.telecom?.product_quality_importance || 85,
-            customer_service_experience: 'neutral',
-            product_bundling_preferences: ['dairy', 'produce'],
-            payment_method: 'cash',
-            payment_timing_preference: template.telecom?.payment_timing_preference || 'weekly',
-            organic_product_preference: 'rarely',
-            bulk_buying_status: template.telecom?.bulk_buying_status || true,
-            loyalty_program_engagement: 'medium',
-            complaint_frequency: 2,
-            brand_switching_consideration: template.telecom?.brand_switching_consideration || 25,
-            referral_behavior: 'passive',
-            category_priority: ['Snacks', 'Beverages', 'Dairy'],
-            product_sharing_behavior: 'family',
-            online_shopping_dependency: template.telecom?.online_shopping_dependency || 40,
-            digital_payment_usage: template.telecom?.digital_payment_usage || true,
-            media_consumption_habits: template.telecom?.media_consumption_habits || ['TV', 'Social Media'],
+            monthly_spend: template.telecom?.monthly_spend || 15000,
+            plan_type: template.telecom?.plan_type || 'weekly',
+            data_usage_gb: template.telecom?.data_usage_gb || 3,
+            network_preference: template.telecom?.network_preference || 'Walmart',
+            switching_frequency: template.telecom?.switching_frequency || 1,
+            service_quality_importance: template.telecom?.service_quality_importance || 85,
+            payment_timing: template.telecom?.payment_timing || 'weekly',
+            bundling_preference: template.telecom?.bundling_preference || true,
+            switching_consideration: template.telecom?.switching_consideration || 25,
+            digital_service_usage: template.telecom?.digital_service_usage || 40,
+            autopay_preference: template.telecom?.autopay_preference || true,
+            streaming_service_usage: template.telecom?.streaming_service_usage || ['TV', 'Social Media'],
             social_media_usage: template.telecom?.social_media_usage || 'moderate',
           },
           sociocultural: {
@@ -433,7 +421,7 @@ const PersonaSettings: React.FC<PersonaSettingsProps> = ({
           <div className="flex items-center gap-2">
             {hasChanges && (
               <div className="flex items-center gap-2 text-orange-600 text-sm">
-                <AlertCircle className="h-4 w-4" />
+                < className="h-4 w-4" />
                 <span>Cambios sin guardar</span>
               </div>
             )}

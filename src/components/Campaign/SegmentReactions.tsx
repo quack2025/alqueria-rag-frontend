@@ -1,8 +1,7 @@
 // components/Campaign/SegmentReactions.tsx - Muestra reacciones detalladas por segmento
 
 import React, { useState } from "react";
-import { 
-  AlertCircle, CheckCircle, 
+import {, CheckCircle, 
   MessageCircle, Lightbulb, ThumbsUp, ThumbsDown, Star,
   BarChart3, Eye, ArrowRight, Target
 } from 'lucide-react';
@@ -44,7 +43,7 @@ const SegmentReactions: React.FC<SegmentReactionsProps> = ({
       case 'muy_positivo': return <ThumbsUp className="h-4 w-4 text-green-600" />;
       case 'positivo': return <CheckCircle className="h-4 w-4 text-green-500" />;
       case 'neutral': return <Eye className="h-4 w-4 text-gray-500" />;
-      case 'negativo': return <AlertCircle className="h-4 w-4 text-orange-500" />;
+      case 'negativo': return < className="h-4 w-4 text-orange-500" />;
       case 'muy_negativo': return <ThumbsDown className="h-4 w-4 text-red-600" />;
       default: return <Eye className="h-4 w-4 text-gray-400" />;
     }
@@ -399,7 +398,7 @@ const SegmentReactions: React.FC<SegmentReactionsProps> = ({
 
               <div className="bg-white rounded-lg border border-gray-200 p-6">
                 <h5 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 text-orange-600" />
+                  < className="h-4 w-4 text-orange-600" />
                   Preocupaciones
                 </h5>
                 <ul className="space-y-2">

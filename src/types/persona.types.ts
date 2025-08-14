@@ -68,16 +68,16 @@ export interface PersonaCharacteristics {
     device_age: number; // in months
     upgrade_frequency: number; // months between upgrades
     network_quality_importance: number; // 0-100
-    customer_service_experience: 'very_poor' | 'poor' | 'neutral' | 'good' | 'excellent';
+    | 'poor' | 'neutral' | 'good' | 'excellent';
     bundling_preferences: string[];
-    payment_method: 'cash' | 'card' | 'bank_transfer' | 'mobile_money' | 'other';
+    | 'card' | 'bank_transfer' | 'mobile_money' | 'other';
     bill_payment_timing: 'early' | 'on_time' | 'late' | 'very_late';
     roaming_usage: 'never' | 'rarely' | 'sometimes' | 'often';
     family_plan_status: boolean;
-    loyalty_program_engagement: 'none' | 'low' | 'medium' | 'high';
+    | 'low' | 'medium' | 'high';
     complaint_frequency: number; // per year
     switching_consideration: number; // 0-100 likelihood
-    referral_behavior: 'detractor' | 'passive' | 'promoter';
+    | 'passive' | 'promoter';
     feature_usage_priority: string[];
     data_sharing_behavior: 'never' | 'family' | 'friends' | 'anyone';
     wifi_dependency: number; // 0-100

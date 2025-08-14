@@ -1,7 +1,7 @@
 // components/Filters/AdvancedFilters.tsx - Filtros avanzados para búsqueda RAG Enterprise
 
 import React, { useState } from "react";
-import { Filter, Calendar, MapPin, BookOpen, TrendingUp, X, Search } from 'lucide-react';
+import { Filter, Calendar, MapPin, BookOpen, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 interface FilterState {
@@ -223,7 +223,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
           {/* Tipo de Estudio */}
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <TrendingUp className="h-5 w-5 text-gray-600" />
+              < className="h-5 w-5 text-gray-600" />
               <h3 className="text-lg font-medium text-gray-900">Tipo de Estudio</h3>
               {filters.studyTypes.length > 0 && (
                 <span className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">

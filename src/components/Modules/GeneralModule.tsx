@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { 
-  ArrowLeft, Bot, Send, Filter, Search, Download, Settings, 
+  ArrowLeft, Bot, Send, Filter, Download, Settings, 
   Trash2, BarChart3, FileText, Clock, Image, Paperclip, Sliders
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
@@ -14,7 +14,7 @@ import { chatStorage } from '../../lib/chatStorage';
 import MarkdownRenderer from '../Chat/MarkdownRenderer';
 import CitationsList from '../Chat/CitationsList';
 import AdvancedFilters from '../Filters/AdvancedFilters';
-import ChatHistorySearch from '../Search/ChatHistorySearch';
+import ChatHistory from '..//ChatHistory';
 
 const GeneralModule: React.FC = () => {
   const navigate = useNavigate();
@@ -26,7 +26,7 @@ const GeneralModule: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
+  const [show, setShow] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
   const [activeFilters, setActiveFilters] = useState<any>(null);
@@ -235,7 +235,7 @@ const GeneralModule: React.FC = () => {
         citations: data.citations || [],
         metadata: data.metadata || {},
         visualization: data.visualization || null,
-        hasVisualizations: data.has_visualization || false
+        visualization: data.visualization || false
       };
 
       const updatedMessages = chatStorage.updateLastMessage('general', updates);
@@ -335,13 +335,13 @@ const GeneralModule: React.FC = () => {
               )}
             </div>
 
-            {/* Search */}
+            {/* */}
             <button
-              onClick={() => setShowSearch(true)}
+              onClick={() => setShow(true)}
               className="p-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50"
               title="Buscar en historial"
             >
-              <Search className="h-4 w-4" />
+              < className="h-4 w-4" />
             </button>
 
             {/* Export */}
@@ -666,9 +666,9 @@ const GeneralModule: React.FC = () => {
         }}
       />
 
-      <ChatHistorySearch
-        isOpen={showSearch}
-        onClose={() => setShowSearch(false)}
+      <ChatHistory
+        isOpen={show}
+        onClose={() => setShow(false)}
         onSelectMessage={() => {
           // Ya estamos en el modo correcto
         }}

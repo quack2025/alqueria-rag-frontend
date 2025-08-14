@@ -1,35 +1,35 @@
-// components/Search/ChatHistorySearch.tsx - Búsqueda semántica en historial de chats
+// components//ChatHistory.tsx - Búsqueda semántica en historial de chats
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useState } from "react";
-import { Search, Clock, MessageSquare, X, TrendingUp } from 'lucide-react';
+import {, Clock, MessageSquare, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { chatStorage } from '../../lib/chatStorage';
 import type { ChatMessage } from '../../types';
 
-interface SearchResult {
+interfaceResult {
   message: ChatMessage;
   mode: 'general' | 'creative';
   relevance: number;
   snippet: string;
 }
 
-interface ChatHistorySearchProps {
+interface ChatHistoryProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectMessage?: (message: ChatMessage, mode: string) => void;
   className?: string;
 }
 
-const ChatHistorySearch: React.FC<ChatHistorySearchProps> = ({ 
+const ChatHistory: React.FC<ChatHistoryProps> = ({ 
   isOpen, 
   onClose, 
   onSelectMessage,
   className 
 }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const [searchQuery, setQuery] = useState('');
+  const [searchResults, setResults] = useState<Result[]>([]);
+  const [ising, setIsing] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState<'all' | '7d' | '30d' | '90d'>('all');
 
   // Obtener todos los mensajes de ambos modos
@@ -64,13 +64,13 @@ const ChatHistorySearch: React.FC<ChatHistorySearchProps> = ({
   };
 
   // Búsqueda semántica simple (se puede mejorar con embeddings)
-  const performSearch = (query: string) => {
+  const perform = (query: string) => {
     if (!query.trim()) {
-      setSearchResults([]);
+      setResults([]);
       return;
     }
 
-    setIsSearching(true);
+    setIsing(true);
     
     // Simular búsqueda con delay
     setTimeout(() => {
@@ -79,7 +79,7 @@ const ChatHistorySearch: React.FC<ChatHistorySearchProps> = ({
       
       const filteredMessages = filterByPeriod(getAllMessages);
       
-      const results: SearchResult[] = filteredMessages
+      const results:Result[] = filteredMessages
         .map(msg => {
           const contentLower = msg.content.toLowerCase();
           
@@ -125,16 +125,16 @@ const ChatHistorySearch: React.FC<ChatHistorySearchProps> = ({
         .sort((a, b) => b.relevance - a.relevance)
         .slice(0, 20); // Top 20 resultados
       
-      setSearchResults(results);
-      setIsSearching(false);
+      setResults(results);
+      setIsing(false);
     }, 300);
   };
 
   useEffect(() => {
-    performSearch(searchQuery);
+    perform(searchQuery);
   }, [searchQuery, selectedPeriod]);
 
-  const handleSelectResult = (result: SearchResult) => {
+  const handleSelectResult = (result:Result) => {
     if (onSelectMessage) {
       onSelectMessage(result.message, result.mode);
     }
@@ -166,7 +166,7 @@ const ChatHistorySearch: React.FC<ChatHistorySearchProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <Search className="h-6 w-6 text-blue-600" />
+            < className="h-6 w-6 text-blue-600" />
             <div>
               <h2 className="text-xl font-semibold text-gray-900">
                 Búsqueda en Historial
@@ -184,21 +184,21 @@ const ChatHistorySearch: React.FC<ChatHistorySearchProps> = ({
           </button>
         </div>
 
-        {/* Search Bar & Filters */}
+        {/* Bar & Filters */}
         <div className="p-4 border-b border-gray-200 space-y-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            < className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar en conversaciones..."
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               autoFocus
             />
             {searchQuery && (
               <button
-                onClick={() => setSearchQuery('')}
+                onClick={() => setQuery('')}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
                 <X className="h-4 w-4" />
@@ -233,7 +233,7 @@ const ChatHistorySearch: React.FC<ChatHistorySearchProps> = ({
 
         {/* Results */}
         <div className="flex-1 overflow-y-auto p-4">
-          {isSearching ? (
+          {ising ? (
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
                 <div className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-2"></div>
@@ -281,7 +281,7 @@ const ChatHistorySearch: React.FC<ChatHistorySearchProps> = ({
 
                   {result.message.citations && result.message.citations.length > 0 && (
                     <div className="mt-2 flex items-center gap-2">
-                      <TrendingUp className="h-3 w-3 text-gray-400" />
+                      < className="h-3 w-3 text-gray-400" />
                       <span className="text-xs text-gray-500">
                         {result.message.citations.length} fuentes citadas
                       </span>
@@ -296,7 +296,7 @@ const ChatHistorySearch: React.FC<ChatHistorySearchProps> = ({
             </div>
           ) : searchQuery ? (
             <div className="text-center py-12">
-              <Search className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+              < className="h-12 w-12 text-gray-300 mx-auto mb-3" />
               <p className="text-gray-600">No se encontraron resultados</p>
               <p className="text-sm text-gray-500 mt-1">
                 Intenta con otros términos o ajusta el período de búsqueda
@@ -336,4 +336,4 @@ const ChatHistorySearch: React.FC<ChatHistorySearchProps> = ({
   );
 };
 
-export default ChatHistorySearch;
+export default ChatHistory;

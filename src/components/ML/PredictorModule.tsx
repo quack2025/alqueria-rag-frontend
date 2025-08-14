@@ -7,7 +7,6 @@ import {
   Brain, 
   Zap,
   Target,
-  TrendingUp,
   AlertTriangle,
   CheckCircle,
   XCircle,
@@ -355,7 +354,7 @@ const PredictorModule: React.FC = () => {
                 {/* Success Prediction */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-green-600" />
+                    < className="h-5 w-5 text-green-600" />
                     Predicción de Éxito
                   </h3>
                   

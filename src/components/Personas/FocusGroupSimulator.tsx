@@ -329,7 +329,7 @@ const FocusGroupSimulator: React.FC<FocusGroupSimulatorProps> = ({ isOpen, onClo
       Perfil del Participante:
       - Estilo de opinión: ${participant.opinion_style}
       - Segmento: ${participant.segment}
-      - Personalidad: ${participant.personality}
+      - Personalidad: ${participant.characteristics.psychographics}
       
       ${evaluationContext ? `
       Evaluación previa:

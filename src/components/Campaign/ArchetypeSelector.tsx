@@ -2,8 +2,7 @@
 
 import React, { useState } from "react";
 import { 
-  Users, Play, CheckCircle, AlertTriangle, Info, 
-  TrendingUp, Target
+  Users, Play, CheckCircle, AlertTriangle, Info, Target
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { UnileverArchetype } from '../../types/persona.types';
@@ -232,7 +231,7 @@ const ArchetypeSelector: React.FC<ArchetypeSelectorProps> = ({
               {/* Insights rápidos */}
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-xs">
-                  <TrendingUp className="h-3 w-3 text-green-600" />
+                  < className="h-3 w-3 text-green-600" />
                   <span className="text-gray-600 truncate">{archetype.insights[0]}</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs">

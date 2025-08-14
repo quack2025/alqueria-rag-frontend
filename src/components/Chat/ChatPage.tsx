@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
-import { Send, LogOut, Bot, Settings, Trash2, BarChart3, Filter, Search, Users } from 'lucide-react';
+import { Send, LogOut, Bot, Settings, Trash2, BarChart3, Filter, Users } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 import { cn, generateId } from '../../lib/utils';
 import type { ChatMessage, RAGResponse } from '../../types';
@@ -12,7 +12,7 @@ import MarkdownRenderer from './MarkdownRenderer';
 import CitationsList from './CitationsList';
 import ConfigurationPanel from '../Config/ConfigurationPanel';
 import AdvancedFilters from '../Filters/AdvancedFilters';
-import ChatHistorySearch from '../Search/ChatHistorySearch';
+import ChatHistory from '..//ChatHistory';
 import AdvancedPersonaManager from '../Personas/AdvancedPersonaManager';
 import FocusGroupSimulator from '../Personas/FocusGroupSimulator';
 
@@ -35,7 +35,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ className }) => {
   const [error, setError] = useState<string | null>(null);
   const [showConfig, setShowConfig] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
+  const [show, setShow] = useState(false);
   const [showPersonas, setShowPersonas] = useState(false);
   const [showFocusGroup, setShowFocusGroup] = useState(false);
   const [activeFilters, setActiveFilters] = useState<any>(null);
@@ -271,11 +271,11 @@ const ChatPage: React.FC<ChatPageProps> = ({ className }) => {
             </button>
 
             <button
-              onClick={() => setShowSearch(true)}
+              onClick={() => setShow(true)}
               className="p-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50"
               title="Buscar en historial"
             >
-              <Search className="h-4 w-4" />
+              < className="h-4 w-4" />
             </button>
 
             <div className="relative">
@@ -512,10 +512,10 @@ const ChatPage: React.FC<ChatPageProps> = ({ className }) => {
         }}
       />
 
-      {/* Chat History Search */}
-      <ChatHistorySearch
-        isOpen={showSearch}
-        onClose={() => setShowSearch(false)}
+      {/* Chat History */}
+      <ChatHistory
+        isOpen={show}
+        onClose={() => setShow(false)}
         onSelectMessage={(_, mode) => {
           // Cambiar al modo correcto y mostrar el mensaje
           setCurrentMode(mode as ChatMode);
@@ -536,7 +536,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ className }) => {
 **Perfil**: ${persona.characteristics.demographics.age} años, ${persona.characteristics.demographics.gender === 'female' ? 'mujer' : 'hombre'}, ${persona.characteristics.demographics.marital_status === 'married' ? 'casado(a)' : 'soltero(a)'}
 **Ocupación**: ${persona.characteristics.demographics.employment_status}
 **NSE**: ${persona.characteristics.demographics.income_bracket}
-**Plan actual**: ${persona.characteristics.telecom.shopping_frequency} - L${persona.characteristics.telecom.monthly_fmcg_spend}/mes
+**Plan actual**: ${persona.characteristics.telecom.plan_type} - L${persona.characteristics.telecom.monthly_spend}/mes
 **Personalidad**: ${persona.conversation_style.dialect_markers.join(', ')} son palabras que usa frecuentemente
 
 ${persona.background.life_story}

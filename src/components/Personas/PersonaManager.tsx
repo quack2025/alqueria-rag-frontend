@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useState } from "react";
-import { Users, UserPlus, MessageSquare, FileText, Activity, RefreshCw, Download, CheckCircle, AlertCircle } from 'lucide-react';
+import { Users, UserPlus, MessageSquare, FileText, Activity, RefreshCw, Download, CheckCircle } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 interface Persona {
@@ -248,7 +248,7 @@ const PersonaManager: React.FC<PersonaManagerProps> = ({ isOpen, onClose, onSele
                 ? 'bg-green-50 text-green-800 border border-green-200'
                 : 'bg-red-50 text-red-800 border border-red-200'
             )}>
-              {message.type === 'success' ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+              {message.type === 'success' ? <CheckCircle className="h-4 w-4" /> : < className="h-4 w-4" />}
               {message.text}
             </div>
           )}

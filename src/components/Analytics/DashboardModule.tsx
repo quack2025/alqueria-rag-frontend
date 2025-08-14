@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
   BarChart3, 
-  TrendingUp, 
   Users, 
   Target, 
   DollarSign, 
@@ -174,7 +173,7 @@ const DashboardModule: React.FC = () => {
                   metric.trend === 'down' && "text-red-600",
                   metric.trend === 'stable' && "text-gray-600"
                 )}>
-                  <TrendingUp className={cn(
+                  < className={cn(
                     "h-3 w-3",
                     metric.trend === 'down' && "rotate-180"
                   )} />
