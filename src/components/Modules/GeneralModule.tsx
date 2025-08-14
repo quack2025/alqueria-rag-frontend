@@ -205,7 +205,7 @@ const GeneralModule: React.FC = () => {
         formData.append('output_types', JSON.stringify(responseSettings.enableVisualizations ? ["text", "table", "chart"] : ["text"]));
         formData.append('response_customization', JSON.stringify(enhancedRequest.response_customization));
         
-        attachedFiles.forEach((file, index) => {
+        attachedFiles.forEach((file) => {
           formData.append(`images`, file);
         });
         
@@ -233,8 +233,7 @@ const GeneralModule: React.FC = () => {
         content: data.answer || data.content || 'Respuesta recibida',
         citations: data.citations || [],
         metadata: data.metadata || {},
-        visualization: data.visualization || null,
-        visualization: data.has_visualization || false
+        visualization: data.visualization || null
       };
 
       const updatedMessages = chatStorage.updateLastMessage('general', updates);
