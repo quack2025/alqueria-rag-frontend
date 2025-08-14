@@ -35,7 +35,7 @@ const SyntheticModule: React.FC = () => {
   const [evaluationProgress, setEvaluationProgress] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
   const [showFocusGroup, setShowFocusGroup] = useState(false);
-  const [focusGroupPersonas, setFocusGroupPersonas] = useState<SyntheticPersona[]>([]);
+  // const [focusGroupPersonas, setFocusGroupPersonas] = useState<SyntheticPersona[]>([]);
   const [showSummary, setShowSummary] = useState(false);
   const [showInterviews, setShowInterviews] = useState(false);
   const [showDeepChat, setShowDeepChat] = useState(false);
