@@ -1,6 +1,6 @@
 // components/Personas/FocusGroupSimulator.tsx - Simulador de Focus Groups
 
-import { useState } from "react";';
+import { useState } from "react";
 import { Users, Play, Pause, Download, MessageCircle, User, Mic } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { llmChatService } from '../../services/llmChatService';

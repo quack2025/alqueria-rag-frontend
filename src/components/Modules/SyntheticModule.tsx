@@ -1,6 +1,6 @@
 // components/Modules/SyntheticModule.tsx - Módulo de Evaluación de Campañas y Conceptos
 
-import { useState } from "react";';
+import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Users, Download, Settings, Lightbulb, 

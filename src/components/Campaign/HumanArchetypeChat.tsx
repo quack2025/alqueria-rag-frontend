@@ -1,6 +1,6 @@
 // components/Campaign/HumanArchetypeChat.tsx - Chat ultra-humano con role prompting
 
-import { useState } from "react";';
+import { useState } from "react";
 import { 
   Send, X, User, 
   Download, ChevronLeft, Mic, Phone

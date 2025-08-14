@@ -1,6 +1,6 @@
 // components/Search/ChatHistorySearch.tsx - Búsqueda semántica en historial de chats
 
-import { useState } from "react";';
+import { useState } from "react";
 import { Search, Clock, MessageSquare, X, TrendingUp } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { chatStorage } from '../../lib/chatStorage';

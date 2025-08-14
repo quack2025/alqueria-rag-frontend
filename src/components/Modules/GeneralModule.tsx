@@ -1,6 +1,6 @@
 // components/Modules/GeneralModule.tsx - Módulo RAG General
 
-import { useState } from "react";';
+import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Bot, Send, Filter, Search, Download, Settings, 

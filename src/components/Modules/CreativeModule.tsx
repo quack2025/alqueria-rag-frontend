@@ -1,6 +1,6 @@
 // components/Modules/CreativeModule.tsx - Módulo RAG Creativo
 
-import { useState } from "react";';
+import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Sparkles, Palette, TrendingUp, Download, Settings, 
