@@ -13,6 +13,34 @@ interface LoginResponse {
 export const useAuth = () => {
   const login = async (username: string, password: string): Promise<LoginResponse> => {
     try {
+      // Fallback authentication for Unilever
+      const fallbackAuth = {
+        'admin': 'admin123',
+        'user': 'user123',
+        'unilever': 'unilever2024',
+        'tigo': 'tigo2024'
+      };
+
+      // Check fallback first
+      if (fallbackAuth[username] && fallbackAuth[username] === password) {
+        const fallbackUser = {
+          username: username,
+          role: username === 'admin' ? 'admin' : 'user'
+        };
+        const fallbackToken = btoa(`${username}:${password}:${Date.now()}`);
+        
+        localStorage.setItem('tigo_auth_token', fallbackToken);
+        localStorage.setItem('tigo_user', JSON.stringify(fallbackUser));
+        
+        return {
+          success: true,
+          token: fallbackToken,
+          message: 'Login exitoso (local)',
+          user: fallbackUser
+        };
+      }
+
+
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/auth/login`, {
         method: 'POST',
         headers: {
