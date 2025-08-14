@@ -17,7 +17,7 @@ import EvaluationSummary from '../Campaign/EvaluationSummary';
 import HumanArchetypeChat from '../Campaign/HumanArchetypeChat';
 import { CampaignEvaluator } from '../../utils/campaignEvaluator';
 import type { CampaignConcept, EvaluationSession, SegmentReaction } from '../../types/campaign.types';
-import type { SyntheticPersona } from '../../types/persona.types';
+// import type { SyntheticPersona } from '../../types/persona.types';
 import { TigoArchetype } from '../../types/persona.types';
 
 type ViewState = 'welcome' | 'concept_form' | 'archetype_selector' | 'evaluating' | 'results';
@@ -599,7 +599,7 @@ const SyntheticModule: React.FC = () => {
       <FocusGroupSimulator
         isOpen={showFocusGroup}
         onClose={() => setShowFocusGroup(false)}
-        personas={focusGroupPersonas}
+        personas={[]}
       />
 
       {/* Chat Humano con Arquetipo */}
