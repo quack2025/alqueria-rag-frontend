@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Sparkles, Palette, TrendingUp, Download, Settings, 
-  Trash2, BarChart3, Lightbulb, Clock, Zap, Image as ImageIcon, AlertCircle
+  Trash2, BarChart3, Lightbulb, Clock, Zap, Image as ImageIcon
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 import { cn, generateId } from '../../lib/utils';
@@ -23,14 +23,11 @@ const CreativeModule: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [creativityLevel, setCreativityLevel] = useState(75);
-  const [imageGenerationEnabled, setImageGenerationEnabled] = useState(false);
   const [dailyImageCount, setDailyImageCount] = useState(0);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   
   // Daily limits
   const DAILY_USER_LIMIT = 10;
-  const DAILY_SYSTEM_LIMIT = 50;
-  
   // Referencias
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -248,7 +245,6 @@ const CreativeModule: React.FC = () => {
           content: `🎨 **Imagen generada**: ${prompt}`,
           mode: 'creative',
           timestamp: new Date(),
-          imageUrl: data.image_url,
           imagePrompt: prompt
         };
 

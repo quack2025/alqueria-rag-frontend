@@ -233,8 +233,8 @@ const GeneralModule: React.FC = () => {
         content: data.answer || data.content || 'Respuesta recibida',
         citations: data.citations || [],
         metadata: data.metadata || {},
-        visualizations: data.visualizations || null,
-        hasVisualizations: data.has_visualizations || false
+        visualization: data.visualization || null,
+        hasVisualizations: data.has_visualization || false
       };
 
       const updatedMessages = chatStorage.updateLastMessage('general', updates);
@@ -486,9 +486,9 @@ const GeneralModule: React.FC = () => {
                   {message.role === 'assistant' ? (
                     <div>
                       <MarkdownRenderer content={message.content} />
-                      {message.visualizations && (
+                      {message.visualization && (
                         <div className="mt-4 space-y-4">
-                          {Object.entries(message.visualizations).map(([type, charts]: [string, any]) => (
+                          {Object.entries(message.visualization).map(([type, charts]: [string, any]) => (
                             charts && Array.isArray(charts) && charts.map((chart: any, index: number) => (
                               <div key={`${type}-${index}`} className="p-4 bg-gray-50 rounded-lg border">
                                 <h4 className="text-sm font-medium text-gray-700 mb-2 capitalize">
