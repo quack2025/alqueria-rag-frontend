@@ -27,9 +27,20 @@ const LoginPage: React.FC<LoginPageProps> = ({ className }) => {
   // Verificar si ya está autenticado
   useEffect(() => {
     if (isAuthenticated()) {
-      navigate('/', { replace: true });
+      window.location.href = '/';
     }
-  }, [navigate, isAuthenticated]);
+  }, [isAuthenticated]);
+
+  // Verificar autenticación cada segundo para detectar cambios
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (isAuthenticated()) {
+        window.location.href = '/';
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,9 +53,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ className }) => {
       
       if (response.success) {
         setSuccess(t('auth.loading'));
+        // Forzar redirección inmediata
         setTimeout(() => {
-          navigate('/', { replace: true });
-        }, 1000);
+          window.location.href = '/';
+        }, 500);
       } else {
         setError(response.message || t('auth.loginError'));
       }
