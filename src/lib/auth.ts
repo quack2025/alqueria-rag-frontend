@@ -12,12 +12,18 @@ interface LoginResponse {
 
 export const useAuth = () => {
   const login = async (username: string, password: string): Promise<LoginResponse> => {
-    // Credenciales locales para acceso rápido
+    // Credenciales corporativas del equipo
     const validCredentials = [
+      // Equipo Unilever Colombia
+      { username: 'daniela.parra', password: 'Unilever2024!', role: 'admin' },
+      { username: 'marcela.rodriguez', password: 'Insights2024!', role: 'admin' },
+      
+      // Equipo Genius Labs
+      { username: 'jorge.rosales', password: 'GeniusLabs2024!', role: 'owner' },
+      
+      // Credenciales legacy (mantener temporalmente)
       { username: 'admin', password: 'admin123', role: 'admin' },
-      { username: 'unilever', password: 'unilever2024', role: 'user' },
-      { username: 'user', password: 'user123', role: 'user' },
-      { username: 'demo', password: 'demo', role: 'demo' }
+      { username: 'unilever', password: 'unilever2024', role: 'user' }
     ];
 
     // Simular delay de red
@@ -47,7 +53,7 @@ export const useAuth = () => {
 
     return {
       success: false,
-      message: 'Credenciales incorrectas. Prueba: admin/admin123 o unilever/unilever2024'
+      message: 'Credenciales incorrectas. Contacta al administrador para acceso.'
     };
   };
 

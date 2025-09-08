@@ -35,9 +35,26 @@
 - `/savital-diagnosis` - Red Flags y oportunidades de mejora
 
 ### **Credenciales de Acceso:**
-- El sistema utiliza autenticación corporativa
-- Contactar a jorge.rosales@genius-labs.com.co para configuración inicial
-- Cada usuario tendrá acceso personalizado según su rol
+
+#### **Daniela Parra (Product Manager)**
+- **Usuario**: `daniela.parra`
+- **Contraseña**: `Unilever2024!`
+- **Nivel**: Administrador completo
+
+#### **Marcela Rodríguez (Consumer Insights Manager)**
+- **Usuario**: `marcela.rodriguez`
+- **Contraseña**: `Insights2024!`
+- **Nivel**: Administrador completo
+
+#### **Jorge Rosales (Technical Lead)**
+- **Usuario**: `jorge.rosales`
+- **Contraseña**: `GeniusLabs2024!`
+- **Nivel**: Owner/Admin
+
+**Notas de Seguridad:**
+- Cambiar contraseñas después del primer acceso
+- Cada usuario tiene acceso personalizado según su rol
+- Para soporte técnico contactar: jorge.rosales@genius-labs.com.co
 
 ## 📊 **Funcionalidades por Rol**
 
