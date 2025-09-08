@@ -107,7 +107,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ className }) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="admin, user, o unilever"
+                  placeholder="Usuario corporativo"
                   disabled={isLoading}
                   required
                 />
@@ -170,15 +170,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ className }) => {
             </button>
           </form>
 
-          {/* Demo Credentials */}
-          <div className="mt-6 text-center">
-            <p className="text-xs text-gray-500 mb-2">Credenciales de prueba:</p>
-            <div className="text-xs text-gray-600 space-y-1">
-              <div><strong>admin</strong> / admin123</div>
-              <div><strong>user</strong> / user123</div>
-              <div><strong>unilever</strong> / unilever2024</div>
-            </div>
-          </div>
 
           {/* Security Notice */}
           <div className="mt-6 text-center">
