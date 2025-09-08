@@ -23,14 +23,14 @@ const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({ isOpen, onClose
       name: 'Prompt del Sistema (General)',
       description: 'Prompt base para el modo General',
       type: 'text',
-      value: 'Eres un asistente especializado en análisis de mercado para Tigo Honduras. Proporciona respuestas precisas basadas únicamente en los datos disponibles.'
+      value: 'Eres un asistente especializado en análisis de mercado para Unilever Colombia. Proporciona insights precisos sobre productos de consumo masivo basándote únicamente en los datos disponibles.'
     },
     {
       id: 'system_prompt_creative',
       name: 'Prompt del Sistema (Creativo)',
       description: 'Prompt base para el modo Creativo',
       type: 'text',
-      value: 'Eres un consultor estratégico creativo para Tigo Honduras. Genera insights innovadores y visualizaciones basadas en los datos, incluyendo recomendaciones estratégicas.'
+      value: 'Eres un consultor estratégico creativo para Unilever Colombia. Genera insights innovadores sobre marcas FMCG, visualizaciones y recomendaciones estratégicas basadas en datos de consumidores colombianos.'
     },
     {
       id: 'rag_percentage_general',

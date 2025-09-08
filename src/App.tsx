@@ -5,12 +5,12 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useAuth } from './lib/auth';
 import LoginPage from './components/Auth/LoginPage';
 import ModuleSelector from './components/Landing/ModuleSelector';
-import GeneralModule from './components/Modules/GeneralModule';
+import IntelligentRAGModule from './components/Modules/IntelligentRAGModule';
 import CreativeModule from './components/Modules/CreativeModule';
-import SyntheticModule from './components/Modules/SyntheticModule';
-import DashboardModule from './components/Analytics/DashboardModule';
-import PredictorModule from './components/ML/PredictorModule';
-import ReportsModule from './components/Reports/ReportsModule';
+import EnhancedSyntheticModule from './components/Modules/EnhancedSyntheticModule';
+import SavitalConceptDashboard from './components/ConceptEvaluation/SavitalConceptDashboard';
+import InteractiveSavitalDashboard from './components/ConceptEvaluation/InteractiveSavitalDashboard';
+import SavitalResearchDashboard from './components/ConceptEvaluation/SavitalResearchDashboard';
 import { cn } from './lib/utils';
 
 // Componente de ruta protegida
@@ -92,10 +92,10 @@ const App: React.FC = () => {
           
           {/* Rutas protegidas - Módulos individuales */}
           <Route 
-            path="/general" 
+            path="/intelligent" 
             element={
               <ProtectedRoute>
-                <GeneralModule />
+                <IntelligentRAGModule />
               </ProtectedRoute>
             } 
           />
@@ -113,48 +113,21 @@ const App: React.FC = () => {
             path="/synthetic" 
             element={
               <ProtectedRoute>
-                <SyntheticModule />
+                <EnhancedSyntheticModule />
               </ProtectedRoute>
             } 
           />
           
-          {/* Nuevos módulos Analytics y ML */}
+          {/* Ruta para evaluación de conceptos Savital */}
           <Route 
-            path="/dashboard" 
+            path="/savital-concepts" 
             element={
               <ProtectedRoute>
-                <DashboardModule />
+                <InteractiveSavitalDashboard />
               </ProtectedRoute>
             } 
           />
           
-          <Route 
-            path="/predictor" 
-            element={
-              <ProtectedRoute>
-                <PredictorModule />
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/reports" 
-            element={
-              <ProtectedRoute>
-                <ReportsModule />
-              </ProtectedRoute>
-            } 
-          />
-          
-          {/* Ruta legacy para retrocompatibilidad - redirige al selector */}
-          <Route 
-            path="/chat" 
-            element={
-              <ProtectedRoute>
-                <Navigate to="/" replace />
-              </ProtectedRoute>
-            } 
-          />
           
           {/* Callback para magic link (futuro) */}
           <Route 

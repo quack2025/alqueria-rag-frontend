@@ -21,14 +21,26 @@ const EvaluationSummary: React.FC<EvaluationSummaryProps> = ({
 }) => {
   // Calcular métricas agregadas
   const calculateMetrics = () => {
-    const scores = reactions.map(r => r.overall_score);
+    const scores = reactions.map(r => r.scores?.purchase_intent || r.overall_score || 0);
     const variableScores: Record<string, number[]> = {};
     
     reactions.forEach(reaction => {
-      Object.entries(reaction.variable_reactions).forEach(([variable, data]) => {
-        if (!variableScores[variable]) variableScores[variable] = [];
-        variableScores[variable].push(data.score);
-      });
+      // Para evaluaciones con variable_reactions (sistema Tigo)
+      if (reaction.variable_reactions) {
+        Object.entries(reaction.variable_reactions).forEach(([variable, data]) => {
+          if (!variableScores[variable]) variableScores[variable] = [];
+          variableScores[variable].push(data.score);
+        });
+      } 
+      // Para evaluaciones colombianas con scores
+      else if (reaction.scores) {
+        Object.entries(reaction.scores).forEach(([variable, score]) => {
+          if (typeof score === 'number') {
+            if (!variableScores[variable]) variableScores[variable] = [];
+            variableScores[variable].push(score);
+          }
+        });
+      }
     });
 
     const avgVariableScores = Object.entries(variableScores).map(([variable, scores]) => ({
@@ -82,15 +94,15 @@ const EvaluationSummary: React.FC<EvaluationSummaryProps> = ({
 
   // Extraer insights principales
   const topInsights = reactions
-    .flatMap(r => r.key_insights)
+    .flatMap(r => r.key_insights || r.feedback?.positive_themes || [])
     .filter((insight, index, self) => self.indexOf(insight) === index)
     .slice(0, 5);
 
   // Consolidar preocupaciones únicas
-  const consolidatedConcerns = [...new Set(reactions.flatMap(r => r.concerns))];
+  const consolidatedConcerns = [...new Set(reactions.flatMap(r => r.concerns || r.feedback?.main_concerns || []))];
   
   // Priorizar sugerencias
-  const prioritizedSuggestions = [...new Set(reactions.flatMap(r => r.suggestions))]
+  const prioritizedSuggestions = [...new Set(reactions.flatMap(r => r.suggestions || r.feedback?.improvement_suggestions || []))]
     .slice(0, 5);
 
   return (

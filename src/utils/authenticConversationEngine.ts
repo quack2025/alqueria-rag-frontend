@@ -1,11 +1,11 @@
-// utils/authenticConversationEngine.ts - Motor de conversación auténtica hondureña
+// utils/authenticConversationEngine.ts - Motor de conversación auténtica colombiana
 
 import { 
   ECONOMIC_SEGMENTS, 
   LANGUAGE_PATTERNS
-} from '../data/hondurasKnowledgeBase';
+} from '../data/colombiaKnowledgeBase';
 import type { CampaignConcept, VariableReaction, EvaluationVariable } from '../types/campaign.types';
-import { TigoArchetype } from '../types/persona.types';
+import { UnileverArchetype } from '../types/unileverPersona.types';
 
 interface PersonaProfile {
   archetype: string;
@@ -15,7 +15,7 @@ interface PersonaProfile {
   occupation: string;
   nse: string;
   monthly_income: number;
-  current_telecom_spend: number;
+  current_fmcg_spend: number;
 }
 
 interface ConversationContext {

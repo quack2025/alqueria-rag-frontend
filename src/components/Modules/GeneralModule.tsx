@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Bot, Send, Filter, Search, Download, Settings, 
-  Trash2, BarChart3, FileText, Clock, Image, Paperclip, Sliders
+  Trash2, BarChart3, FileText, Clock, Image, Paperclip, Sliders, Target, Lightbulb
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 import { cn, generateId } from '../../lib/utils';
@@ -12,8 +12,15 @@ import type { ChatMessage, RAGResponse } from '../../types';
 import { chatStorage } from '../../lib/chatStorage';
 import MarkdownRenderer from '../Chat/MarkdownRenderer';
 import CitationsList from '../Chat/CitationsList';
+import VisualizationRenderer from '../Charts/VisualizationRenderer';
+import { generateMockVisualization } from '../../utils/mockVisualizationData';
 import AdvancedFilters from '../Filters/AdvancedFilters';
 import ChatHistorySearch from '../Search/ChatHistorySearch';
+import StrategicConfigPanel, { type StrategicConfig } from '../Config/StrategicConfigPanel';
+import StrategicQuestionSuggestions from '../Suggestions/StrategicQuestionSuggestions';
+import { strategicRAGService } from '../../services/strategicRAGService';
+import type { StrategicQuestion } from '../../data/unileverStrategicQuestions';
+import { processRAGResponse } from '../../utils/responseCleanup';
 
 const GeneralModule: React.FC = () => {
   const navigate = useNavigate();
@@ -45,6 +52,19 @@ const GeneralModule: React.FC = () => {
     analysisType: 'descriptivo' as 'descriptivo' | 'predictivo' | 'comparativo',
     outputFormat: 'narrativo' as 'narrativo' | 'bullets' | 'reporte'
   });
+
+  // Strategic Mode State
+  const [isStrategicMode, setIsStrategicMode] = useState(false);
+  const [strategicConfig, setStrategicConfig] = useState<StrategicConfig>({
+    analysisType: 'strategic',
+    insightDepth: 'deep',
+    enableCrossDocumentAnalysis: true,
+    enableTrendAnalysis: false,
+    includeRecommendations: true,
+    maxChunks: 8
+  });
+  const [showStrategicConfig, setShowStrategicConfig] = useState(false);
+  const [showStrategicQuestions, setShowStrategicQuestions] = useState(false);
   
   // Referencias
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -166,7 +186,11 @@ const GeneralModule: React.FC = () => {
     // Agregar mensaje del asistente
     addMessage({
       role: 'assistant',
-      content: hasFiles ? 'Analizando documentos y archivos adjuntos...' : 'Analizando documentos...',
+      content: isStrategicMode 
+        ? 'Realizando análisis estratégico profundo...'
+        : hasFiles 
+          ? 'Analizando documentos y archivos adjuntos...' 
+          : 'Analizando documentos...',
       mode: 'general',
     });
     
@@ -174,9 +198,32 @@ const GeneralModule: React.FC = () => {
     setAttachedFiles([]); // Clear files after sending
     
     try {
+      let data: any;
+      
+      if (isStrategicMode) {
+        // Usar servicio estratégico
+        console.log('🎯 Strategic Analysis Request:', { userMessage, config: strategicConfig });
+        
+        const strategicResponse = await strategicRAGService.generateStrategicAnalysis({
+          query: userMessage,
+          ...strategicConfig
+        });
+        
+        data = {
+          answer: processRAGResponse(strategicResponse.answer),
+          citations: strategicResponse.citations,
+          metadata: {
+            ...strategicResponse.metadata,
+            strategic_framework: strategicResponse.metadata.strategic_framework,
+            key_findings: strategicResponse.key_findings,
+            recommendations: strategicResponse.strategic_recommendations
+          }
+        };
+      } else {
+        // Usar servicio normal (código existente)
       let requestBody: string | FormData;
       let headers: Record<string, string> = {
-        'Authorization': `Bearer ${localStorage.getItem('tigo_auth_token')}`,
+        'Authorization': `Bearer ${localStorage.getItem('unilever_auth_token')}`,
       };
 
       // Build enhanced request with response customization
@@ -216,7 +263,7 @@ const GeneralModule: React.FC = () => {
         requestBody = JSON.stringify(enhancedRequest);
       }
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/rag-pure`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://web-production-ef8db.up.railway.app'}/api/rag-pure`, {
         method: 'POST',
         headers,
         body: requestBody,
@@ -226,14 +273,16 @@ const GeneralModule: React.FC = () => {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       
-      const data: RAGResponse = await response.json();
+        const responseData: RAGResponse = await response.json();
+        data = responseData;
+      }
       
       // Actualizar último mensaje con la respuesta completa
       const updates: Partial<ChatMessage> = {
-        content: data.answer || data.content || 'Respuesta recibida',
+        content: processRAGResponse(data.answer || data.content || 'Respuesta recibida'),
         citations: data.citations || [],
         metadata: data.metadata || {},
-        visualizations: data.visualizations || null,
+        visualizations: data.visualizations || generateMockVisualization(data.answer || data.content || ''),
         hasVisualizations: data.has_visualizations || false
       };
 
@@ -243,7 +292,9 @@ const GeneralModule: React.FC = () => {
     } catch (error: any) {
       console.error('❌ Chat error:', error);
       
-      const errorMessage = 'Error de conexión. Asegúrate de que el backend esté ejecutándose en http://localhost:8000';
+      const errorMessage = isStrategicMode 
+        ? 'Error en análisis estratégico. Verifica la conexión al backend de Railway.' 
+        : 'Error de conexión. Verifica la conexión al backend de Railway.';
       
       const updatedMessages = chatStorage.updateLastMessage('general', {
         content: errorMessage,
@@ -277,9 +328,28 @@ const GeneralModule: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `tigo-rag-general-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `unilever-rag-general-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  // Strategic mode handlers
+  const handleStrategicQuestionSelect = (question: StrategicQuestion) => {
+    // Configurar el análisis según la pregunta
+    if (question.recommendedConfig) {
+      setStrategicConfig(prev => ({ ...prev, ...question.recommendedConfig }));
+    }
+    
+    // Establecer la pregunta en el input
+    setInput(question.question);
+    
+    // Activar modo estratégico
+    setIsStrategicMode(true);
+    
+    // Enfocar el input para que el usuario pueda enviar
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
   };
 
   return (
@@ -342,6 +412,45 @@ const GeneralModule: React.FC = () => {
             >
               <Search className="h-4 w-4" />
             </button>
+
+            {/* Strategic Mode Toggle */}
+            <button
+              onClick={() => setIsStrategicMode(!isStrategicMode)}
+              className={cn(
+                "p-2 border rounded-lg transition-colors flex items-center gap-1.5",
+                isStrategicMode
+                  ? "text-purple-600 border-purple-300 bg-purple-50 hover:bg-purple-100"
+                  : "text-gray-600 hover:text-gray-800 border-gray-300 hover:bg-gray-50"
+              )}
+              title="Modo análisis estratégico"
+            >
+              <Target className="h-4 w-4" />
+              <span className="text-xs font-medium">
+                {isStrategicMode ? 'Estratégico' : 'Básico'}
+              </span>
+            </button>
+
+            {/* Strategic Questions Button */}
+            {isStrategicMode && (
+              <button
+                onClick={() => setShowStrategicQuestions(true)}
+                className="p-2 text-purple-600 hover:text-purple-800 border border-purple-300 rounded-lg hover:bg-purple-50 transition-colors"
+                title="Preguntas estratégicas sugeridas"
+              >
+                <Lightbulb className="h-4 w-4" />
+              </button>
+            )}
+
+            {/* Strategic Config Button */}
+            {isStrategicMode && (
+              <button
+                onClick={() => setShowStrategicConfig(true)}
+                className="p-2 text-purple-600 hover:text-purple-800 border border-purple-300 rounded-lg hover:bg-purple-50 transition-colors"
+                title="Configuración estratégica"
+              >
+                <Settings className="h-4 w-4" />
+              </button>
+            )}
 
             {/* Export */}
             {messages.length > 0 && (
@@ -437,6 +546,44 @@ const GeneralModule: React.FC = () => {
             {error}
           </div>
         )}
+
+        {/* Strategic Mode Indicator */}
+        {isStrategicMode && (
+          <div className="mt-3 p-3 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg text-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Target className="h-4 w-4 text-purple-600" />
+                <span className="text-purple-700 font-medium">
+                  🎯 Modo Análisis Estratégico Activo
+                </span>
+              </div>
+              <button
+                onClick={() => setIsStrategicMode(false)}
+                className="text-purple-600 hover:text-purple-800 text-xs font-medium"
+              >
+                Desactivar
+              </button>
+            </div>
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+              <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full">
+                {strategicConfig.analysisType}
+              </span>
+              <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">
+                {strategicConfig.insightDepth}
+              </span>
+              {strategicConfig.enableCrossDocumentAnalysis && (
+                <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
+                  Análisis cruzado
+                </span>
+              )}
+              {strategicConfig.includeRecommendations && (
+                <span className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full">
+                  Recomendaciones
+                </span>
+              )}
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Messages */}
@@ -447,21 +594,21 @@ const GeneralModule: React.FC = () => {
               <Bot className="h-8 w-8 text-blue-600" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              RAG General - Análisis Basado en Datos
+              RAG General - Insights de Unilever
             </h3>
             <p className="text-gray-600 mb-6">
-              Realiza consultas específicas basadas en documentos de investigación de mercado
+              Consultas específicas basadas en datos reales de marcas como Dove, Fruco y portfolio Unilever
             </p>
             
             {/* Quick Actions */}
             <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 max-w-4xl mx-auto">
               {[
-                '¿Cómo perciben los hondureños la marca Tigo vs la competencia?',
-                'Análisis de satisfacción del servicio Tigo Home por región',
-                'Efectividad de campañas publicitarias de Tigo en 2024',
-                'Insights sobre adopción de servicios digitales en Honduras',
-                'Evaluación de conceptos de productos Tigo más exitosos',
-                'Tendencias de uso de telecomunicaciones por segmento demográfico'
+                'Análisis de preferencias de consumidores sobre variantes de Dove Body Wash',
+                'Efectividad de claims testing para Fruco: "El mejor sabor de Colombia"',
+                'Percepción de liderazgo de Fruco vs competencia en salsa de tomate',
+                'Insights sobre posicionamiento de Dove Original vs nuevas variantes',
+                'Análisis de atributos valorados en jabones corporales líquidos',
+                'Evaluación de conceptos incrementales para portafolio Dove'
               ].map((question, index) => (
                 <button
                   key={index}
@@ -487,24 +634,8 @@ const GeneralModule: React.FC = () => {
                     <div>
                       <MarkdownRenderer content={message.content} />
                       {message.visualizations && (
-                        <div className="mt-4 space-y-4">
-                          {Object.entries(message.visualizations).map(([type, charts]: [string, any]) => (
-                            charts && Array.isArray(charts) && charts.map((chart: any, index: number) => (
-                              <div key={`${type}-${index}`} className="p-4 bg-gray-50 rounded-lg border">
-                                <h4 className="text-sm font-medium text-gray-700 mb-2 capitalize">
-                                  {type.replace('_', ' ')} #{index + 1}
-                                </h4>
-                                {chart.description && (
-                                  <p className="text-xs text-gray-600 mb-2">{chart.description}</p>
-                                )}
-                                <div className="bg-white p-3 rounded border">
-                                  <pre className="text-xs text-gray-700 overflow-x-auto">
-                                    {JSON.stringify(chart, null, 2)}
-                                  </pre>
-                                </div>
-                              </div>
-                            ))
-                          ))}
+                        <div className="mt-4">
+                          <VisualizationRenderer visualization={message.visualizations} />
                         </div>
                       )}
                       {message.citations && message.citations.length > 0 && (
@@ -1013,6 +1144,21 @@ const GeneralModule: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Strategic Configuration Panel */}
+      <StrategicConfigPanel
+        isOpen={showStrategicConfig}
+        onClose={() => setShowStrategicConfig(false)}
+        config={strategicConfig}
+        onChange={setStrategicConfig}
+      />
+
+      {/* Strategic Questions Suggestions */}
+      <StrategicQuestionSuggestions
+        isOpen={showStrategicQuestions}
+        onClose={() => setShowStrategicQuestions(false)}
+        onSelectQuestion={handleStrategicQuestionSelect}
+      />
     </div>
   );
 };

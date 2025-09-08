@@ -264,7 +264,7 @@ const ChatHistorySearch: React.FC<ChatHistorySearchProps> = ({
                           ? "bg-gray-100 text-gray-700"
                           : "bg-green-100 text-green-700"
                       )}>
-                        {result.message.role === 'user' ? 'Tú' : 'Tigo RAG'}
+                        {result.message.role === 'user' ? 'Tú' : 'Unilever RAG'}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-gray-500">

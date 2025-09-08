@@ -1,5 +1,5 @@
 {
-  "name": "tigo-rag-frontend",
+  "name": "unilever-rag-frontend",
   "version": 2,
   "builds": [
     {
@@ -27,8 +27,8 @@
   },
   "build": {
     "env": {
-      "VITE_API_URL": "@tigo_api_url",
-      "VITE_JWT_SECRET": "@tigo_jwt_secret",
+      "VITE_API_URL": "https://web-production-ef8db.up.railway.app",
+      "VITE_JWT_SECRET": "tu-jwt-secret-key-unilever-2024",
       "VITE_APP_ENV": "production",
       "VITE_DEBUG": "false"
     }

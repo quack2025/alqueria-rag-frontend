@@ -10,6 +10,7 @@ import { cn } from '../../lib/utils';
 import type { SegmentReaction, CampaignConcept, EvaluationVariable } from '../../types/campaign.types';
 import { EVALUATION_VARIABLES } from '../../types/campaign.types';
 import { TigoArchetype } from '../../types/persona.types';
+import { ColombianArchetype } from '../../types/colombianPersona.types';
 
 interface SegmentReactionsProps {
   concept: CampaignConcept;
@@ -29,14 +30,13 @@ const SegmentReactions: React.FC<SegmentReactionsProps> = ({
   const [selectedVariable, setSelectedVariable] = useState<EvaluationVariable>('name');
   const [viewMode, setViewMode] = useState<'overview' | 'detailed'>('overview');
 
-  // Mapeo de arquetipos a nombres y colores
+  // Mapeo de arquetipos colombianos a nombres y colores
   const archetypeInfo = {
-    [TigoArchetype.PROFESIONAL]: { name: 'Profesional', color: 'blue', icon: '💼' },
-    [TigoArchetype.CONTROLADOR]: { name: 'Controlador', color: 'green', icon: '📊' },
-    [TigoArchetype.EMPRENDEDOR]: { name: 'Emprendedor', color: 'orange', icon: '🚀' },
-    [TigoArchetype.GOMOSO_EXPLORADOR]: { name: 'Gomoso/Explorador', color: 'purple', icon: '🎨' },
-    [TigoArchetype.PRAGMATICO]: { name: 'Pragmático', color: 'yellow', icon: '⚡' },
-    [TigoArchetype.RESIGNADO]: { name: 'Resignado', color: 'gray', icon: '🌾' }
+    [ColombianArchetype.COSTENA_EMPRENDEDORA]: { name: 'Costeña Emprendedora', color: 'orange', icon: '🏖️' },
+    [ColombianArchetype.BOGOTANA_PROFESIONAL]: { name: 'Bogotana Profesional', color: 'blue', icon: '🏢' },
+    [ColombianArchetype.PAISA_TRADICIONAL]: { name: 'Paisa Tradicional', color: 'green', icon: '👨‍👩‍👧‍👦' },
+    [ColombianArchetype.CALENA_MODERNA]: { name: 'Caleña Moderna', color: 'purple', icon: '💃' },
+    [ColombianArchetype.LLANERA_EMPRENDEDORA]: { name: 'Llanera Emprendedora', color: 'yellow', icon: '🌾' }
   };
 
   const getSentimentIcon = (sentiment: string) => {
@@ -148,7 +148,7 @@ const SegmentReactions: React.FC<SegmentReactionsProps> = ({
                     <div>
                       <h4 className="text-lg font-semibold text-gray-900">{info?.name}</h4>
                       <p className="text-sm text-gray-600">
-                        {reaction.persona_context.name} • {reaction.persona_context.age} años • {reaction.persona_context.city}
+                        {reaction.demographics || 'Consumidoras colombianas'}
                       </p>
                     </div>
                   </div>
@@ -156,12 +156,15 @@ const SegmentReactions: React.FC<SegmentReactionsProps> = ({
                   <div className="flex items-center gap-4">
                     <div className="text-right">
                       <div className={cn("px-3 py-1 rounded-full text-xs font-medium flex items-center gap-2", 
-                        getSentimentColor(reaction.overall_sentiment))}>
-                        {getSentimentIcon(reaction.overall_sentiment)}
-                        {reaction.overall_sentiment.replace('_', ' ')}
+                        getScoreColor(reaction.scores.purchase_intent))}>
+                        {reaction.scores.purchase_intent >= 70 ? <CheckCircle className="h-4 w-4" /> : 
+                         reaction.scores.purchase_intent >= 50 ? <Eye className="h-4 w-4" /> : 
+                         <AlertCircle className="h-4 w-4" />}
+                        {reaction.scores.purchase_intent >= 70 ? 'Alto interés' : 
+                         reaction.scores.purchase_intent >= 50 ? 'Interés moderado' : 'Bajo interés'}
                       </div>
-                      <div className={cn("text-2xl font-bold mt-1", getScoreColor(reaction.overall_score))}>
-                        {reaction.overall_score}/100
+                      <div className={cn("text-2xl font-bold mt-1", getScoreColor(reaction.scores.purchase_intent))}>
+                        {reaction.scores.purchase_intent}/100
                       </div>
                     </div>
                     <div className="p-2 rounded-full bg-gray-100 group-hover:bg-emerald-100 transition-colors">
@@ -172,16 +175,33 @@ const SegmentReactions: React.FC<SegmentReactionsProps> = ({
 
                 {/* Mini vista de variables */}
                 <div className="grid grid-cols-5 gap-2">
-                  {Object.entries(reaction.variable_reactions).slice(0, 5).map(([variable, varReaction]) => (
-                    <div key={variable} className="text-center">
-                      <div className="text-xs text-gray-600 mb-1">
-                        {EVALUATION_VARIABLES[variable as EvaluationVariable]?.label}
+                  {reaction.variable_reactions ? 
+                    Object.entries(reaction.variable_reactions).slice(0, 5).map(([variable, varReaction]) => (
+                      <div key={variable} className="text-center">
+                        <div className="text-xs text-gray-600 mb-1">
+                          {EVALUATION_VARIABLES[variable as EvaluationVariable]?.label}
+                        </div>
+                        <div className={cn("text-lg font-bold", getScoreColor(varReaction.score))}>
+                          {varReaction.score}
+                        </div>
                       </div>
-                      <div className={cn("text-lg font-bold", getScoreColor(varReaction.score))}>
-                        {varReaction.score}
+                    )) :
+                    // Fallback para evaluaciones colombianas usando scores
+                    reaction.scores ? Object.entries(reaction.scores).slice(0, 5).map(([variable, score]) => (
+                      <div key={variable} className="text-center">
+                        <div className="text-xs text-gray-600 mb-1">
+                          {variable === 'purchase_intent' ? 'Compra' : 
+                           variable === 'relevance' ? 'Relevancia' : 
+                           variable === 'appeal' ? 'Atractivo' : 
+                           variable === 'interest' ? 'Interés' : 
+                           variable.charAt(0).toUpperCase() + variable.slice(1)}
+                        </div>
+                        <div className={cn("text-lg font-bold", getScoreColor(typeof score === 'number' ? score : 0))}>
+                          {typeof score === 'number' ? score : 0}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )) : []
+                  }
                 </div>
 
                 {/* Insights rápidos */}
@@ -196,12 +216,12 @@ const SegmentReactions: React.FC<SegmentReactionsProps> = ({
                     <div className="flex items-center gap-1">
                       <Star className="h-4 w-4 text-yellow-600" />
                       <span className="text-gray-600">Recomendación:</span>
-                      <span className="font-medium">{reaction.likelihood_to_recommend}%</span>
+                      <span className="font-medium">{reaction.scores.relevance || 0}%</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Lightbulb className="h-4 w-4 text-purple-600" />
                       <span className="text-gray-600">Insights:</span>
-                      <span className="font-medium">{reaction.key_insights.length}</span>
+                      <span className="font-medium">{reaction.feedback?.positive_themes?.length || 0}</span>
                     </div>
                   </div>
                     <span className="text-xs text-emerald-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
@@ -265,7 +285,7 @@ const SegmentReactions: React.FC<SegmentReactionsProps> = ({
                       {archetypeInfo[selectedReaction.archetype as keyof typeof archetypeInfo]?.name}
                     </h3>
                     <p className="text-sm text-gray-600">
-                      {selectedReaction.persona_context.name} • {selectedReaction.persona_context.city}
+                      {selectedReaction.demographics || 'Consumidoras colombianas'}
                     </p>
                   </div>
                 </div>
@@ -281,90 +301,93 @@ const SegmentReactions: React.FC<SegmentReactionsProps> = ({
               </div>
             </div>
 
-            {/* Selector de variables */}
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-3">Variables de Evaluación</h4>
-              <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
-                {Object.entries(EVALUATION_VARIABLES).map(([key, variable]) => {
-                  const reaction = selectedReaction.variable_reactions[key as EvaluationVariable];
-                  
-                  return (
-                    <button
-                      key={key}
-                      onClick={() => setSelectedVariable(key as EvaluationVariable)}
-                      className={cn(
-                        "p-3 rounded-lg border-2 text-sm transition-all",
-                        selectedVariable === key
-                          ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                          : "border-gray-200 hover:border-gray-300"
-                      )}
-                    >
-                      <div className="font-medium">{variable.label}</div>
-                      <div className={cn("text-xs font-bold mt-1", getScoreColor(reaction.score))}>
-                        {reaction.score}/100
-                      </div>
-                      <div className="mt-1">
-                        {getSentimentIcon(reaction.sentiment)}
-                      </div>
-                    </button>
-                  );
-                })}
+            {/* Selector de variables - Solo mostrar si hay variable_reactions */}
+            {selectedReaction.variable_reactions && (
+              <div className="bg-white rounded-lg border border-gray-200 p-4">
+                <h4 className="text-sm font-medium text-gray-900 mb-3">Variables de Evaluación</h4>
+                <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
+                  {Object.entries(EVALUATION_VARIABLES).map(([key, variable]) => {
+                    const reaction = selectedReaction.variable_reactions[key as EvaluationVariable];
+                    
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => setSelectedVariable(key as EvaluationVariable)}
+                        className={cn(
+                          "p-3 rounded-lg border-2 text-sm transition-all",
+                          selectedVariable === key
+                            ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                            : "border-gray-200 hover:border-gray-300"
+                        )}
+                      >
+                        <div className="font-medium">{variable.label}</div>
+                        <div className={cn("text-xs font-bold mt-1", getScoreColor(reaction.score))}>
+                          {reaction.score}/100
+                        </div>
+                        <div className="mt-1">
+                          {getSentimentIcon(reaction.sentiment)}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Detalle de la variable seleccionada */}
-            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-              <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                <div className="flex items-center justify-between">
+            {/* Detalle de la variable seleccionada - Solo para evaluaciones con variable_reactions */}
+            {selectedReaction.variable_reactions && (
+              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900">
+                        {EVALUATION_VARIABLES[selectedVariable].label}
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        {EVALUATION_VARIABLES[selectedVariable].description}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <div className={cn("text-3xl font-bold", 
+                        getScoreColor(selectedReaction.variable_reactions[selectedVariable].score))}>
+                        {selectedReaction.variable_reactions[selectedVariable].score}/100
+                      </div>
+                      <div className={cn("px-3 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1 mt-2",
+                        getSentimentColor(selectedReaction.variable_reactions[selectedVariable].sentiment))}>
+                        {getSentimentIcon(selectedReaction.variable_reactions[selectedVariable].sentiment)}
+                        {selectedReaction.variable_reactions[selectedVariable].sentiment.replace('_', ' ')}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-6 space-y-4">
+                  {/* Reacción textual */}
                   <div>
-                    <h4 className="text-lg font-semibold text-gray-900">
-                      {EVALUATION_VARIABLES[selectedVariable].label}
-                    </h4>
-                    <p className="text-sm text-gray-600">
-                      {EVALUATION_VARIABLES[selectedVariable].description}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <div className={cn("text-3xl font-bold", 
-                      getScoreColor(selectedReaction.variable_reactions[selectedVariable].score))}>
-                      {selectedReaction.variable_reactions[selectedVariable].score}/100
-                    </div>
-                    <div className={cn("px-3 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1 mt-2",
-                      getSentimentColor(selectedReaction.variable_reactions[selectedVariable].sentiment))}>
-                      {getSentimentIcon(selectedReaction.variable_reactions[selectedVariable].sentiment)}
-                      {selectedReaction.variable_reactions[selectedVariable].sentiment.replace('_', ' ')}
+                    <h5 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+                      <MessageCircle className="h-4 w-4" />
+                      Reacción inmediata
+                    </h5>
+                    <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-emerald-500">
+                      <p className="text-gray-700 italic">
+                        "{selectedReaction.variable_reactions[selectedVariable].reaction_text}"
+                      </p>
                     </div>
                   </div>
-                </div>
-              </div>
 
-              <div className="p-6 space-y-4">
-                {/* Reacción textual */}
-                <div>
-                  <h5 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
-                    <MessageCircle className="h-4 w-4" />
-                    Reacción inmediata
-                  </h5>
-                  <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-emerald-500">
-                    <p className="text-gray-700 italic">
-                      "{selectedReaction.variable_reactions[selectedVariable].reaction_text}"
+                  {/* Feedback específico */}
+                  <div>
+                    <h5 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+                      <Eye className="h-4 w-4" />
+                      Análisis detallado
+                    </h5>
+                    <p className="text-gray-700 leading-relaxed">
+                      {selectedReaction.variable_reactions[selectedVariable].specific_feedback}
                     </p>
                   </div>
-                </div>
 
-                {/* Feedback específico */}
-                <div>
-                  <h5 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
-                    <Eye className="h-4 w-4" />
-                    Análisis detallado
-                  </h5>
-                  <p className="text-gray-700 leading-relaxed">
-                    {selectedReaction.variable_reactions[selectedVariable].specific_feedback}
-                  </p>
-                </div>
-
-                {/* Sugerencia de mejora */}
-                {selectedReaction.variable_reactions[selectedVariable].improvement_suggestion && (
+                  {/* Sugerencia de mejora */}
+                  {selectedReaction.variable_reactions[selectedVariable].improvement_suggestion && (
                   <div>
                     <h5 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
                       <Lightbulb className="h-4 w-4 text-yellow-600" />
@@ -376,9 +399,65 @@ const SegmentReactions: React.FC<SegmentReactionsProps> = ({
                       </p>
                     </div>
                   </div>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Vista alternativa para evaluaciones colombianas */}
+            {!selectedReaction.variable_reactions && (
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  📊 Evaluación General del Arquetipo
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                  {selectedReaction.scores && Object.entries(selectedReaction.scores).map(([key, score]) => (
+                    <div key={key} className="text-center p-3 bg-gray-50 rounded-lg">
+                      <div className={cn("text-2xl font-bold mb-1", getScoreColor(typeof score === 'number' ? score : 0))}>
+                        {typeof score === 'number' ? score : 0}
+                      </div>
+                      <div className="text-xs text-gray-600">
+                        {key === 'purchase_intent' ? 'Intención de compra' : 
+                         key === 'relevance' ? 'Relevancia' : 
+                         key === 'appeal' ? 'Atractivo' : 
+                         key === 'interest' ? 'Interés' : 
+                         key === 'comprehension' ? 'Comprensión' :
+                         key === 'credibility' ? 'Credibilidad' :
+                         key === 'uniqueness' ? 'Diferenciación' :
+                         key.charAt(0).toUpperCase() + key.slice(1)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Feedback summary */}
+                <div className="space-y-4">
+                  <div>
+                    <h5 className="font-medium text-gray-900 mb-2">Aspectos Positivos</h5>
+                    <div className="bg-green-50 rounded-lg p-4 border-l-4 border-green-400">
+                      <ul className="space-y-1 text-sm text-green-800">
+                        {(selectedReaction.feedback?.positive_themes || []).slice(0, 3).map((theme, index) => (
+                          <li key={index}>• {theme}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  {selectedReaction.feedback?.main_concerns && selectedReaction.feedback.main_concerns.length > 0 && (
+                    <div>
+                      <h5 className="font-medium text-gray-900 mb-2">Principales Preocupaciones</h5>
+                      <div className="bg-orange-50 rounded-lg p-4 border-l-4 border-orange-400">
+                        <ul className="space-y-1 text-sm text-orange-800">
+                          {selectedReaction.feedback.main_concerns.slice(0, 3).map((concern, index) => (
+                            <li key={index}>• {concern}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Insights generales del segmento */}
             <div className="grid md:grid-cols-2 gap-6">
@@ -388,7 +467,7 @@ const SegmentReactions: React.FC<SegmentReactionsProps> = ({
                   Puntos Fuertes
                 </h5>
                 <ul className="space-y-2">
-                  {selectedReaction.key_insights.map((insight, index) => (
+                  {(selectedReaction.key_insights || selectedReaction.feedback?.positive_themes || []).map((insight, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm text-gray-700">
                       <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0" />
                       {insight}
@@ -403,7 +482,7 @@ const SegmentReactions: React.FC<SegmentReactionsProps> = ({
                   Preocupaciones
                 </h5>
                 <ul className="space-y-2">
-                  {selectedReaction.concerns.map((concern, index) => (
+                  {(selectedReaction.concerns || selectedReaction.feedback?.main_concerns || []).map((concern, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm text-gray-700">
                       <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2 flex-shrink-0" />
                       {concern}

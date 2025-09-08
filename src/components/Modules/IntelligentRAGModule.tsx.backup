@@ -1,0 +1,677 @@
+// components/Modules/IntelligentRAGModule.tsx - Módulo RAG Unificado e Inteligente
+
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { 
+  ArrowLeft, Brain, Send, Download, Trash2, 
+  Target, Search, BarChart3, Zap, FileText,
+  Clock, RefreshCw, TrendingUp, Sparkles
+} from 'lucide-react';
+import { useAuth } from '../../lib/auth';
+import { cn, generateId } from '../../lib/utils';
+import type { ChatMessage, RAGResponse } from '../../types';
+import { chatStorage } from '../../lib/chatStorage';
+import MarkdownRenderer from '../Chat/MarkdownRenderer';
+import CitationsList from '../Chat/CitationsList';
+import VisualizationRenderer from '../Charts/VisualizationRenderer';
+import UnileverQuestionSuggestions from '../Suggestions/UnileverQuestionSuggestions';
+import { processRAGResponse } from '../../utils/responseCleanup';
+import { TextNormalizer, debugNormalization } from '../../utils/textNormalization';
+
+interface IntelligentRAGConfig {
+  searchDepth: 'standard' | 'deep' | 'comprehensive';
+  analysisMode: 'descriptive' | 'strategic' | 'predictive';
+  maxChunks: number;
+  enableCrossDocument: boolean;
+  enableVisualization: boolean;
+  smartRetry: boolean;
+  // Nueva configuración para ranking temporal
+  temporalRanking: {
+    prioritizeRecent: boolean; // Si true, privilegia datos recientes
+    historicalBoost: boolean; // Si true, da boost a datos históricos importantes
+    dateWeighting: 'none' | 'recent' | 'balanced' | 'historical'; // Estrategia de ponderación
+    minSimilarityThreshold: number; // Threshold mínimo para incluir resultados menos similares pero relevantes
+  };
+}
+
+const IntelligentRAGModule: React.FC = () => {
+  const navigate = useNavigate();
+  const { getUser, isAuthenticated } = useAuth();
+  
+  // Estado principal
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [currentQuery, setCurrentQuery] = useState('');
+  
+  // Configuración inteligente
+  const [config, setConfig] = useState<IntelligentRAGConfig>({
+    searchDepth: 'deep',
+    analysisMode: 'strategic',
+    maxChunks: 10,
+    enableCrossDocument: true,
+    enableVisualization: true,
+    smartRetry: true,
+    // Configuración para mejorar recuperación de datos históricos (como Pond's 2021)
+    temporalRanking: {
+      prioritizeRecent: false, // No privilegiar recencia automáticamente
+      historicalBoost: true, // Dar boost a datos históricos relevantes
+      dateWeighting: 'balanced', // Balanceado entre reciente e histórico
+      minSimilarityThreshold: 0.020 // Threshold más bajo para incluir datos menos similares pero relevantes
+    }
+  });
+  
+  // UI State
+  const [isRetrying, setIsRetrying] = useState(false);
+  const [searchAttempts, setSearchAttempts] = useState(0);
+  
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const user = getUser();
+
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      navigate('/login', { replace: true });
+      return;
+    }
+    loadMessages();
+  }, [navigate, isAuthenticated]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const loadMessages = () => {
+    const savedMessages = chatStorage.getMessages('general');
+    setMessages(savedMessages);
+  };
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const addMessage = (message: Omit<ChatMessage, 'id' | 'timestamp'>): ChatMessage => {
+    const newMessage: ChatMessage = {
+      ...message,
+      id: generateId(),
+      timestamp: new Date(),
+    };
+    
+    const updatedMessages = chatStorage.addMessage('general', newMessage);
+    setMessages(updatedMessages);
+    return newMessage;
+  };
+
+  /**
+   * Sistema inteligente que determina la mejor estrategia de búsqueda
+   */
+  const determineSearchStrategy = (query: string, attempt: number = 1) => {
+    const queryLower = query.toLowerCase();
+    const strategies = {
+      // Estrategia específica para Pond's con normalización tipográfica
+      pondsSpecific: {
+        condition: () => 
+          TextNormalizer.containsPondsReferences(query),
+        config: {
+          maxChunks: 15,
+          searchTerms: (() => {
+            const normalizedQuery = TextNormalizer.normalizeQuery(query);
+            const variations = TextNormalizer.generateSearchVariations(normalizedQuery);
+            return attempt === 1 
+              ? `${normalizedQuery} UNILEVER TrackingPostLanzamiento tracking post lanzamiento agua micelar limpiador facial`
+              : `${variations[1] || normalizedQuery} UNILEVER TrackingPostLanzamiento Sep2021 Jun2021 ConceptTest Feb2021 Jul2021`;
+          })(),
+          endpoint: '/api/rag-pure',
+          customization: {
+            detail_level: 12,
+            language: 'español',
+            target_audience: 'gerentes',
+            // Configuración para datos históricos - NO privilegiar fecha reciente
+            temporal_priority: 'historical', // Priorizar datos 2021-2022 para Pond's
+            date_boost: false, // Desactivar boost por recencia
+            similarity_threshold: 0.018, // Threshold más bajo para compensar inconsistencias tipográficas
+            text_normalization: true // Flag para backend sobre normalización aplicada
+          }
+        }
+      },
+      
+      // Estrategia para marcas específicas con datos limitados
+      specificBrand: {
+        condition: () => 
+          queryLower.includes('maizena') ||
+          queryLower.includes('savital'),
+        config: {
+          maxChunks: 12,
+          searchTerms: query,
+          endpoint: '/api/rag-pure',
+          customization: {
+            detail_level: 10,
+            language: 'español',
+            target_audience: 'gerentes'
+          }
+        }
+      },
+      
+      // Estrategia para análisis de consumidores
+      consumerProfile: {
+        condition: () => 
+          queryLower.includes('consumidor') || 
+          queryLower.includes('perfil') ||
+          queryLower.includes('target') ||
+          queryLower.includes('audiencia'),
+        config: {
+          maxChunks: 8,
+          searchTerms: query,
+          endpoint: '/api/rag-hybrid',
+          customization: {
+            rag_percentage: 70,
+            creativity_level: 30,
+            detail_level: 8
+          }
+        }
+      },
+
+      // Estrategia para insights estratégicos
+      strategic: {
+        condition: () => 
+          queryLower.includes('estrategia') ||
+          queryLower.includes('insight') ||
+          queryLower.includes('oportunidad') ||
+          queryLower.includes('recomendación'),
+        config: {
+          maxChunks: 10,
+          searchTerms: query,
+          endpoint: '/api/rag-creative',
+          customization: {
+            detail_level: 9,
+            analysis_type: 'strategic'
+          }
+        }
+      },
+
+      // Estrategia por defecto mejorada
+      default: {
+        condition: () => true,
+        config: {
+          maxChunks: config.maxChunks,
+          searchTerms: query,
+          endpoint: '/api/rag-hybrid',
+          customization: {
+            rag_percentage: 80,
+            creativity_level: 20,
+            detail_level: config.searchDepth === 'comprehensive' ? 10 : 8
+          }
+        }
+      }
+    };
+
+    // En caso de retry, aumentar profundidad
+    if (attempt > 1) {
+      return {
+        maxChunks: Math.min(15, strategies.default.config.maxChunks + (attempt * 2)),
+        searchTerms: `${query} información detallada análisis`,
+        endpoint: '/api/rag-hybrid',
+        customization: {
+          rag_percentage: 60,
+          creativity_level: 40,
+          detail_level: 10
+        }
+      };
+    }
+
+    // Encuentra la primera estrategia que coincida
+    const strategy = Object.values(strategies).find(s => s.condition());
+    return strategy?.config || strategies.default.config;
+  };
+
+  /**
+   * Evalúa si la respuesta es de calidad suficiente
+   */
+  const evaluateResponseQuality = (response: any): boolean => {
+    const answer = response.answer || '';
+    const citations = response.citations || [];
+    
+    // Indicadores de respuesta de baja calidad
+    const lowQualityIndicators = [
+      'no tengo información',
+      'no hay datos',
+      'no se dispone',
+      'no está disponible',
+      'sin información específica'
+    ];
+    
+    const hasLowQualityContent = lowQualityIndicators.some(indicator => 
+      answer.toLowerCase().includes(indicator.toLowerCase())
+    );
+    
+    const hasSufficientContent = answer.length > 200;
+    const hasCitations = citations.length > 0;
+    const hasGoodSimilarity = citations.some((c: any) => c.similarity > 0.02);
+    
+    return !hasLowQualityContent && (hasSufficientContent || hasCitations || hasGoodSimilarity);
+  };
+
+  const handleSubmit = async (e: React.FormEvent, retryAttempt: number = 1) => {
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
+
+    const originalQuery = input.trim();
+    const normalizedQuery = TextNormalizer.normalizeQuery(originalQuery);
+    
+    // Debug normalización para Pond's
+    if (TextNormalizer.containsPondsReferences(originalQuery)) {
+      const debugInfo = debugNormalization(originalQuery);
+      console.log('🔤 Text Normalization Debug:', debugInfo);
+    }
+
+    const userMessage = addMessage({
+      role: 'user',
+      content: originalQuery, // Mostrar query original al usuario
+    });
+
+    setCurrentQuery(originalQuery);
+    const query = normalizedQuery; // Usar query normalizada internamente
+    setInput('');
+    setIsLoading(true);
+    setError(null);
+    setSearchAttempts(retryAttempt);
+
+    try {
+      // Determinar estrategia de búsqueda inteligente con query normalizada
+      const strategy = determineSearchStrategy(query, retryAttempt);
+      
+      console.log(`🧠 Intelligent Search Strategy (Attempt ${retryAttempt}):`, strategy);
+
+      const requestBody = {
+        text: strategy.searchTerms,
+        metadata_filter: null,
+        output_types: config.enableVisualization ? ["text", "table", "chart"] : ["text"],
+        response_customization: {
+          extension_level: config.searchDepth === 'comprehensive' ? 'detallado' : 'normal',
+          response_style: 'ejecutivo',
+          detail_level: strategy.maxChunks,
+          language: 'español',
+          target_audience: 'gerentes',
+          include_citations: true,
+          temporal_context: 'completo',
+          analysis_type: config.analysisMode === 'strategic' ? 'predictivo' : 'descriptivo',
+          output_format: 'narrativo',
+          ...strategy.customization
+        },
+        // Configuración de ranking temporal para el backend
+        search_configuration: {
+          temporal_ranking: config.temporalRanking.dateWeighting,
+          prioritize_recent: config.temporalRanking.prioritizeRecent,
+          historical_boost: config.temporalRanking.historicalBoost,
+          similarity_threshold: config.temporalRanking.minSimilarityThreshold,
+          max_chunks: strategy.maxChunks
+        }
+      };
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL}${strategy.endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data: RAGResponse = await response.json();
+      
+      console.log('📊 RAG Response Quality Check:', {
+        contentLength: data.answer?.length || 0,
+        citationsCount: data.citations?.length || 0,
+        hasVisualization: !!data.has_visualizations
+      });
+
+      // Evaluar calidad de respuesta
+      const isQualityResponse = evaluateResponseQuality(data);
+      
+      // Retry inteligente si es necesario
+      if (!isQualityResponse && config.smartRetry && retryAttempt < 3) {
+        console.log('🔄 Poor quality response detected, retrying with enhanced strategy...');
+        setIsRetrying(true);
+        
+        // Pequeña pausa antes del retry
+        setTimeout(() => {
+          setIsRetrying(false);
+          handleSubmit(e, retryAttempt + 1);
+        }, 1000);
+        return;
+      }
+
+      // Procesar respuesta exitosa
+      const cleanedAnswer = processRAGResponse(data.answer || 'No se pudo generar una respuesta.');
+      
+      addMessage({
+        role: 'assistant',
+        content: cleanedAnswer,
+        citations: data.citations || [],
+        metadata: data.metadata,
+        visualizations: data.visualizations
+      });
+
+    } catch (error: any) {
+      console.error('❌ Intelligent RAG Error:', error);
+      setError(`Error en la consulta: ${error.message}`);
+      
+      addMessage({
+        role: 'assistant',
+        content: `❌ **Error en la consulta**\n\n${error.message}\n\nIntenta reformular tu pregunta o contacta al administrador si el problema persiste.`,
+        citations: [],
+        metadata: { error: true }
+      });
+    } finally {
+      setIsLoading(false);
+      setIsRetrying(false);
+    }
+  };
+
+  const handleClearChat = () => {
+    if (window.confirm('¿Estás seguro de que quieres limpiar toda la conversación?')) {
+      chatStorage.clearMessages('general');
+      setMessages([]);
+      setError(null);
+    }
+  };
+
+  const handleExportChat = () => {
+    const exportData = chatStorage.exportMessages('general');
+    const blob = new Blob([exportData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `unilever-intelligent-rag-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      {/* Header */}
+      <header className="bg-white/95 backdrop-blur-sm border-b border-gray-200 shrink-0">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate('/')}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <ArrowLeft className="h-5 w-5 text-gray-600" />
+              </button>
+              
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
+                  <Brain className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-gray-900">Intelligent RAG</h1>
+                  <p className="text-sm text-gray-600">
+                    Búsqueda inteligente en profundidad • {user?.username}
+                  </p>
+                </div>
+              </div>
+
+              {/* Status indicators */}
+              <div className="flex items-center gap-2 ml-6">
+                <div className="flex items-center gap-1 px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-medium">
+                  <Target className="h-3 w-3" />
+                  {config.searchDepth === 'deep' ? 'Deep Search' : 
+                   config.searchDepth === 'comprehensive' ? 'Comprehensive' : 'Standard'}
+                </div>
+                
+                <div className="flex items-center gap-1 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium">
+                  <Zap className="h-3 w-3" />
+                  Max {config.maxChunks} chunks
+                </div>
+
+                {config.smartRetry && (
+                  <div className="flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
+                    <RefreshCw className="h-3 w-3" />
+                    Smart Retry
+                  </div>
+                )}
+
+                {/* Indicador de configuración temporal */}
+                <div className={cn(
+                  "flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium",
+                  config.temporalRanking.dateWeighting === 'historical' 
+                    ? "bg-amber-100 text-amber-700"
+                    : config.temporalRanking.dateWeighting === 'recent'
+                    ? "bg-green-100 text-green-700"  
+                    : "bg-gray-100 text-gray-700"
+                )}>
+                  <Clock className="h-3 w-3" />
+                  {config.temporalRanking.dateWeighting === 'historical' ? 'Histórico' :
+                   config.temporalRanking.dateWeighting === 'recent' ? 'Reciente' :
+                   config.temporalRanking.dateWeighting === 'balanced' ? 'Balanceado' : 'Standard'}
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              
+              
+              <button
+                onClick={handleExportChat}
+                className="p-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                title="Exportar conversación"
+              >
+                <Download className="h-4 w-4" />
+              </button>
+              
+              <button
+                onClick={handleClearChat}
+                className="p-2 text-red-600 hover:text-red-800 border border-red-300 rounded-lg hover:bg-red-50 transition-colors"
+                title="Limpiar chat"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+
+
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-h-0">
+        {messages.length === 0 ? (
+          <div className="h-full flex flex-col items-center justify-center p-6">
+            <div className="text-center max-w-4xl">
+              <div className="h-20 w-20 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <Brain className="h-10 w-10 text-white" />
+              </div>
+              
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                Intelligent RAG System
+              </h2>
+              <p className="text-lg text-gray-600 mb-8">
+                Sistema unificado de búsqueda inteligente que adapta automáticamente su estrategia para obtener los mejores insights de Unilever
+              </p>
+
+              {/* Features */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="bg-white/80 backdrop-blur border border-indigo-200 rounded-xl p-6">
+                  <Search className="h-8 w-8 text-indigo-600 mb-4 mx-auto" />
+                  <h3 className="font-semibold text-gray-900 mb-2">Búsqueda Adaptativa</h3>
+                  <p className="text-sm text-gray-600">
+                    Detecta automáticamente el tipo de consulta y adapta la estrategia de búsqueda para mejores resultados
+                  </p>
+                </div>
+
+                <div className="bg-white/80 backdrop-blur border border-purple-200 rounded-xl p-6">
+                  <RefreshCw className="h-8 w-8 text-purple-600 mb-4 mx-auto" />
+                  <h3 className="font-semibold text-gray-900 mb-2">Smart Retry</h3>
+                  <p className="text-sm text-gray-600">
+                    Evalúa la calidad de respuestas y reintenta automáticamente con estrategias mejoradas
+                  </p>
+                </div>
+
+                <div className="bg-white/80 backdrop-blur border border-emerald-200 rounded-xl p-6">
+                  <Target className="h-8 w-8 text-emerald-600 mb-4 mx-auto" />
+                  <h3 className="font-semibold text-gray-900 mb-2">Deep Analysis</h3>
+                  <p className="text-sm text-gray-600">
+                    Búsqueda en profundidad con hasta 15 chunks para casos complejos como Pond's o marcas específicas
+                  </p>
+                </div>
+              </div>
+
+              {/* Intelligent Suggestions */}
+              <div className="max-w-4xl mx-auto">
+                <UnileverQuestionSuggestions
+                  onQuestionSelect={(question) => setInput(question)}
+                  mode="intelligent"
+                />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto p-6" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+            <div className="max-w-5xl mx-auto space-y-6">
+              {messages.map((message) => (
+                <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[85%] rounded-2xl ${
+                    message.role === 'user' 
+                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4' 
+                      : 'bg-white/80 backdrop-blur border border-indigo-200 text-gray-900 p-6'
+                  }`}>
+                    {message.role === 'assistant' ? (
+                      <div>
+                        <MarkdownRenderer content={message.content} />
+                        
+                        {message.visualizations && (
+                          <div className="mt-4">
+                            <VisualizationRenderer 
+                              visualizations={message.visualizations} 
+                              query={currentQuery}
+                            />
+                          </div>
+                        )}
+
+                        {message.citations && message.citations.length > 0 && (
+                          <div className="mt-4">
+                            <CitationsList citations={message.citations} />
+                          </div>
+                        )}
+
+                        {/* Metadata info */}
+                        {message.metadata && (
+                          <div className="mt-4 pt-4 border-t border-indigo-100">
+                            <div className="flex items-center gap-4 text-xs text-indigo-600">
+                              <div className="flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                {message.metadata.processing_time_seconds?.toFixed(1)}s
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <BarChart3 className="h-3 w-3" />
+                                {message.metadata.chunks_retrieved} chunks
+                              </div>
+                              {searchAttempts > 1 && (
+                                <div className="flex items-center gap-1">
+                                  <RefreshCw className="h-3 w-3" />
+                                  Attempt {searchAttempts}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="whitespace-pre-wrap">{message.content}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {/* Loading state */}
+              {isLoading && (
+                <div className="flex justify-start">
+                  <div className="bg-white/80 backdrop-blur border border-indigo-200 rounded-2xl p-6">
+                    <div className="flex items-center gap-3">
+                      <div className="flex space-x-1">
+                        <div className="w-2 h-2 bg-indigo-600 rounded-full animate-pulse"></div>
+                        <div className="w-2 h-2 bg-indigo-600 rounded-full animate-pulse" style={{ animationDelay: '0.1s' }}></div>
+                        <div className="w-2 h-2 bg-indigo-600 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                      </div>
+                      <span className="text-sm text-indigo-600">
+                        {isRetrying ? 'Reintentando con estrategia mejorada...' : 'Analizando con búsqueda inteligente...'}
+                      </span>
+                      {searchAttempts > 1 && (
+                        <span className="text-xs text-purple-600">
+                          (Intento {searchAttempts})
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div ref={messagesEndRef} />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Input Form */}
+      <div className="border-t border-gray-200 bg-white/95 backdrop-blur-sm p-4 shrink-0">
+        <div className="max-w-5xl mx-auto">
+          <form onSubmit={handleSubmit} className="flex gap-3">
+            <div className="flex-1 relative">
+              <input
+                ref={inputRef}
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Pregunta cualquier cosa sobre las marcas de Unilever..."
+                className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none placeholder-gray-500"
+                disabled={isLoading}
+              />
+              {input && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="flex items-center gap-1 text-xs text-indigo-600">
+                    <Brain className="h-3 w-3" />
+                    Smart
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <button
+              type="submit"
+              disabled={!input.trim() || isLoading}
+              className={cn(
+                "px-6 py-3 rounded-xl font-medium transition-all flex items-center gap-2",
+                (!input.trim() || isLoading)
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl"
+              )}
+            >
+              {isLoading ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+              {isLoading ? 'Analizando...' : 'Enviar'}
+            </button>
+          </form>
+
+          {error && (
+            <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+    </div>
+  );
+};
+
+export default IntelligentRAGModule;

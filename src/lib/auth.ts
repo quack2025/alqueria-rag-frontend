@@ -12,43 +12,56 @@ interface LoginResponse {
 
 export const useAuth = () => {
   const login = async (username: string, password: string): Promise<LoginResponse> => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      });
+    // Credenciales locales para acceso rápido
+    const validCredentials = [
+      { username: 'admin', password: 'admin123', role: 'admin' },
+      { username: 'unilever', password: 'unilever2024', role: 'user' },
+      { username: 'user', password: 'user123', role: 'user' },
+      { username: 'demo', password: 'demo', role: 'demo' }
+    ];
 
-      const data = await response.json();
+    // Simular delay de red
+    await new Promise(resolve => setTimeout(resolve, 800));
 
-      if (data.success && data.token) {
-        localStorage.setItem('tigo_auth_token', data.token);
-        localStorage.setItem('tigo_user', JSON.stringify(data.user));
-      }
+    const validUser = validCredentials.find(
+      cred => cred.username === username && cred.password === password
+    );
 
-      return data;
-    } catch (error) {
-      console.error('Login error:', error);
+    if (validUser) {
+      const token = `mock_token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const user = {
+        username: validUser.username,
+        role: validUser.role
+      };
+
+      localStorage.setItem('unilever_auth_token', token);
+      localStorage.setItem('unilever_user', JSON.stringify(user));
+
       return {
-        success: false,
-        message: 'Error de conexión'
+        success: true,
+        token,
+        message: 'Login exitoso',
+        user
       };
     }
+
+    return {
+      success: false,
+      message: 'Credenciales incorrectas. Prueba: admin/admin123 o unilever/unilever2024'
+    };
   };
 
   const logout = () => {
-    localStorage.removeItem('tigo_auth_token');
-    localStorage.removeItem('tigo_user');
+    localStorage.removeItem('unilever_auth_token');
+    localStorage.removeItem('unilever_user');
   };
 
   const isAuthenticated = (): boolean => {
-    return !!localStorage.getItem('tigo_auth_token');
+    return !!localStorage.getItem('unilever_auth_token');
   };
 
   const getUser = () => {
-    const userStr = localStorage.getItem('tigo_user');
+    const userStr = localStorage.getItem('unilever_user');
     return userStr ? JSON.parse(userStr) : null;
   };
 

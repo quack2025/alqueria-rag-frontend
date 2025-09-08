@@ -1,10 +1,12 @@
-// components/Landing/ModuleSelector.tsx - Pantalla de selección de módulos
+// components/Landing/ModuleSelector.tsx - Pantalla de selección de módulos (Simple)
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bot, Sparkles, Users, LogOut, Settings, BarChart3, User, Brain, FileText, Video, TrendingUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Bot, Sparkles, Users, LogOut, Settings } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 import { cn } from '../../lib/utils';
+import LanguageSelector from '../Language/LanguageSelector';
 
 interface ModuleSelectorProps {
   className?: string;
@@ -13,192 +15,89 @@ interface ModuleSelectorProps {
 const ModuleSelector: React.FC<ModuleSelectorProps> = ({ className }) => {
   const navigate = useNavigate();
   const { logout, getUser } = useAuth();
+  const { t } = useTranslation();
   const user = getUser();
 
   const modules = [
     {
-      id: 'general',
-      title: 'RAG General',
-      subtitle: 'Consultas directas y análisis de datos',
-      description: 'Accede a insights precisos basados en documentos de investigación de mercado. Ideal para análisis específicos, reportes ejecutivos y consultas puntuales.',
+      id: 'intelligent',
+      title: t('modules.intelligent.title'),
+      subtitle: t('modules.intelligent.subtitle'),
+      description: t('modules.intelligent.description'),
       icon: Bot,
-      color: 'blue',
-      features: [
-        'Respuestas basadas en datos reales',
-        'Citas y fuentes documentadas', 
-        'Filtros por región, año y metodología',
-        'Exportación de conversaciones',
-        'Búsqueda en historial'
-      ],
-      route: '/general',
-      gradient: 'from-blue-500 to-blue-600'
+      color: 'indigo',
+      features: t('modules.intelligent.features', { returnObjects: true }) as string[],
+      route: '/intelligent',
+      gradient: 'from-indigo-600 to-purple-600',
+      badge: t('modules.intelligent.badge'),
+      button: t('modules.intelligent.button')
     },
     {
       id: 'creative',
-      title: 'RAG Creativo',
-      subtitle: 'Insights estratégicos y visualizaciones',
-      description: 'Genera análisis innovadores, visualizaciones interactivas y recomendaciones estratégicas. Perfecto para brainstorming y planificación.',
+      title: t('modules.creative.title'),
+      subtitle: t('modules.creative.subtitle'),
+      description: t('modules.creative.description'),
       icon: Sparkles,
       color: 'purple',
-      features: [
-        'Visualizaciones automáticas',
-        'Recomendaciones estratégicas',
-        'Análisis de tendencias',
-        'Insights predictivos',
-        'Dashboard interactivo'
-      ],
+      features: t('modules.creative.features', { returnObjects: true }) as string[],
       route: '/creative',
-      gradient: 'from-purple-500 to-pink-500'
+      gradient: 'from-purple-500 to-pink-500',
+      badge: t('modules.creative.badge'),
+      button: t('modules.creative.button')
     },
     {
       id: 'synthetic',
-      title: 'Usuarios Sintéticos',
-      subtitle: 'Investigación con personas virtuales',
-      description: 'Conversa con 6 arquetipos hondureños realistas, simula focus groups y valida conceptos. Sistema ético de investigación cualitativa.',
+      title: t('modules.synthetic.title'),
+      subtitle: t('modules.synthetic.subtitle'),
+      description: t('modules.synthetic.description'),
       icon: Users,
       color: 'emerald',
-      features: [
-        '6 arquetipos de consumidores hondureños',
-        '80 características configurables',
-        'Simulador de focus groups',
-        'Validación ética anti-sesgo',
-        'Role prompting avanzado'
-      ],
+      features: t('modules.synthetic.features', { returnObjects: true }) as string[],
       route: '/synthetic',
-      gradient: 'from-emerald-500 to-green-600'
-    },
-    {
-      id: 'dashboard',
-      title: 'Dashboard Ejecutivo',
-      subtitle: 'Analytics y métricas en tiempo real',
-      description: 'Panel ejecutivo con métricas profesionales, ROI de campañas y análisis de performance. Visualización de datos nivel consultora.',
-      icon: BarChart3,
-      color: 'orange',
-      features: [
-        'Métricas de ROI en tiempo real',
-        'Análisis de performance de campañas',
-        'Heatmaps de engagement',
-        'Reportes comparativos',
-        'KPIs personalizados'
-      ],
-      route: '/dashboard',
-      gradient: 'from-orange-500 to-red-500',
-      badge: 'PREMIUM'
-    },
-    {
-      id: 'predictor',
-      title: 'Predictor ML',
-      subtitle: 'Inteligencia artificial predictiva',
-      description: 'Sistema de Machine Learning que predice el éxito de campañas antes del lanzamiento. Recomendaciones de optimización automáticas.',
-      icon: Brain,
-      color: 'indigo',
-      features: [
-        'Predicción de éxito pre-lanzamiento',
-        'Recomendaciones de optimización',
-        'Análisis de riesgo por segmento',
-        'A/B testing sugerencias',
-        'Modelo entrenado con historial'
-      ],
-      route: '/predictor',
-      gradient: 'from-indigo-500 to-purple-600',
-      badge: 'AI POWERED'
-    },
-    {
-      id: 'reports',
-      title: 'Reportes Automáticos',
-      subtitle: 'Generación IA de documentos',
-      description: 'Generación automática de reportes ejecutivos con visualizaciones IA. Infografías y documentos profesionales en minutos.',
-      icon: FileText,
-      color: 'teal',
-      features: [
-        'Reportes PDF automáticos',
-        'Infografías generadas por IA',
-        'Templates personalizables',
-        'Visualizaciones profesionales',
-        'Programación de reportes'
-      ],
-      route: '/reports',
-      gradient: 'from-teal-500 to-cyan-500',
-      badge: 'DALL-E 3'
-    },
-    {
-      id: 'video',
-      title: 'Video Analysis',
-      subtitle: 'Análisis facial y de emociones',
-      description: 'Análisis avanzado de videos con detección de emociones y micro-expresiones. Compara lo que dicen vs lo que sienten.',
-      icon: Video,
-      color: 'rose',
-      features: [
-        'Detección de emociones faciales',
-        'Análisis de micro-expresiones',
-        'Timeline de engagement emocional',
-        'Comparación sentiment vs verbal',
-        'Heatmaps de emotional journey'
-      ],
-      route: '/video',
-      gradient: 'from-rose-500 to-pink-500',
-      badge: 'PRÓXIMAMENTE',
-      disabled: true
+      gradient: 'from-emerald-500 to-green-600',
+      badge: t('modules.synthetic.badge'),
+      button: t('modules.synthetic.button')
     }
   ];
 
-  const handleModuleSelect = (route: string, disabled?: boolean) => {
-    if (disabled) {
-      alert('Esta funcionalidad estará disponible próximamente. ¡Mantente atento!');
-      return;
-    }
-    navigate(route);
-  };
-
   const handleLogout = () => {
-    if (window.confirm('¿Estás seguro que deseas cerrar sesión?')) {
-      logout();
-      navigate('/login', { replace: true });
-    }
+    logout();
+    navigate('/login', { replace: true });
   };
 
   return (
-    <div className={cn('min-h-screen bg-gradient-to-br from-gray-50 to-blue-50', className)}>
+    <div className={cn('min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50', className)}>
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header className="bg-white/90 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
-                <BarChart3 className="h-6 w-6 text-white" />
+            <div className="flex items-center gap-4">
+              <div className="h-10 w-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
+                <Bot className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">
-                  Tigo RAG System
-                </h1>
-                <p className="text-sm text-gray-600">
-                  Sistema Integral de Análisis e Investigación
-                </p>
+                <h1 className="text-2xl font-bold text-gray-900">{t('auth.title')}</h1>
+                <p className="text-sm text-gray-600">{t('auth.subtitle')} • {user?.username}</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg">
-                <User className="h-4 w-4 text-gray-600" />
-                <span className="text-sm font-medium text-gray-700">
-                  {user?.username || 'Usuario'}
-                </span>
-              </div>
+            <div className="flex items-center gap-3">
+              <LanguageSelector variant="compact" showLabel={false} />
               
               <button
-                onClick={() => navigate('/settings')}
-                className="p-2 text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-100 transition-colors"
-                title="Configuración global"
+                onClick={() => {/* Settings not implemented */}}
+                className="p-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                title="Configuración"
               >
-                <Settings className="h-5 w-5" />
+                <Settings className="h-4 w-4" />
               </button>
               
               <button
                 onClick={handleLogout}
-                className="p-2 text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-100 transition-colors"
-                title="Cerrar sesión"
+                className="flex items-center gap-2 px-4 py-2 text-red-600 hover:text-red-800 border border-red-300 rounded-lg hover:bg-red-50 transition-colors"
               >
-                <LogOut className="h-5 w-5" />
+                <LogOut className="h-4 w-4" />
+{t('common.logout') || 'Logout'}
               </button>
             </div>
           </div>
@@ -206,127 +105,90 @@ const ModuleSelector: React.FC<ModuleSelectorProps> = ({ className }) => {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-12">
-        {/* Welcome Section */}
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        {/* Hero Section */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Bienvenido, {user?.username}
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            {t('modules.title')}
           </h2>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Selecciona el módulo que mejor se adapte a tus necesidades de investigación y análisis de mercado
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            {t('modules.subtitle')}
           </p>
         </div>
 
-        {/* Module Cards */}
-        <div className="grid lg:grid-cols-3 gap-6 mb-12">
+        {/* Modules Grid */}
+        <div className="grid lg:grid-cols-3 gap-8 mb-8">
           {modules.map((module) => (
             <div
               key={module.id}
-              className={cn(
-                "bg-white rounded-2xl shadow-lg transition-all duration-300 border border-gray-200 overflow-hidden group relative",
-                module.disabled 
-                  ? "opacity-75 cursor-not-allowed" 
-                  : "hover:shadow-xl transform hover:-translate-y-1"
-              )}
+              className="group relative bg-white rounded-2xl border border-gray-200 hover:border-gray-300 hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer"
+              onClick={() => navigate(module.route)}
             >
               {/* Badge */}
               {module.badge && (
                 <div className="absolute top-4 right-4 z-10">
                   <span className={cn(
-                    "px-2 py-1 text-xs font-bold rounded-full",
-                    module.badge === 'PRÓXIMAMENTE' && "bg-gray-600 text-white",
-                    module.badge === 'PREMIUM' && "bg-orange-500 text-white",
-                    module.badge === 'AI POWERED' && "bg-indigo-500 text-white",
-                    module.badge === 'DALL-E 3' && "bg-teal-500 text-white"
+                    'px-2 py-1 text-xs font-medium rounded-full',
+                    module.badge === 'BÁSICO'
+                      ? 'bg-emerald-100 text-emerald-700'
+                      : 'bg-blue-100 text-blue-700'
                   )}>
                     {module.badge}
                   </span>
                 </div>
               )}
 
-              {/* Header with gradient */}
-              <div className={cn('px-6 py-6 bg-gradient-to-r', module.gradient)}>
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="h-12 w-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
-                    <module.icon className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white">
-                      {module.title}
-                    </h3>
-                    <p className="text-white/80 text-sm">
-                      {module.subtitle}
-                    </p>
-                  </div>
+              {/* Header */}
+              <div className={cn('h-32 bg-gradient-to-r', module.gradient, 'p-6 text-white relative overflow-hidden')}>
+                <div className="absolute top-4 left-6">
+                  <module.icon className="h-10 w-10" />
                 </div>
-                
-                <p className="text-white/90 text-sm leading-relaxed">
-                  {module.description}
-                </p>
+                <div className="absolute bottom-6 left-6 right-16">
+                  <h3 className="text-xl font-semibold mb-1">{module.title}</h3>
+                  <p className="text-sm opacity-90">{module.subtitle}</p>
+                </div>
+                {/* Decorative elements */}
+                <div className="absolute -right-8 -top-8 w-24 h-24 bg-white/10 rounded-full"></div>
+                <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-white/10 rounded-full"></div>
               </div>
 
               {/* Content */}
-              <div className="px-6 py-6">
-                <h4 className="font-semibold text-gray-900 mb-3">
-                  Características principales:
-                </h4>
-                <ul className="space-y-2 mb-6">
-                  {module.features.map((feature, index) => (
-                    <li key={index} className="flex items-center gap-2 text-sm text-gray-600">
-                      <div className={cn('w-1.5 h-1.5 rounded-full', {
-                        'bg-blue-500': module.id === 'general',
-                        'bg-purple-500': module.id === 'creative',
-                        'bg-emerald-500': module.id === 'synthetic',
-                        'bg-orange-500': module.id === 'dashboard',
-                        'bg-indigo-500': module.id === 'predictor',
-                        'bg-teal-500': module.id === 'reports',
-                        'bg-rose-500': module.id === 'video'
-                      })} />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
+              <div className="p-6">
+                <p className="text-gray-600 mb-4 text-sm leading-relaxed">
+                  {module.description}
+                </p>
 
+                {/* Features List */}
+                <div className="space-y-2 mb-6">
+                  {module.features.map((feature, index) => (
+                    <div key={index} className="flex items-center gap-2 text-xs text-gray-500">
+                      <div className={cn('w-1.5 h-1.5 rounded-full bg-gradient-to-r', module.gradient)}></div>
+                      <span>{feature}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* CTA Button */}
                 <button
-                  onClick={() => handleModuleSelect(module.route, module.disabled)}
                   className={cn(
-                    'w-full py-3 px-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 text-white',
-                    module.disabled 
-                      ? 'bg-gray-400 cursor-not-allowed' 
-                      : cn('bg-gradient-to-r hover:shadow-lg group-hover:scale-105', module.gradient)
+                    'w-full py-3 px-4 rounded-xl font-medium transition-all duration-200 bg-gradient-to-r text-white shadow-md hover:shadow-lg group-hover:scale-105',
+                    module.gradient
                   )}
-                  disabled={module.disabled}
                 >
-                  {module.disabled ? 'Próximamente' : 'Acceder al Módulo'}
-                  <module.icon className="h-4 w-4" />
+{module.button}
                 </button>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Quick Stats */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="grid md:grid-cols-3 gap-6 text-center">
-            <div>
-              <div className="text-2xl font-bold text-blue-600 mb-1">1,500+</div>
-              <div className="text-sm text-gray-600">Documentos indexados</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-purple-600 mb-1">6</div>
-              <div className="text-sm text-gray-600">Arquetipos de usuarios</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-emerald-600 mb-1">24/7</div>
-              <div className="text-sm text-gray-600">Disponibilidad</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer Info */}
-        <div className="text-center mt-8 text-sm text-gray-500">
+        {/* Info Footer */}
+        <div className="text-center text-gray-500 text-sm">
+          <p className="mb-2">
+            💡 <strong>Tip:</strong> Sistema simplificado sin editor complejo de personas
+          </p>
           <p>
-            Sistema desarrollado para Tigo Honduras • Basado en Azure OpenAI GPT-4
+            Desarrollado con ❤️ para análisis de marcas FMCG • Sistema RAG básico
           </p>
         </div>
       </main>

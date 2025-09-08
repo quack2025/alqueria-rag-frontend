@@ -2,20 +2,26 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { 
   ArrowLeft, Sparkles, Palette, TrendingUp, Download, Settings, 
-  Trash2, BarChart3, Lightbulb, Clock, Zap, Image as ImageIcon, AlertCircle
+  Trash2, BarChart3, Lightbulb, Clock, Zap, Image as ImageIcon, AlertCircle, Shield
 } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 import { cn, generateId } from '../../lib/utils';
 import type { ChatMessage, RAGResponse } from '../../types';
 import { chatStorage } from '../../lib/chatStorage';
 import MarkdownRenderer from '../Chat/MarkdownRenderer';
+import TransparentRenderer from '../Chat/TransparentRenderer';
 import CitationsList from '../Chat/CitationsList';
+import VisualizationRenderer from '../Charts/VisualizationRenderer';
+import { generateMockVisualization } from '../../utils/mockVisualizationData';
+import { processRAGResponse } from '../../utils/responseCleanup';
 
 const CreativeModule: React.FC = () => {
   const navigate = useNavigate();
   const { getUser, isAuthenticated } = useAuth();
+  const { t } = useTranslation();
   
   // Estado
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -43,7 +49,7 @@ const CreativeModule: React.FC = () => {
       return;
     }
     loadMessages();
-  }, [navigate, isAuthenticated]);
+  }, []); // Dependencias vacías para evitar loop
 
   useEffect(() => {
     scrollToBottom();
@@ -56,7 +62,7 @@ const CreativeModule: React.FC = () => {
 
   const loadDailyImageCount = () => {
     const today = new Date().toDateString();
-    const stored = localStorage.getItem(`tigo_daily_images_${today}`);
+    const stored = localStorage.getItem(`unilever_daily_images_${today}`);
     const count = stored ? parseInt(stored) : 0;
     setDailyImageCount(count);
   };
@@ -65,7 +71,7 @@ const CreativeModule: React.FC = () => {
     const today = new Date().toDateString();
     const newCount = dailyImageCount + 1;
     setDailyImageCount(newCount);
-    localStorage.setItem(`tigo_daily_images_${today}`, newCount.toString());
+    localStorage.setItem(`unilever_daily_images_${today}`, newCount.toString());
   };
 
   const canGenerateImage = () => {
@@ -112,7 +118,7 @@ const CreativeModule: React.FC = () => {
     // Agregar mensaje del asistente
     addMessage({
       role: 'assistant',
-      content: 'Generando insights creativos...',
+      content: t('chat.generatingCreativeInsights'),
       mode: 'creative',
     });
     
@@ -123,7 +129,7 @@ const CreativeModule: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('tigo_auth_token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('unilever_auth_token')}`,
         },
         body: JSON.stringify({
           messages: [{ role: 'user', content: userMessage }],
@@ -140,10 +146,10 @@ const CreativeModule: React.FC = () => {
       
       // Actualizar último mensaje con la respuesta completa
       const updates: Partial<ChatMessage> = {
-        content: data.answer || data.content || 'Respuesta recibida',
+        content: processRAGResponse(data.answer || data.content || 'Respuesta recibida'),
         citations: data.citations || [],
         metadata: data.metadata || {},
-        visualization: data.visualization
+        visualization: data.visualization || generateMockVisualization(data.answer || data.content || '')
       };
 
       const updatedMessages = chatStorage.updateLastMessage('creative', updates);
@@ -160,7 +166,7 @@ const CreativeModule: React.FC = () => {
         const imageNoticeMessage: ChatMessage = {
           id: generateId(),
           role: 'assistant',
-          content: '🎨 Detecté que necesitas una imagen. Generando visual con DALL-E...',
+          content: t('chat.detectingImageNeed'),
           mode: 'creative',
           timestamp: new Date(),
         };
@@ -173,11 +179,11 @@ const CreativeModule: React.FC = () => {
         
         // Extract key concepts from the response for better image generation
         if (userMessage.toLowerCase().includes('redes sociales')) {
-          imagePrompt = `Crear un post profesional para redes sociales de Tigo Honduras con diseño moderno, colores azul (#1E40AF) y blanco, incluir el logo de Tigo, elementos de conectividad y señal móvil`;
+          imagePrompt = `Crear un post profesional para redes sociales de Unilever Colombia con diseño moderno, colores azul (#1E40AF) y blanco, incluir productos de cuidado personal y belleza`;
         } else if (userMessage.toLowerCase().includes('campaña')) {
-          imagePrompt = `Diseño de campaña publicitaria para Tigo Honduras con visual impactante, branding corporativo azul y blanco, elementos de tecnología y telecomunicaciones`;
+          imagePrompt = `Diseño de campaña publicitaria para Unilever Colombia con visual impactante, branding corporativo azul y blanco, elementos de productos FMCG y cuidado personal`;
         } else if (userMessage.toLowerCase().includes('infografía')) {
-          imagePrompt = `Infografía profesional para Tigo Honduras con datos y estadísticas, diseño limpio y moderno en azul y blanco, iconos de telecomunicaciones`;
+          imagePrompt = `Infografía profesional para Unilever Colombia con datos y estadísticas, diseño limpio y moderno en azul y blanco, iconos de productos de consumo`;
         }
         
         // Wait a moment for the text response to render, then generate image
@@ -189,7 +195,7 @@ const CreativeModule: React.FC = () => {
     } catch (error: any) {
       console.error('❌ Chat error:', error);
       
-      const errorMessage = 'Error de conexión. Asegúrate de que el backend esté ejecutándose';
+      const errorMessage = t('errors.connectionError');
       
       const updatedMessages = chatStorage.updateLastMessage('creative', {
         content: errorMessage,
@@ -203,7 +209,7 @@ const CreativeModule: React.FC = () => {
   };
 
   const handleClearChat = () => {
-    if (window.confirm('¿Estás seguro que deseas limpiar el chat creativo?')) {
+    if (window.confirm(t('chat.confirmClearCreative'))) {
       chatStorage.clearMessages('creative');
       setMessages([]);
     }
@@ -211,7 +217,7 @@ const CreativeModule: React.FC = () => {
 
   const generateImage = async (prompt: string) => {
     if (!canGenerateImage()) {
-      setError(`Has alcanzado el límite diario de ${DAILY_USER_LIMIT} imágenes. Intenta mañana.`);
+      setError(t('errors.dailyImageLimit', { limit: DAILY_USER_LIMIT }));
       return;
     }
 
@@ -223,14 +229,14 @@ const CreativeModule: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('tigo_auth_token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('unilever_auth_token')}`,
         },
         body: JSON.stringify({
-          prompt: `${prompt}. Estilo profesional corporativo para Tigo Honduras, colores azul y blanco, alta calidad.`,
+          prompt: `${prompt}. Estilo profesional corporativo para Unilever Colombia, colores azul y blanco, alta calidad.`,
           size: "1024x1024",
           quality: "hd",
           style: "vivid",
-          brand_context: "Tigo Honduras telecommunications"
+          brand_context: "Unilever Colombia FMCG and personal care"
         }),
       });
 
@@ -245,7 +251,7 @@ const CreativeModule: React.FC = () => {
         const imageMessage: ChatMessage = {
           id: generateId(),
           role: 'assistant',
-          content: `🎨 **Imagen generada**: ${prompt}`,
+          content: t('chat.imageGenerated', { prompt }),
           mode: 'creative',
           timestamp: new Date(),
           imageUrl: data.image_url,
@@ -261,7 +267,7 @@ const CreativeModule: React.FC = () => {
 
     } catch (error: any) {
       console.error('Error generando imagen:', error);
-      setError('Error al generar la imagen. Intenta nuevamente.');
+      setError(t('errors.imageGenerationError'));
     } finally {
       setIsGeneratingImage(false);
     }
@@ -282,7 +288,7 @@ const CreativeModule: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `tigo-rag-creative-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `unilever-rag-creative-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -306,16 +312,20 @@ const CreativeModule: React.FC = () => {
               </div>
               <div>
                 <h1 className="text-xl font-semibold text-gray-900">
-                  RAG Creativo
+                  {t('modules.creative.title')}
                 </h1>
                 <div className="flex items-center gap-4">
                   <p className="text-sm text-gray-500">
-                    Insights estratégicos • {user?.username || 'Usuario'}
+                    {t('chat.creativitySubtitle')} • {user?.username || t('common.user')}
                   </p>
+                  <div className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                    <Shield className="h-3 w-3" />
+                    {t('common.transparent')}
+                  </div>
                   <div className="flex items-center gap-2 px-2 py-1 bg-purple-100 rounded-full">
                     <ImageIcon className="h-3 w-3 text-purple-600" />
                     <span className="text-xs text-purple-700 font-medium">
-                      {dailyImageCount}/{DAILY_USER_LIMIT} imágenes hoy
+                      {dailyImageCount}/{DAILY_USER_LIMIT} {t('chat.imagesToday')}
                     </span>
                   </div>
                 </div>
@@ -328,7 +338,7 @@ const CreativeModule: React.FC = () => {
             <div className="flex items-center gap-2 px-3 py-2 bg-purple-50 border border-purple-200 rounded-lg">
               <Palette className="h-4 w-4 text-purple-600" />
               <span className="text-sm text-purple-700 font-medium">
-                Creatividad: {creativityLevel}%
+                {t('chat.creativity')}: {creativityLevel}%
               </span>
               <input
                 type="range"
@@ -345,7 +355,7 @@ const CreativeModule: React.FC = () => {
               <button
                 onClick={exportConversation}
                 className="p-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50"
-                title="Exportar conversación"
+                title={t('common.exportConversation')}
               >
                 <Download className="h-4 w-4" />
               </button>
@@ -356,7 +366,7 @@ const CreativeModule: React.FC = () => {
               <button
                 onClick={handleClearChat}
                 className="p-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50"
-                title="Limpiar chat"
+                title={t('common.clearChat')}
               >
                 <Trash2 className="h-4 w-4" />
               </button>
@@ -365,7 +375,7 @@ const CreativeModule: React.FC = () => {
             {/* Config */}
             <button
               className="p-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50"
-              title="Configuración del módulo creativo"
+              title={t('common.configuration')}
             >
               <Settings className="h-4 w-4" />
             </button>
@@ -388,35 +398,35 @@ const CreativeModule: React.FC = () => {
               <Sparkles className="h-8 w-8 text-purple-600" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              RAG Creativo - Insights y Visualizaciones
+              {t('chat.welcomeTitle')}
             </h3>
             <p className="text-gray-600 mb-6">
-              Genera análisis innovadores, recomendaciones estratégicas y visualizaciones interactivas
+              {t('chat.creativeWelcomeDescription')}
             </p>
             
             {/* Creative Prompts */}
             <div className="grid gap-3 md:grid-cols-2 max-w-4xl mx-auto">
               {[
                 {
-                  icon: TrendingUp,
-                  title: 'Análisis Predictivo',
-                  prompt: 'Genera predicciones sobre el comportamiento del consumidor hondureño en 2025'
-                },
-                {
                   icon: Lightbulb,
-                  title: 'Ideas Innovadoras', 
-                  prompt: 'Propón 5 servicios innovadores que Tigo podría lanzar basados en las tendencias actuales'
-                },
-                {
-                  icon: BarChart3,
-                  title: 'Visualización de Datos',
-                  prompt: 'Crea un dashboard visual comparando el NPS de Tigo vs competencia por región',
-                  hasImageOption: true
+                  title: t('chat.creativePrompts.innovativeDove.title'),
+                  prompt: t('chat.creativePrompts.innovativeDove.prompt')
                 },
                 {
                   icon: Zap,
-                  title: 'Estrategia Disruptiva',
-                  prompt: 'Diseña una estrategia para capturar el segmento Gen Z en Honduras',
+                  title: t('chat.creativePrompts.disruptiveMaizena.title'),
+                  prompt: t('chat.creativePrompts.disruptiveMaizena.prompt'),
+                  hasImageOption: true
+                },
+                {
+                  icon: TrendingUp,
+                  title: t('chat.creativePrompts.innovationSedal.title'),
+                  prompt: t('chat.creativePrompts.innovationSedal.prompt')
+                },
+                {
+                  icon: BarChart3,
+                  title: t('chat.creativePrompts.disruptionSavital.title'),
+                  prompt: t('chat.creativePrompts.disruptionSavital.prompt'),
                   hasImageOption: true
                 }
               ].map((prompt, index) => (
@@ -451,7 +461,7 @@ const CreativeModule: React.FC = () => {
                         ) : (
                           <>
                             <ImageIcon className="h-3 w-3" />
-                            {canGenerateImage() ? 'Generar imagen visual' : `Límite diario alcanzado`}
+                            {canGenerateImage() ? t('chat.generateVisualImage') : t('chat.dailyLimitReached')}
                           </>
                         )}
                       </button>
@@ -464,10 +474,10 @@ const CreativeModule: React.FC = () => {
             <div className="mt-8 p-4 bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl border border-purple-200 max-w-2xl mx-auto">
               <div className="flex items-center gap-2 mb-2">
                 <Palette className="h-4 w-4 text-purple-600" />
-                <span className="text-sm font-medium text-purple-800">Modo Creativo Activado</span>
+                <span className="text-sm font-medium text-purple-800">{t('chat.creativeModeActive')}</span>
               </div>
               <p className="text-xs text-purple-700">
-                Genera visualizaciones automáticas, insights innovadores y recomendaciones estratégicas basadas en datos
+                {t('chat.creativeModeDescription')}
               </p>
             </div>
           </div>
@@ -482,14 +492,18 @@ const CreativeModule: React.FC = () => {
                 }`}>
                   {message.role === 'assistant' ? (
                     <div>
-                      <MarkdownRenderer content={message.content} />
+                      <TransparentRenderer 
+                        content={message.content}
+                        citations={message.citations || []}
+                        metadata={message.metadata}
+                      />
                       
                       {/* Generated Image */}
                       {(message as any).imageUrl && (
                         <div className="mt-4">
                           <div className="flex items-center gap-2 mb-3">
                             <ImageIcon className="h-4 w-4 text-purple-600" />
-                            <span className="text-sm font-medium text-purple-800">Imagen Generada con DALL-E</span>
+                            <span className="text-sm font-medium text-purple-800">{t('chat.imageGeneratedWithDallE')}</span>
                           </div>
                           <div className="rounded-xl overflow-hidden border border-purple-200 shadow-lg">
                             <img 
@@ -502,7 +516,7 @@ const CreativeModule: React.FC = () => {
                           {(message as any).imagePrompt && (
                             <div className="mt-2 p-2 bg-purple-50 rounded-lg">
                               <p className="text-xs text-purple-700">
-                                <strong>Prompt:</strong> {(message as any).imagePrompt}
+                                <strong>{t('chat.prompt')}:</strong> {(message as any).imagePrompt}
                               </p>
                             </div>
                           )}
@@ -511,28 +525,22 @@ const CreativeModule: React.FC = () => {
                               onClick={() => {
                                 const link = document.createElement('a');
                                 link.href = (message as any).imageUrl;
-                                link.download = `tigo-generated-${Date.now()}.png`;
+                                link.download = `unilever-generated-${Date.now()}.png`;
                                 link.click();
                               }}
                               className="px-3 py-1 bg-purple-100 text-purple-700 text-xs rounded-lg hover:bg-purple-200 transition-colors flex items-center gap-1"
                             >
                               <Download className="h-3 w-3" />
-                              Descargar
+                              {t('common.download')}
                             </button>
                           </div>
                         </div>
                       )}
                       
-                      {/* Visualización */}
+                      {/* Visualización mejorada */}
                       {message.visualization && (
-                        <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200">
-                          <div className="flex items-center gap-2 mb-2">
-                            <BarChart3 className="h-4 w-4 text-blue-600" />
-                            <span className="text-sm font-medium text-blue-800">Visualización Generada</span>
-                          </div>
-                          <div className="text-sm text-blue-700">
-                            {message.visualization.title || 'Gráfico interactivo'}
-                          </div>
+                        <div className="mt-4">
+                          <VisualizationRenderer visualization={message.visualization} />
                         </div>
                       )}
                       
@@ -582,7 +590,7 @@ const CreativeModule: React.FC = () => {
                       <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }} />
                     </div>
                     <span className="text-sm text-purple-700">
-                      Creando insights...
+                      {t('chat.creatingInsights')}
                     </span>
                   </div>
                 </div>
@@ -601,7 +609,7 @@ const CreativeModule: React.FC = () => {
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Describe tu idea o genera insights creativos..."
+              placeholder={t('chat.creativePlaceholder')}
               className="flex-1 px-4 py-2 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/80"
               disabled={isLoading}
               maxLength={5000}
@@ -619,17 +627,17 @@ const CreativeModule: React.FC = () => {
                     ? "bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-300"
                     : "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-300"
                 )}
-                title={canGenerateImage() ? 'Generar imagen con DALL-E' : `Límite diario alcanzado (${dailyImageCount}/${DAILY_USER_LIMIT})`}
+                title={canGenerateImage() ? t('chat.generateImageDallE') : t('chat.dailyLimitReachedCount', { current: dailyImageCount, limit: DAILY_USER_LIMIT })}
               >
                 {isGeneratingImage ? (
                   <>
                     <div className="w-3 h-3 border border-purple-300 border-t-transparent rounded-full animate-spin" />
-                    <span className="hidden sm:inline">Generando...</span>
+                    <span className="hidden sm:inline">{t('chat.generating')}</span>
                   </>
                 ) : (
                   <>
                     <ImageIcon className="h-3 w-3" />
-                    <span className="hidden sm:inline">Imagen</span>
+                    <span className="hidden sm:inline">{t('chat.image')}</span>
                   </>
                 )}
               </button>
@@ -644,7 +652,7 @@ const CreativeModule: React.FC = () => {
               )}
             >
               <Sparkles className="h-4 w-4" />
-              Crear
+              {t('common.create')}
             </button>
           </div>
           
@@ -652,7 +660,7 @@ const CreativeModule: React.FC = () => {
           <div className="flex justify-between items-center mt-2 text-xs text-purple-600">
             <span className="flex items-center gap-2">
               <Palette className="h-3 w-3" />
-              Modo Creativo: Insights innovadores con nivel {creativityLevel}% de creatividad
+              {t('chat.creativeModeLevel', { level: creativityLevel })}
             </span>
             <span>
               {input.length}/5000

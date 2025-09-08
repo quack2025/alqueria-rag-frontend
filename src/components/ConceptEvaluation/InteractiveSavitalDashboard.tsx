@@ -1,0 +1,516 @@
+// InteractiveSavitalDashboard.tsx - Dashboard Interactivo con Editor de Conceptos
+import React, { useState, useEffect } from 'react';
+import { ChevronDown, ChevronUp, Edit2, Save, X, RefreshCw, Users, TrendingUp, AlertCircle, Star, Package, Target, Sparkles } from 'lucide-react';
+import { savitalFocusService } from '../../services/savitalFocusService';
+import { SAVITAL_FOCUS_GROUP } from '../../data/savitalFocusGroup';
+import type { ProductConcept, ConceptEvaluation } from '../../services/savitalFocusService';
+
+const InteractiveSavitalDashboard: React.FC = () => {
+  const [concepts, setConcepts] = useState<ProductConcept[]>([
+    {
+      id: 'savital_control_caida',
+      name: 'Control Caída desde la Raíz',
+      description: 'Fórmula avanzada con complejo de biotina, cafeína y ginseng que fortalece el folículo piloso desde la raíz, reduciendo la caída hasta un 80% en 8 semanas de uso continuo.',
+      key_ingredients: ['Biotina fortificada', 'Cafeína estimulante', 'Ginseng revitalizante'],
+      target_segment: 'Mujeres 25-45 años con caída moderada a severa',
+      price_range: '28,000-35,000 COP',
+      usage_frequency: 'Diario',
+      expected_results: 'Reducción visible de caída en 2 semanas',
+      emotional_benefit: 'Recupera tu confianza con cabello fuerte',
+      sensory_experience: 'Aroma herbal energizante, textura ligera',
+      format: 'Shampoo + Acondicionador'
+    },
+    {
+      id: 'savital_equilibrio_capilar',
+      name: 'Equilibrio Capilar',
+      description: 'Sistema inteligente con niacinamida y zinc que regula la producción de grasa sin resecar, ideal para cuero cabelludo mixto. Equilibra pH y microbioma capilar.',
+      key_ingredients: ['Niacinamida reguladora', 'Zinc purificante', 'Prebióticos'],
+      target_segment: 'Todo tipo de cabello con desequilibrios',
+      price_range: '22,000-28,000 COP',
+      usage_frequency: '3 veces por semana',
+      expected_results: 'Equilibrio visible en 1 semana',
+      emotional_benefit: 'Simplicidad y equilibrio en tu rutina',
+      sensory_experience: 'Frescura mentolada suave',
+      format: 'Shampoo + Mascarilla semanal'
+    },
+    {
+      id: 'savital_nutricion_raiz',
+      name: 'Nutrición desde la Raíz',
+      description: 'Tratamiento intensivo con aceite de baobab africano y keratina vegetal que penetra profundamente nutriendo desde el interior. Repara daño extremo y previene quiebre.',
+      key_ingredients: ['Aceite de Baobab', 'Keratina vegetal', 'Vitamina E'],
+      target_segment: 'Cabello muy dañado, procesado químicamente',
+      price_range: '25,000-32,000 COP',
+      usage_frequency: '2-3 veces por semana',
+      expected_results: 'Nutrición profunda en 3 aplicaciones',
+      emotional_benefit: 'Reparación profesional en casa',
+      sensory_experience: 'Cremoso, aroma a vainilla africana',
+      format: 'Shampoo + Tratamiento intensivo'
+    },
+    {
+      id: 'savital_frizz_control',
+      name: 'Hidratación y Control Frizz',
+      description: 'Tecnología anti-humedad con aceite de jojoba y proteína de quinoa que sella la cutícula, controlando el frizz hasta por 72 horas incluso en clima húmedo.',
+      key_ingredients: ['Aceite de Jojoba', 'Proteína de Quinoa', 'Silicona vegetal'],
+      target_segment: 'Cabello rizado/ondulado en clima húmedo',
+      price_range: '20,000-26,000 COP',
+      usage_frequency: 'Cada lavado',
+      expected_results: 'Control inmediato del frizz',
+      emotional_benefit: 'Libertad sin preocuparte del clima',
+      sensory_experience: 'Suave, aroma tropical fresco',
+      format: 'Shampoo + Crema para peinar'
+    },
+    {
+      id: 'savital_crecimiento_abundante',
+      name: 'Crecimiento Abundante',
+      description: 'Elixir de crecimiento con triple acción: romero estimulante, biotina y extracto de sábila. Acelera el crecimiento hasta 2cm por mes y aumenta densidad capilar.',
+      key_ingredients: ['Romero estimulante', 'Biotina', 'Sábila regeneradora'],
+      target_segment: 'Mujeres que buscan cabello más largo y abundante',
+      price_range: '30,000-38,000 COP',
+      usage_frequency: 'Diario en cuero cabelludo',
+      expected_results: 'Nuevo crecimiento visible en 4 semanas',
+      emotional_benefit: 'El cabello largo que siempre soñaste',
+      sensory_experience: 'Elixir ligero, aroma herbal fresco',
+      format: 'Elixir concentrado + Shampoo'
+    }
+  ]);
+
+  const [evaluations, setEvaluations] = useState<{[key: string]: any}>({});
+  const [editingConcept, setEditingConcept] = useState<string | null>(null);
+  const [expandedConcept, setExpandedConcept] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<string | null>(null);
+
+  // Evaluar todos los conceptos al cargar
+  useEffect(() => {
+    evaluateAllConcepts();
+  }, []);
+
+  const evaluateAllConcepts = () => {
+    setLoading(true);
+    const allUserIds = SAVITAL_FOCUS_GROUP.map(user => user.id);
+    const newEvaluations: any = {};
+
+    concepts.forEach(concept => {
+      const evaluation = savitalFocusService.evaluateConcept(concept, allUserIds);
+      newEvaluations[concept.id] = evaluation;
+    });
+
+    setEvaluations(newEvaluations);
+    setLoading(false);
+  };
+
+  const handleConceptEdit = (conceptId: string, field: string, value: string) => {
+    setConcepts(prev => prev.map(c => 
+      c.id === conceptId ? { ...c, [field]: value } : c
+    ));
+  };
+
+  const handleSaveConcept = (conceptId: string) => {
+    setLoading(true);
+    const concept = concepts.find(c => c.id === conceptId);
+    if (concept) {
+      const allUserIds = SAVITAL_FOCUS_GROUP.map(user => user.id);
+      const evaluation = savitalFocusService.evaluateConcept(concept, allUserIds);
+      setEvaluations(prev => ({ ...prev, [conceptId]: evaluation }));
+    }
+    setEditingConcept(null);
+    setLoading(false);
+  };
+
+  const getScoreColor = (score: number) => {
+    if (score >= 8) return 'text-green-600';
+    if (score >= 6) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  const getScoreBg = (score: number) => {
+    if (score >= 8) return 'bg-green-100';
+    if (score >= 6) return 'bg-yellow-100';
+    return 'bg-red-100';
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 py-8 px-4">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900 mb-3">
+                Dashboard Interactivo Savital
+              </h1>
+              <p className="text-gray-600 text-lg">
+                Evaluación de Conceptos con 8 Usuarias Sintéticas Colombianas
+              </p>
+            </div>
+            <button
+              onClick={evaluateAllConcepts}
+              disabled={loading}
+              className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+            >
+              <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
+              Re-evaluar Todos
+            </button>
+          </div>
+
+          {/* Stats Overview */}
+          <div className="grid grid-cols-4 gap-4">
+            <div className="bg-purple-100 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Package className="h-5 w-5 text-purple-600" />
+                <span className="text-sm text-purple-600 font-medium">Conceptos</span>
+              </div>
+              <p className="text-2xl font-bold text-gray-900">{concepts.length}</p>
+            </div>
+            <div className="bg-pink-100 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Users className="h-5 w-5 text-pink-600" />
+                <span className="text-sm text-pink-600 font-medium">Usuarias</span>
+              </div>
+              <p className="text-2xl font-bold text-gray-900">{SAVITAL_FOCUS_GROUP.length}</p>
+            </div>
+            <div className="bg-green-100 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Target className="h-5 w-5 text-green-600" />
+                <span className="text-sm text-green-600 font-medium">Ciudades</span>
+              </div>
+              <p className="text-2xl font-bold text-gray-900">2</p>
+              <p className="text-xs text-gray-600">Bogotá, Barranquilla</p>
+            </div>
+            <div className="bg-blue-100 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className="h-5 w-5 text-blue-600" />
+                <span className="text-sm text-blue-600 font-medium">NSE</span>
+              </div>
+              <p className="text-2xl font-bold text-gray-900">C+/C</p>
+              <p className="text-xs text-gray-600">50% Savital users</p>
+            </div>
+          </div>
+        </div>
+
+        {/* User Filter */}
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+          <h3 className="font-semibold text-gray-900 mb-4">Filtrar por Usuaria</h3>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setSelectedUser(null)}
+              className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                selectedUser === null ? 'bg-purple-600 text-white' : 'bg-gray-100 hover:bg-gray-200'
+              }`}
+            >
+              Todas ({SAVITAL_FOCUS_GROUP.length})
+            </button>
+            {SAVITAL_FOCUS_GROUP.map(user => (
+              <button
+                key={user.id}
+                onClick={() => setSelectedUser(user.id)}
+                className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                  selectedUser === user.id ? 'bg-purple-600 text-white' : 'bg-gray-100 hover:bg-gray-200'
+                }`}
+              >
+                {user.name} ({user.age}, {user.city})
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Concepts Grid */}
+        <div className="space-y-6">
+          {concepts.map((concept, index) => {
+            const evaluation = evaluations[concept.id];
+            const isEditing = editingConcept === concept.id;
+            const isExpanded = expandedConcept === concept.id;
+            
+            return (
+              <div key={concept.id} className="bg-white rounded-xl shadow-lg overflow-hidden">
+                {/* Concept Header */}
+                <div className="p-6 border-b border-gray-200">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-2xl font-bold text-purple-600">#{index + 1}</span>
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            value={concept.name}
+                            onChange={(e) => handleConceptEdit(concept.id, 'name', e.target.value)}
+                            className="text-xl font-bold text-gray-900 border-b-2 border-purple-400 focus:outline-none px-1"
+                          />
+                        ) : (
+                          <h2 className="text-xl font-bold text-gray-900">{concept.name}</h2>
+                        )}
+                      </div>
+                      {isEditing ? (
+                        <textarea
+                          value={concept.description}
+                          onChange={(e) => handleConceptEdit(concept.id, 'description', e.target.value)}
+                          className="w-full text-gray-600 border rounded p-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                          rows={3}
+                        />
+                      ) : (
+                        <p className="text-gray-600">{concept.description}</p>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      {isEditing ? (
+                        <>
+                          <button
+                            onClick={() => handleSaveConcept(concept.id)}
+                            className="p-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                          >
+                            <Save className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => setEditingConcept(null)}
+                            className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => setEditingConcept(concept.id)}
+                          className="p-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Concept Details (Editable) */}
+                  {isEditing && (
+                    <div className="grid grid-cols-2 gap-4 mt-4 p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Ingredientes Clave
+                        </label>
+                        <input
+                          type="text"
+                          value={concept.key_ingredients.join(', ')}
+                          onChange={(e) => handleConceptEdit(concept.id, 'key_ingredients', e.target.value.split(', '))}
+                          className="w-full border rounded p-2 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Rango de Precio
+                        </label>
+                        <input
+                          type="text"
+                          value={concept.price_range}
+                          onChange={(e) => handleConceptEdit(concept.id, 'price_range', e.target.value)}
+                          className="w-full border rounded p-2 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Beneficio Emocional
+                        </label>
+                        <input
+                          type="text"
+                          value={concept.emotional_benefit}
+                          onChange={(e) => handleConceptEdit(concept.id, 'emotional_benefit', e.target.value)}
+                          className="w-full border rounded p-2 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Formato
+                        </label>
+                        <input
+                          type="text"
+                          value={concept.format}
+                          onChange={(e) => handleConceptEdit(concept.id, 'format', e.target.value)}
+                          className="w-full border rounded p-2 text-sm"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Quick Stats */}
+                  {evaluation && (
+                    <div className="grid grid-cols-5 gap-4 mt-4">
+                      <div className={`rounded-lg p-3 ${getScoreBg(evaluation.group_analysis.average_scores.appeal)}`}>
+                        <p className="text-xs font-medium text-gray-600">Appeal</p>
+                        <p className={`text-xl font-bold ${getScoreColor(evaluation.group_analysis.average_scores.appeal)}`}>
+                          {evaluation.group_analysis.average_scores.appeal.toFixed(1)}/10
+                        </p>
+                      </div>
+                      <div className={`rounded-lg p-3 ${getScoreBg(evaluation.group_analysis.average_scores.relevance)}`}>
+                        <p className="text-xs font-medium text-gray-600">Relevancia</p>
+                        <p className={`text-xl font-bold ${getScoreColor(evaluation.group_analysis.average_scores.relevance)}`}>
+                          {evaluation.group_analysis.average_scores.relevance.toFixed(1)}/10
+                        </p>
+                      </div>
+                      <div className={`rounded-lg p-3 ${getScoreBg(evaluation.group_analysis.average_scores.believability)}`}>
+                        <p className="text-xs font-medium text-gray-600">Credibilidad</p>
+                        <p className={`text-xl font-bold ${getScoreColor(evaluation.group_analysis.average_scores.believability)}`}>
+                          {evaluation.group_analysis.average_scores.believability.toFixed(1)}/10
+                        </p>
+                      </div>
+                      <div className={`rounded-lg p-3 ${getScoreBg(evaluation.group_analysis.average_scores.uniqueness)}`}>
+                        <p className="text-xs font-medium text-gray-600">Unicidad</p>
+                        <p className={`text-xl font-bold ${getScoreColor(evaluation.group_analysis.average_scores.uniqueness)}`}>
+                          {evaluation.group_analysis.average_scores.uniqueness.toFixed(1)}/10
+                        </p>
+                      </div>
+                      <div className={`rounded-lg p-3 ${getScoreBg(evaluation.group_analysis.average_scores.purchase_intention)}`}>
+                        <p className="text-xs font-medium text-gray-600">Intención</p>
+                        <p className={`text-xl font-bold ${getScoreColor(evaluation.group_analysis.average_scores.purchase_intention)}`}>
+                          {evaluation.group_analysis.average_scores.purchase_intention.toFixed(1)}/10
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Expand/Collapse Button */}
+                  <button
+                    onClick={() => setExpandedConcept(isExpanded ? null : concept.id)}
+                    className="mt-4 flex items-center gap-2 text-purple-600 hover:text-purple-700 transition-colors"
+                  >
+                    {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                    {isExpanded ? 'Ver menos' : `Ver evaluaciones de ${SAVITAL_FOCUS_GROUP.length} usuarias`}
+                  </button>
+                </div>
+
+                {/* Expanded User Evaluations */}
+                {isExpanded && evaluation && (
+                  <div className="p-6 bg-gray-50">
+                    <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                      <Users className="h-5 w-5" />
+                      Evaluaciones Individuales ({evaluation.individual_evaluations.length} usuarias)
+                    </h3>
+                    
+                    <div className="grid gap-4">
+                      {evaluation.individual_evaluations
+                        .filter((userEvaluation: any) => !selectedUser || userEvaluation.user_id === selectedUser)
+                        .map((userEval: any) => {
+                          const user = SAVITAL_FOCUS_GROUP.find(u => u.id === userEval.user_id);
+                          if (!user) return null;
+
+                          return (
+                            <div key={userEval.user_id} className="bg-white rounded-lg p-4 border border-gray-200">
+                              <div className="flex justify-between items-start mb-3">
+                                <div>
+                                  <h4 className="font-medium text-gray-900">
+                                    {user.name} ({user.age} años)
+                                  </h4>
+                                  <p className="text-sm text-gray-600">
+                                    {user.city} • NSE {user.nse} • {user.savital_relationship.is_user ? '✅ Usuario Savital' : '❌ No usuario'}
+                                  </p>
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    {user.occupation} • Problema: {user.hair_profile.main_concerns.join(', ')}
+                                  </p>
+                                </div>
+                                <div className="flex gap-2">
+                                  {Object.entries(userEval.scores).map(([key, value]: [string, any]) => (
+                                    <div key={key} className={`px-2 py-1 rounded ${getScoreBg(value)}`}>
+                                      <p className="text-xs">{key.substring(0, 3).toUpperCase()}</p>
+                                      <p className={`text-sm font-bold ${getScoreColor(value)}`}>{value}</p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              <div className="space-y-2">
+                                <div className="bg-purple-50 rounded p-3">
+                                  <p className="text-sm font-medium text-purple-900 mb-1">Reacción Emocional:</p>
+                                  <p className="text-sm text-purple-700 italic">"{userEval.qualitative_feedback.emotional_reaction}"</p>
+                                </div>
+
+                                {userEval.qualitative_feedback.likes.length > 0 && (
+                                  <div>
+                                    <p className="text-sm font-medium text-green-700 mb-1">✅ Le gusta:</p>
+                                    <ul className="list-disc list-inside text-sm text-gray-600">
+                                      {userEval.qualitative_feedback.likes.map((like: string, idx: number) => (
+                                        <li key={idx}>{like}</li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+
+                                {userEval.qualitative_feedback.concerns.length > 0 && (
+                                  <div>
+                                    <p className="text-sm font-medium text-red-700 mb-1">⚠️ Preocupaciones:</p>
+                                    <ul className="list-disc list-inside text-sm text-gray-600">
+                                      {userEval.qualitative_feedback.concerns.map((concern: string, idx: number) => (
+                                        <li key={idx}>{concern}</li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+
+                                {userEval.qualitative_feedback.suggestions.length > 0 && (
+                                  <div>
+                                    <p className="text-sm font-medium text-blue-700 mb-1">💡 Sugerencias:</p>
+                                    <ul className="list-disc list-inside text-sm text-gray-600">
+                                      {userEval.qualitative_feedback.suggestions.map((suggestion: string, idx: number) => (
+                                        <li key={idx}>{suggestion}</li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+
+                    {/* Group Insights */}
+                    <div className="mt-6 grid grid-cols-2 gap-4">
+                      <div className="bg-white rounded-lg p-4 border border-gray-200">
+                        <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                          <Sparkles className="h-4 w-4 text-purple-600" />
+                          Temas de Consenso
+                        </h4>
+                        <ul className="space-y-1">
+                          {evaluation.group_analysis.consensus_themes.map((theme: string, idx: number) => (
+                            <li key={idx} className="text-sm text-gray-600 flex items-start gap-2">
+                              <span className="text-purple-600">•</span>
+                              {theme}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div className="bg-white rounded-lg p-4 border border-gray-200">
+                        <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                          <AlertCircle className="h-4 w-4 text-orange-600" />
+                          Aspectos Polarizantes
+                        </h4>
+                        <ul className="space-y-1">
+                          {evaluation.group_analysis.polarizing_aspects.map((aspect: string, idx: number) => (
+                            <li key={idx} className="text-sm text-gray-600 flex items-start gap-2">
+                              <span className="text-orange-600">⚡</span>
+                              {aspect}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+
+                    {/* Recommendations */}
+                    <div className="mt-4 bg-blue-50 rounded-lg p-4">
+                      <h4 className="font-medium text-blue-900 mb-2">Recomendaciones Estratégicas</h4>
+                      <ul className="space-y-1">
+                        {evaluation.recommendations.map((rec: string, idx: number) => (
+                          <li key={idx} className="text-sm text-blue-700 flex items-start gap-2">
+                            <span>→</span>
+                            {rec}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default InteractiveSavitalDashboard;

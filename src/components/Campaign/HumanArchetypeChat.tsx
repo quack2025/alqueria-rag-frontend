@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import type { SegmentReaction } from '../../types/campaign.types';
-import { LANGUAGE_PATTERNS } from '../../data/hondurasKnowledgeBase';
+import { LANGUAGE_PATTERNS } from '../../data/colombiaKnowledgeBase';
 import { llmChatService } from '../../services/llmChatService';
 
 interface ChatMessage {
@@ -104,7 +104,7 @@ Mire, yo soy ama de casa aquí en ${persona?.city}, y pues... la verdad es que v
 
 Fíjese que... no sé, me parece bastante caro para nosotros. Ahorita pagamos como L500 y ya a veces nos cuesta... 
 
-¿Ustedes no tienen algo más... más accesible? Es que con lo que gana mi esposo y lo poquito que yo hago vendiendo cositas, pues... cada lempira cuenta, ¿verdad?`;
+¿Ustedes no tienen algo más... más accesible? Es que con lo que gana mi esposo y lo poquito que yo hago vendiendo cositas, pues... cada peso cuenta, ¿verdad?`;
       
     } else if (archetype === 'PROFESIONAL') {
       greeting = `Ah, hola, qué tal. Disculpe la demora, estaba en una llamada...

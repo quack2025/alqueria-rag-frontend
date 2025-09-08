@@ -3,8 +3,8 @@
 import type { ChatMessage } from '../types';
 
 const STORAGE_KEYS = {
-  general: 'tigo_chat_general',
-  creative: 'tigo_chat_creative',
+  general: 'unilever_chat_general',
+  creative: 'unilever_chat_creative',
 } as const;
 
 export type ChatMode = keyof typeof STORAGE_KEYS;

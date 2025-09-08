@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Send, LogOut, Bot, Settings, Trash2, BarChart3, Filter, Search, Users } from 'lucide-react';
+import { Send, LogOut, Bot, Settings, Trash2, BarChart3, Filter, Search, Users, Target, Lightbulb } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 import { cn, generateId } from '../../lib/utils';
 import type { ChatMessage, RAGResponse } from '../../types';
@@ -15,6 +15,11 @@ import AdvancedFilters from '../Filters/AdvancedFilters';
 import ChatHistorySearch from '../Search/ChatHistorySearch';
 import AdvancedPersonaManager from '../Personas/AdvancedPersonaManager';
 import FocusGroupSimulator from '../Personas/FocusGroupSimulator';
+import TestStrategicButton from './TestStrategicButton';
+// import StrategicConfigPanel, { type StrategicConfig } from '../Config/StrategicConfigPanel';
+// import StrategicQuestionSuggestions from '../Suggestions/StrategicQuestionSuggestions';
+// import { strategicRAGService } from '../../services/strategicRAGService';
+// import type { StrategicQuestion } from '../../data/unileverStrategicQuestions';
 
 interface ChatPageProps {
   className?: string;
@@ -41,6 +46,19 @@ const ChatPage: React.FC<ChatPageProps> = ({ className }) => {
   const [activeFilters, setActiveFilters] = useState<any>(null);
   const [activePersona, setActivePersona] = useState<any>(null);
   const [syntheticPersonas, setSyntheticPersonas] = useState<any[]>([]);
+  
+  // Strategic Mode State - temporarily disabled
+  const [isStrategicMode, setIsStrategicMode] = useState(false);
+  // const [strategicConfig, setStrategicConfig] = useState<StrategicConfig>({
+  //   analysisType: 'strategic',
+  //   insightDepth: 'deep',
+  //   enableCrossDocumentAnalysis: true,
+  //   enableTrendAnalysis: false,
+  //   includeRecommendations: true,
+  //   maxChunks: 8
+  // });
+  const [showStrategicConfig, setShowStrategicConfig] = useState(false);
+  const [showStrategicQuestions, setShowStrategicQuestions] = useState(false);
   
   // Referencias
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -103,34 +121,58 @@ const ChatPage: React.FC<ChatPageProps> = ({ className }) => {
     // Agregar mensaje del asistente
     addMessage({
       role: 'assistant',
-      content: 'Procesando tu consulta...',
+      content: isStrategicMode ? 'Realizando análisis estratégico...' : 'Procesando tu consulta...',
       mode: currentMode,
     });
     
     setIsLoading(true);
     
     try {
-      console.log(`💬 Sending message in ${currentMode} mode:`, userMessage);
+      let data: any;
       
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('tigo_auth_token')}`,
-        },
-        body: JSON.stringify({
-          messages: [{ role: 'user', content: userMessage }],
-          mode: currentMode,
-          filters: activeFilters,
-          persona: activePersona,
-        }),
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      if (isStrategicMode) {
+        // Usar servicio estratégico
+        console.log('🎯 Strategic Analysis Request:', { userMessage, config: strategicConfig });
+        
+        const strategicResponse = await strategicRAGService.generateStrategicAnalysis({
+          query: userMessage,
+          ...strategicConfig
+        });
+        
+        data = {
+          answer: strategicResponse.answer,
+          citations: strategicResponse.citations,
+          metadata: {
+            ...strategicResponse.metadata,
+            strategic_framework: strategicResponse.metadata.strategic_framework,
+            key_findings: strategicResponse.key_findings,
+            recommendations: strategicResponse.strategic_recommendations
+          }
+        };
+      } else {
+        // Usar servicio normal
+        console.log(`💬 Sending message in ${currentMode} mode:`, userMessage);
+        
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://web-production-ef8db.up.railway.app'}/api/chat`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('unilever_auth_token')}`,
+          },
+          body: JSON.stringify({
+            messages: [{ role: 'user', content: userMessage }],
+            mode: currentMode,
+            filters: activeFilters,
+            persona: activePersona,
+          }),
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        data = await response.json();
       }
-      
-      const data: RAGResponse = await response.json();
       
       // Actualizar último mensaje con la respuesta completa
       const updates: Partial<ChatMessage> = {
@@ -150,7 +192,9 @@ const ChatPage: React.FC<ChatPageProps> = ({ className }) => {
     } catch (error: any) {
       console.error('❌ Chat error:', error);
       
-      const errorMessage = 'Error de conexión. Asegúrate de que el backend esté ejecutándose en http://localhost:8000';
+      const errorMessage = isStrategicMode 
+        ? 'Error en análisis estratégico. Verifica la conexión al backend.' 
+        : 'Error de conexión. Asegúrate de que el backend esté ejecutándose.';
       
       // Actualizar último mensaje con error
       setMessages(prev => {
@@ -192,6 +236,25 @@ const ChatPage: React.FC<ChatPageProps> = ({ className }) => {
     }
   };
 
+  // Strategic mode handlers - temporarily disabled
+  // const handleStrategicQuestionSelect = (question: StrategicQuestion) => {
+  //   // Configurar el análisis según la pregunta
+  //   if (question.recommendedConfig) {
+  //     setStrategicConfig(prev => ({ ...prev, ...question.recommendedConfig }));
+  //   }
+    
+  //   // Establecer la pregunta en el input
+  //   setInput(question.question);
+    
+  //   // Activar modo estratégico
+  //   setIsStrategicMode(true);
+    
+  //   // Enfocar el input para que el usuario pueda enviar
+  //   setTimeout(() => {
+  //     inputRef.current?.focus();
+  //   }, 100);
+  // };
+
 
   return (
     <div className={cn('h-screen flex flex-col bg-gray-50', className)}>
@@ -204,7 +267,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ className }) => {
             </div>
             <div>
               <h1 className="text-xl font-semibold text-gray-900">
-                Tigo RAG System
+                Unilever RAG System
               </h1>
               <p className="text-sm text-gray-500">
                 Bienvenido, {user?.username || 'Usuario'}
@@ -255,6 +318,9 @@ const ChatPage: React.FC<ChatPageProps> = ({ className }) => {
                 );
               })}
             </div>
+
+            {/* Test Strategic Button */}
+            <TestStrategicButton />
 
             {/* Actions */}
             <button
@@ -352,6 +418,8 @@ const ChatPage: React.FC<ChatPageProps> = ({ className }) => {
             </button>
           </div>
         )}
+
+        {/* Strategic Mode Indicator - temporarily disabled */}
       </header>
 
       {/* Messages */}
@@ -378,10 +446,10 @@ const ChatPage: React.FC<ChatPageProps> = ({ className }) => {
               </h4>
               <div className="grid gap-2 md:grid-cols-2">
                 {[
-                  '¿Cuál es la percepción de marca de Tigo en Honduras?',
-                  '¿Cómo se compara Tigo con la competencia?',
-                  'Muéstrame datos de participación de mercado',
-                  '¿Qué dicen los estudios sobre la cobertura de Tigo?',
+                  '¿Cuál es la percepción de marca de Dove en Colombia?',
+                  '¿Cómo se compara Fruco con la competencia?',
+                  'Muéstrame datos de participación de mercado Unilever',
+                  '¿Qué dicen los estudios sobre efectividad de OMO?',
                 ].map((question, index) => (
                   <button
                     key={index}
@@ -542,9 +610,9 @@ const ChatPage: React.FC<ChatPageProps> = ({ className }) => {
 ${persona.background.life_story}
 
 Puedes preguntarle sobre:
-- Su experiencia con Tigo vs competencia
+- Su experiencia con marcas Unilever vs competencia
 - Problemas que enfrenta: ${persona.background.pain_points.join(', ')}
-- Lo que más valora en un servicio móvil
+- Lo que más valora en productos de cuidado personal
 - Su opinión sobre nuevos servicios o promociones`;
 
           addMessage({
@@ -565,6 +633,21 @@ Puedes preguntarle sobre:
         onClose={() => setShowFocusGroup(false)}
         personas={syntheticPersonas}
       />
+
+      {/* Strategic Configuration Panel - temporarily disabled */}
+      {/* <StrategicConfigPanel
+        isOpen={showStrategicConfig}
+        onClose={() => setShowStrategicConfig(false)}
+        config={strategicConfig}
+        onChange={setStrategicConfig}
+      /> */}
+
+      {/* Strategic Questions Suggestions - temporarily disabled */}
+      {/* <StrategicQuestionSuggestions
+        isOpen={showStrategicQuestions}
+        onClose={() => setShowStrategicQuestions(false)}
+        onSelectQuestion={handleStrategicQuestionSelect}
+      /> */}
     </div>
   );
 };

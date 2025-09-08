@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, Mail, Lock, Loader2, Shield, Zap } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 import { cn } from '../../lib/utils';
+import LanguageSelector from '../Language/LanguageSelector';
 
 interface LoginPageProps {
   className?: string;
@@ -20,11 +22,12 @@ const LoginPage: React.FC<LoginPageProps> = ({ className }) => {
   
   const navigate = useNavigate();
   const { login, isAuthenticated } = useAuth();
+  const { t } = useTranslation();
 
   // Verificar si ya está autenticado
   useEffect(() => {
     if (isAuthenticated()) {
-      navigate('/chat', { replace: true });
+      navigate('/', { replace: true });
     }
   }, [navigate, isAuthenticated]);
 
@@ -38,16 +41,16 @@ const LoginPage: React.FC<LoginPageProps> = ({ className }) => {
       const response = await login(email, password);
       
       if (response.success) {
-        setSuccess('¡Login exitoso! Redirigiendo...');
+        setSuccess(t('auth.loading'));
         setTimeout(() => {
-          navigate('/chat', { replace: true });
+          navigate('/', { replace: true });
         }, 1000);
       } else {
-        setError(response.message || 'Credenciales inválidas');
+        setError(response.message || t('auth.loginError'));
       }
     } catch (error: any) {
       console.error('Login error:', error);
-      setError(error.message || 'Error de conexión');
+      setError(error.message || t('common.error'));
     } finally {
       setIsLoading(false);
     }
@@ -56,16 +59,21 @@ const LoginPage: React.FC<LoginPageProps> = ({ className }) => {
   return (
     <div className={cn('min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 px-4', className)}>
       <div className="max-w-md w-full space-y-8">
+        {/* Language Selector */}
+        <div className="flex justify-end">
+          <LanguageSelector variant="compact" showLabel={false} />
+        </div>
+        
         {/* Header */}
         <div className="text-center">
           <div className="mx-auto h-16 w-16 bg-blue-600 rounded-full flex items-center justify-center mb-4">
             <Shield className="h-8 w-8 text-white" />
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            RAG System
+            {t('auth.title')}
           </h2>
           <p className="text-gray-600">
-            Sistema de análisis de mercado con IA
+            {t('auth.subtitle')}
           </p>
         </div>
 
@@ -88,7 +96,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ className }) => {
             {/* Email Field */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Usuario
+                {t('auth.username')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -99,7 +107,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ className }) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="admin, user, o tigo"
+                  placeholder="admin, user, o unilever"
                   disabled={isLoading}
                   required
                 />
@@ -109,7 +117,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ className }) => {
             {/* Password Field */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Contraseña
+                {t('auth.password')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -151,12 +159,12 @@ const LoginPage: React.FC<LoginPageProps> = ({ className }) => {
               {isLoading ? (
                 <>
                   <Loader2 className="animate-spin -ml-1 mr-3 h-5 w-5" />
-                  Iniciando sesión...
+                  {t('auth.loading')}
                 </>
               ) : (
                 <>
                   <Zap className="-ml-1 mr-3 h-5 w-5" />
-                  Iniciar Sesión
+                  {t('auth.login')}
                 </>
               )}
             </button>
@@ -168,7 +176,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ className }) => {
             <div className="text-xs text-gray-600 space-y-1">
               <div><strong>admin</strong> / admin123</div>
               <div><strong>user</strong> / user123</div>
-              <div><strong>tigo</strong> / tigo2024</div>
+              <div><strong>unilever</strong> / unilever2024</div>
             </div>
           </div>
 
