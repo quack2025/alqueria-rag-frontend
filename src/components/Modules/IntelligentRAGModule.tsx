@@ -13,7 +13,7 @@ import { chatStorage } from '../../lib/chatStorage';
 import MarkdownRenderer from '../Chat/MarkdownRenderer';
 import CitationsList from '../Chat/CitationsList';
 import VisualizationRenderer from '../Charts/VisualizationRenderer';
-import UnileverQuestionSuggestions from '../Suggestions/UnileverQuestionSuggestions';
+import QuestionSuggestions from '../Suggestions/QuestionSuggestions';
 import { processRAGResponse } from '../../utils/responseCleanup';
 
 const IntelligentRAGModule: React.FC = () => {
@@ -74,6 +74,14 @@ const IntelligentRAGModule: React.FC = () => {
     const updatedMessages = chatStorage.addMessage('general', newMessage);
     setMessages(updatedMessages);
     return newMessage;
+  };
+
+  const handleQuestionSelect = (question: string) => {
+    setInput(question);
+    // Auto-focus the input and optionally auto-submit
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
   };
 
   const getSearchStrategy = (query: string) => {
@@ -280,9 +288,8 @@ const IntelligentRAGModule: React.FC = () => {
 
               {/* Intelligent Suggestions */}
               <div className="max-w-4xl mx-auto">
-                <UnileverQuestionSuggestions
-                  onQuestionSelect={(question) => setInput(question)}
-                  mode="intelligent"
+                <QuestionSuggestions
+                  onQuestionSelect={handleQuestionSelect}
                 />
               </div>
             </div>
