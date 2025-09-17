@@ -113,10 +113,7 @@ export class TwoPhaseEvaluationService {
 
       } catch (error) {
         console.error(`❌ Error en entrevista con ${persona.name}:`, error);
-        // Crear entrevista de fallback para mantener flujo
-        const fallbackInterview = this.createFallbackInterview(persona, concept);
-        interviews.push(fallbackInterview);
-        detailedInterviews.push(this.convertToDetailedInterview(persona, fallbackInterview));
+        throw new Error(`No se pudo completar la entrevista con ${persona.name}. Error: ${error.message}. El sistema requiere que todas las entrevistas se completen exitosamente usando Genius Bot. Por favor, verifique la conexión e intente nuevamente.`);
       }
     }
 
@@ -185,7 +182,7 @@ export class TwoPhaseEvaluationService {
 
     } catch (error) {
       console.error('❌ Error en análisis de optimización:', error);
-      return this.generateFallbackAnalysis(interviewsResult);
+      throw new Error(`No se pudo completar el análisis de optimización para el concepto "${interviewsResult.concept.name}". Error: ${error.message}. Por favor, verifique la conexión con Genius Bot e intente nuevamente.`);
     }
   }
 
@@ -499,91 +496,11 @@ Responde en JSON con esta estructura exacta:
     return result;
   }
 
-  private generateFallbackAnalysis(interviewsResult: InterviewsResult): ConceptAnalysisResult {
-    return {
-      decision: {
-        recommendation: 'REFINAR',
-        confidence: 50,
-        reasoning: 'Análisis limitado debido a error técnico. Se recomienda revisión manual de entrevistas.',
-        nextSteps: ['Revisar entrevistas manualmente', 'Ejecutar análisis nuevamente', 'Considerar ajustes al concepto']
-      },
-      insights: [
-        {
-          category: 'IMPORTANTE',
-          title: 'Análisis técnico incompleto',
-          description: 'El sistema no pudo completar el análisis automático completo',
-          evidence: ['Error en procesamiento de respuestas'],
-          actionItems: ['Revisar entrevistas manualmente', 'Verificar patrones comunes'],
-          impact: 'MEDIO'
-        }
-      ],
-      keyFindings: {
-        strengthPoints: ['Entrevistas completadas exitosamente'],
-        weaknessPoints: ['Análisis automático falló'],
-        surprisingFindings: ['Requiere análisis manual para insights completos']
-      },
-      targetOptimization: {
-        messaging: ['Pendiente de análisis manual'],
-        positioning: ['Revisar manualmente'],
-        features: ['Analizar respuestas de entrevistas'],
-        pricing: ['Evaluar menciones de precio en entrevistas']
-      },
-      researchRecommendations: {
-        mustValidate: ['Todos los aspectos detectados en entrevistas'],
-        segments: [`Participantes de ${interviewsResult.totalInterviews} entrevistas`],
-        methodology: ['Investigación tradicional con focus groups']
-      },
-      timeline: {
-        analysisDate: new Date(),
-        processingTime: 0,
-        basedOnInterviews: interviewsResult.totalInterviews
-      }
-    };
-  }
+  // ELIMINADO: generateFallbackAnalysis - No más respuestas hardcoded
+  // El sistema ahora siempre requiere API real o falla explícitamente
 
-  private createFallbackInterview(
-    persona: DairyPersona,
-    concept: DairyConcept
-  ): ConversationalEvaluation {
-    return {
-      personaId: persona.id,
-      conceptId: concept.id,
-      conversation: [
-        {
-          question: `¿Qué piensas sobre el concepto ${concept.name}?`,
-          response: `Como ${persona.name}, encuentro el concepto interesante pero tendría que evaluarlo más. [Entrevista limitada por error técnico]`
-        }
-      ],
-      executiveSummary: {
-        overallAssessment: {
-          acceptanceLevel: 'moderate',
-          keyConcerns: ['Análisis limitado por error técnico'],
-          strengths: ['Concepto inicial aparenta ser viable'],
-          recommendation: 'Repetir entrevista cuando sea posible'
-        },
-        thematicAnalysis: [
-          {
-            title: 'Evaluación Limitada',
-            keyInsights: [
-              {
-                title: 'Entrevista incompleta',
-                summary: 'No se pudo completar la entrevista debido a error técnico',
-                impact: 'Requiere nueva entrevista para insights completos'
-              }
-            ],
-            relevantQuotes: ['Entrevista técnicamente limitada'],
-            recommendations: ['Reintentar entrevista']
-          }
-        ]
-      },
-      metadata: {
-        interviewDuration: 1,
-        questionsAsked: 1,
-        completionStatus: 'error',
-        timestamp: new Date()
-      }
-    };
-  }
+  // ELIMINADO: createFallbackInterview - No más entrevistas falsas
+  // El sistema ahora falla explícitamente si una entrevista no se puede completar
 
   private updateProgress(
     phase: 'interviews' | 'consolidation' | 'completed',

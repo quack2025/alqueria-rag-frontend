@@ -322,31 +322,23 @@ RESPONDE SOLO EL JSON, SIN TEXTO ADICIONAL.
     }
   }
 
-  // Generar reporte fallback si falla Claude
+  // NO generar reporte fallback - siempre usar API real
   private generateFallbackReport(
     concept: DairyConcept,
     interviews: ConversationalEvaluation[],
     detailedInterviews: DetailedInterview[]
   ): StudySection[] {
-    // Recopilar todas las citas
-    const allQuotes: StudyQuote[] = interviews.flatMap((interview, i) =>
-      interview.executiveSummary.thematicAnalysis.flatMap(section =>
-        section.relevantQuotes.map(quote => ({
-          text: quote,
-          speaker: detailedInterviews[i].personaName
-        }))
-      )
-    );
+    console.error('❌ FALLBACK REPORT ACTIVADO - ESTO NO DEBERÍA SUCEDER');
+    throw new Error(`No se pudo generar el reporte consolidado para el concepto "${concept.name}". El sistema requiere conexión con Genius Bot para generar análisis reales. Por favor, verifique la conexión a la API e intente nuevamente.`);
+  }
 
-    // Análisis básico de barreras detectadas
-    const hasStrongBarriers = interviews.some(i =>
-      i.executiveSummary.thematicAnalysis.some(t =>
-        t.keyInsights.some(ki => ki.summary.toLowerCase().includes('precio') ||
-                                ki.summary.toLowerCase().includes('no compraria'))
-      )
-    );
-
-    const recommendation: 'GO' | 'REFINE' | 'NO-GO' = hasStrongBarriers ? 'REFINE' : 'GO';
+  // Método alternativo que podría usarse solo para debugging (NO para producción)
+  private generateEmergencyFallbackReport(
+    concept: DairyConcept,
+    interviews: ConversationalEvaluation[],
+    detailedInterviews: DetailedInterview[]
+  ): StudySection[] {
+    // SOLO USAR EN CASOS DE EMERGENCIA EXTREMA
 
     return [
       {
