@@ -10,6 +10,37 @@
 import type { Concept, SyntheticPersona } from '../components/InnovationLab/InnovationLabContainer';
 import type { ResponseAnalysis, DynamicFollowUp, AdaptiveInterviewConfig } from '../types/dairy.types';
 
+/**
+ * Función robusta para limpiar respuestas de Claude que pueden tener markdown
+ */
+function cleanClaudeResponse(content: string): string {
+  let cleaned = content.trim();
+
+  // 1. Remover bloques de código markdown completos
+  cleaned = cleaned.replace(/```json\s*[\s\S]*?\s*```/g, (match) => {
+    return match.replace(/```json\s*/g, '').replace(/\s*```/g, '');
+  });
+
+  // 2. Remover cualquier otro bloque de código
+  cleaned = cleaned.replace(/```[\s\S]*?```/g, '');
+
+  // 3. Remover markdown inline
+  cleaned = cleaned.replace(/`([^`]+)`/g, '$1');
+
+  // 4. Limpiar caracteres de control y espacios
+  cleaned = cleaned.replace(/[\r\n\t]/g, ' ').replace(/\s+/g, ' ').trim();
+
+  // 5. Verificar que empiece y termine con llaves
+  if (!cleaned.startsWith('{') && cleaned.includes('{')) {
+    cleaned = cleaned.substring(cleaned.indexOf('{'));
+  }
+  if (!cleaned.endsWith('}') && cleaned.includes('}')) {
+    cleaned = cleaned.substring(0, cleaned.lastIndexOf('}') + 1);
+  }
+
+  return cleaned;
+}
+
 // Configuración de Azure OpenAI
 const AZURE_OPENAI_CONFIG = {
   endpoint: import.meta.env.VITE_AZURE_OPENAI_ENDPOINT || '',
@@ -240,15 +271,10 @@ RESPONDE SOLO EL JSON, SIN TEXTO ADICIONAL.`;
     const data = await response.json();
     let cleanContent = data.content || '';
 
-    // Limpiar markdown si está presente
-    if (cleanContent.includes('```json')) {
-      cleanContent = cleanContent.replace(/```json\s*/g, '').replace(/```\s*$/g, '');
-    }
-    if (cleanContent.includes('```')) {
-      cleanContent = cleanContent.replace(/```[^`]*```/g, '');
-    }
+    // Limpieza robusta de respuestas de Claude
+    cleanContent = cleanClaudeResponse(cleanContent);
 
-    const reviewedQuestions = JSON.parse(cleanContent.trim());
+    const reviewedQuestions = JSON.parse(cleanClaudeResponse(cleanContent));
     console.log('✅ Preguntas mejoradas por moderador experto');
     return reviewedQuestions;
 
@@ -358,7 +384,7 @@ RESPONDE SOLO EL JSON, SIN TEXTO ADICIONAL.`;
       cleanContent = cleanContent.replace(/```json\s*/g, '').replace(/```\s*$/g, '');
     }
 
-    const analysis: ResponseAnalysis = JSON.parse(cleanContent.trim());
+    const analysis: ResponseAnalysis = JSON.parse(cleanClaudeResponse(cleanContent));
     console.log('✅ Análisis adaptativo completado:', analysis);
     return analysis;
 
@@ -458,7 +484,7 @@ RESPONDE SOLO EL JSON, SIN TEXTO ADICIONAL.`;
       cleanContent = cleanContent.replace(/```json\s*/g, '').replace(/```\s*$/g, '');
     }
 
-    const followUps: DynamicFollowUp[] = JSON.parse(cleanContent.trim());
+    const followUps: DynamicFollowUp[] = JSON.parse(cleanClaudeResponse(cleanContent));
 
     // Limitar según configuración
     const limitedFollowUps = followUps.slice(0, config.maxDynamicQuestions);
@@ -532,7 +558,8 @@ export async function generateConversationalEvaluation(
   concept: Concept,
   persona: SyntheticPersona,
   ragContext?: any,
-  adaptiveConfig?: AdaptiveInterviewConfig
+  adaptiveConfig?: AdaptiveInterviewConfig,
+  onProgressUpdate?: (message: string) => void
 ): Promise<ConversationalEvaluation> {
   const conversation: ConversationalEvaluation['conversation'] = [];
   const systemPrompt = generateSystemPrompt(persona);
@@ -544,10 +571,14 @@ export async function generateConversationalEvaluation(
     adaptiveMode: 'moderate'
   };
 
-  console.log(`🚀 Iniciando entrevista adaptativa en modo ${config.adaptiveMode} para ${persona.name}`);
+  const progressMessage = `🚀 Iniciando entrevista adaptativa en modo ${config.adaptiveMode} para ${persona.name}`;
+  console.log(progressMessage);
+  if (onProgressUpdate) onProgressUpdate(progressMessage);
 
   // PASO 1: Revisar preguntas con moderador experto
-  console.log('📋 Enviando preguntas para revisión del moderador experto...');
+  const moderatorMessage = '📋 Enviando preguntas para revisión del moderador experto...';
+  console.log(moderatorMessage);
+  if (onProgressUpdate) onProgressUpdate(moderatorMessage);
   let reviewedQuestions = await reviewQuestionsWithExpert(concept, CONVERSATION_SCRIPT);
 
   // PASO 2: Reemplazar placeholders en las preguntas revisadas
@@ -562,7 +593,9 @@ export async function generateConversationalEvaluation(
   // Generar conversación pregunta por pregunta con progress tracking
   for (const [index, questionScript] of personalizedQuestions.entries()) {
     try {
-      console.log(`🎯 Procesando pregunta ${index + 1} de ${personalizedQuestions.length} para ${persona.name}`);
+      const questionMessage = `🎯 Procesando pregunta ${index + 1} de ${personalizedQuestions.length} para ${persona.name}`;
+      console.log(questionMessage);
+      if (onProgressUpdate) onProgressUpdate(questionMessage);
 
       // Construir contexto de conversación previa
       const previousContext = conversation.map(c => 
@@ -593,7 +626,9 @@ Responde de manera natural y conversacional, entre 120-200 palabras, manteniénd
       });
 
       // FASE 1: Análisis adaptativo de la respuesta
-      console.log(`🧠 Analizando respuesta de ${persona.name} para seguimientos dinámicos...`);
+      const analysisMessage = `🧠 Analizando respuesta de ${persona.name} para seguimientos dinámicos...`;
+      console.log(analysisMessage);
+      if (onProgressUpdate) onProgressUpdate(analysisMessage);
 
       const responseAnalysis = await analyzeResponseForAdaptiveFollowup(
         response.content,
@@ -1045,7 +1080,7 @@ IMPORTANTE: Basa tu análisis SOLO en lo que esta persona específica expresó. 
 
       console.log('🧹 Cleaned content for parsing:', cleanContent.substring(0, 200) + '...');
 
-      const analysisResult = JSON.parse(cleanContent.trim());
+      const analysisResult = JSON.parse(cleanClaudeResponse(cleanContent));
 
       return {
         thematicAnalysis: analysisResult.keyThemes?.map((theme: any) => ({
@@ -1133,7 +1168,7 @@ IMPORTANTE: Basa tu análisis SOLO en lo que esta persona específica expresó. 
           cleanedText = cleanedText.substring(jsonStart, jsonEnd);
         }
 
-        summaryData = JSON.parse(cleanedText);
+        summaryData = JSON.parse(cleanClaudeResponse(cleanedText));
         console.log('✅ JSON parseable exitosamente');
       } catch (parseError) {
         console.log('⚠️ No es JSON válido, generando estructura manualmente');

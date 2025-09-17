@@ -16,6 +16,8 @@ import type {
 export class ConsolidatedEvaluationService {
   private progressCallback?: (progress: EvaluationProgress) => void;
   private startTime: number = 0;
+  private currentStep: number = 0;
+  private totalSteps: number = 0;
 
   constructor(progressCallback?: (progress: EvaluationProgress) => void) {
     this.progressCallback = progressCallback;
@@ -27,20 +29,23 @@ export class ConsolidatedEvaluationService {
     personas: DairyPersona[]
   ): Promise<ConsolidatedStudyResult> {
     this.startTime = Date.now();
+    this.currentStep = 0;
+    this.totalSteps = personas.length + 1; // personas + 1 consolidation step
 
     // FASE 1: Realizar entrevistas individuales
-    this.updateProgress('interviews', 0, personas.length + 1, 'Iniciando entrevistas individuales...');
+    this.updateProgress('interviews', 0, this.totalSteps, 'Iniciando entrevistas individuales...');
 
     const individualInterviews: ConversationalEvaluation[] = [];
     const detailedInterviews: DetailedInterview[] = [];
 
     for (let i = 0; i < personas.length; i++) {
       const persona = personas[i];
+      this.currentStep = i + 1;
 
       this.updateProgress(
         'interviews',
-        i + 1,
-        personas.length + 1,
+        this.currentStep,
+        this.totalSteps,
         `Entrevistando a ${persona.name}...`,
         persona.name
       );
@@ -62,10 +67,11 @@ export class ConsolidatedEvaluationService {
     }
 
     // FASE 2: Generar reporte consolidado
+    this.currentStep = this.totalSteps;
     this.updateProgress(
       'consolidation',
-      personas.length + 1,
-      personas.length + 1,
+      this.currentStep,
+      this.totalSteps,
       'Generando reporte ejecutivo consolidado...'
     );
 
@@ -80,8 +86,8 @@ export class ConsolidatedEvaluationService {
 
     this.updateProgress(
       'completed',
-      personas.length + 1,
-      personas.length + 1,
+      this.totalSteps,
+      this.totalSteps,
       'Evaluación completada'
     );
 
@@ -141,7 +147,17 @@ export class ConsolidatedEvaluationService {
       conceptForService as any,
       personaForService as any,
       { industry: 'lácteos', market: 'Colombia' },
-      adaptiveConfig
+      adaptiveConfig,
+      (message: string) => {
+        // Forward detailed progress messages to UI
+        this.updateProgress(
+          'interviews',
+          this.getCurrentStep(),
+          this.getTotalSteps(),
+          message,
+          persona.name
+        );
+      }
     );
   }
 
@@ -483,5 +499,14 @@ RESPONDE SOLO EL JSON, SIN TEXTO ADICIONAL.
       timeElapsed,
       estimatedTimeRemaining: estimatedTimeRemaining > 0 ? estimatedTimeRemaining : undefined
     });
+  }
+
+  // Helper methods for tracking progress in callback functions
+  private getCurrentStep(): number {
+    return this.currentStep;
+  }
+
+  private getTotalSteps(): number {
+    return this.totalSteps;
   }
 }

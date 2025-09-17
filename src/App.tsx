@@ -12,12 +12,11 @@ import { cn } from './lib/utils';
 // Componente de ruta protegida
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  isAuthenticated: boolean;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { isAuthenticated } = useAuth();
-
-  if (!isAuthenticated()) {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, isAuthenticated }) => {
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
@@ -27,12 +26,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 // Componente de ruta pública (solo para no autenticados)
 interface PublicRouteProps {
   children: React.ReactNode;
+  isAuthenticated: boolean;
 }
 
-const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
-  const { isAuthenticated } = useAuth();
-
-  if (isAuthenticated()) {
+const PublicRoute: React.FC<PublicRouteProps> = ({ children, isAuthenticated }) => {
+  if (isAuthenticated) {
     return <Navigate to="/" replace />;
   }
 
@@ -54,20 +52,32 @@ const App: React.FC = () => {
     // Agregar clase al body para estilos globales
     document.body.classList.add('alqueria-rag-app');
 
-    // Detectar cambios en el estado de autenticación
+    // Escuchar eventos personalizados de cambios de autenticación
+    const handleAuthStateChange = (event: CustomEvent) => {
+      const { authenticated } = event.detail;
+      console.log('🔐 Evento de autenticación recibido:', authenticated);
+      setAuthState(authenticated);
+    };
+
+    // Detectar cambios en el estado de autenticación (como fallback)
     const checkAuthState = () => {
       const currentAuthState = isAuthenticated();
       if (currentAuthState !== authState) {
+        console.log('🔐 Estado de autenticación cambió (fallback):', currentAuthState);
         setAuthState(currentAuthState);
       }
     };
 
-    // Verificar cada 500ms si el estado de auth cambió
-    const authInterval = setInterval(checkAuthState, 500);
+    // Agregar listener para eventos personalizados
+    window.addEventListener('auth-state-changed', handleAuthStateChange as EventListener);
+
+    // Verificar cada 5 segundos como fallback (reducido frecuencia)
+    const authInterval = setInterval(checkAuthState, 5000);
 
     return () => {
       document.body.classList.remove('alqueria-rag-app');
       clearInterval(authInterval);
+      window.removeEventListener('auth-state-changed', handleAuthStateChange as EventListener);
     };
   }, [authState, isAuthenticated]);
 
@@ -80,7 +90,7 @@ const App: React.FC = () => {
             path="/"
             element={
               authState ? (
-                <ProtectedRoute>
+                <ProtectedRoute isAuthenticated={authState}>
                   <AlqueriaModuleSelector />
                 </ProtectedRoute>
               ) : (
@@ -93,7 +103,7 @@ const App: React.FC = () => {
           <Route
             path="/login"
             element={
-              <PublicRoute>
+              <PublicRoute isAuthenticated={authState}>
                 <LoginPage />
               </PublicRoute>
             }
@@ -103,7 +113,7 @@ const App: React.FC = () => {
           <Route
             path="/intelligent"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute isAuthenticated={authState}>
                 <AlqueriaIntelligentRAGModule />
               </ProtectedRoute>
             }
@@ -112,7 +122,7 @@ const App: React.FC = () => {
           <Route
             path="/creative"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute isAuthenticated={authState}>
                 <AlqueriaCreativeModule />
               </ProtectedRoute>
             }
@@ -121,7 +131,7 @@ const App: React.FC = () => {
           <Route
             path="/innovation-lab"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute isAuthenticated={authState}>
                 <AlqueriaInnovationLab />
               </ProtectedRoute>
             }
@@ -131,7 +141,7 @@ const App: React.FC = () => {
           <Route
             path="/auth/callback"
             element={
-              <PublicRoute>
+              <PublicRoute isAuthenticated={authState}>
                 <LoginPage />
               </PublicRoute>
             }
