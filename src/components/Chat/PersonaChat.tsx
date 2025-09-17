@@ -361,3 +361,5 @@ export const PersonaChat: React.FC<PersonaChatProps> = ({ archetype, onBack }) =
     </div>
   );
 };
+
+export default PersonaChat;

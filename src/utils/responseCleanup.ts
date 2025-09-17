@@ -4,7 +4,13 @@
  * Limpia las respuestas del backend eliminando sugerencias automáticas innecesarias
  */
 export function cleanRAGResponse(content: string): string {
-  if (!content) return content;
+  if (!content) return '';
+
+  // Validar que content sea un string
+  if (typeof content !== 'string') {
+    console.warn('cleanRAGResponse received non-string content:', typeof content, content);
+    return String(content); // Convertir a string si no lo es
+  }
 
   // Patrones para identificar y remover las secciones de sugerencias
   const patternsToRemove = [
@@ -40,14 +46,20 @@ export function cleanRAGResponse(content: string): string {
 
   // Aplicar todos los patrones de limpieza
   patternsToRemove.forEach(pattern => {
-    cleanedContent = cleanedContent.replace(pattern, '');
+    if (typeof cleanedContent === 'string') {
+      cleanedContent = cleanedContent.replace(pattern, '');
+    }
   });
 
   // Limpiar espacios y líneas vacías al final
-  cleanedContent = cleanedContent
-    .replace(/\n{3,}/g, '\n\n') // Máximo 2 líneas consecutivas
-    .replace(/\s+$/g, '') // Remover espacios al final
-    .trim();
+  if (typeof cleanedContent === 'string') {
+    cleanedContent = cleanedContent
+      .replace(/\n{3,}/g, '\n\n') // Máximo 2 líneas consecutivas
+      .replace(/\s+$/g, '') // Remover espacios al final
+      .trim();
+  } else {
+    cleanedContent = String(cleanedContent);
+  }
 
   return cleanedContent;
 }
@@ -56,7 +68,13 @@ export function cleanRAGResponse(content: string): string {
  * Limpia específicamente las sugerencias de Tigo que aparecen en respuestas de Unilever
  */
 export function removeIncorrectBrandSuggestions(content: string): string {
-  if (!content) return content;
+  if (!content) return '';
+
+  // Validar que content sea un string
+  if (typeof content !== 'string') {
+    console.warn('removeIncorrectBrandSuggestions received non-string content:', typeof content, content);
+    return String(content);
+  }
 
   // Patrones específicos para remover referencias incorrectas
   const incorrectPatterns = [
@@ -65,7 +83,7 @@ export function removeIncorrectBrandSuggestions(content: string): string {
     /¿Cuáles son las ventajas competitivas de Tigo vs Claro\?/g,
     /¿Cómo perciben los usuarios la calidad de señal de cada operador\?/g,
     /análisis competitivo con Claro/g,
-    
+
     // Referencias a Honduras cuando debería ser Colombia
     /Honduras|hondureña|hondureño/gi
   ];
@@ -73,7 +91,9 @@ export function removeIncorrectBrandSuggestions(content: string): string {
   let cleanedContent = content;
 
   incorrectPatterns.forEach(pattern => {
-    cleanedContent = cleanedContent.replace(pattern, '');
+    if (typeof cleanedContent === 'string') {
+      cleanedContent = cleanedContent.replace(pattern, '');
+    }
   });
 
   return cleanedContent;
@@ -83,11 +103,44 @@ export function removeIncorrectBrandSuggestions(content: string): string {
  * Función principal que aplica todas las limpiezas
  */
 export function processRAGResponse(content: string): string {
+  if (!content) return '';
+
+  // Validar que content sea un string
+  if (typeof content !== 'string') {
+    console.warn('processRAGResponse received non-string content:', typeof content, content);
+    return String(content);
+  }
+
   let processed = content;
-  
+
   // Aplicar limpiezas en secuencia
   processed = cleanRAGResponse(processed);
   processed = removeIncorrectBrandSuggestions(processed);
-  
+
   return processed;
+}
+
+/**
+ * Función helper para procesar respuestas completas del backend
+ */
+export function processCompleteRAGResponse(data: any): any {
+  if (!data) return { answer: '', sources: [], metadata: {}, visualizations: [] };
+
+  // Si es un string, procesarlo directamente
+  if (typeof data === 'string') {
+    return {
+      answer: processRAGResponse(data),
+      sources: [],
+      metadata: {},
+      visualizations: []
+    };
+  }
+
+  // Si es un objeto, procesar el campo answer
+  return {
+    answer: processRAGResponse(data.answer || ''),
+    sources: data.sources || [],
+    metadata: data.metadata || {},
+    visualizations: data.visualizations || []
+  };
 }

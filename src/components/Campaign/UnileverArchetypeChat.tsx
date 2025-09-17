@@ -6,7 +6,7 @@ import {
   ShoppingBag, Heart, TrendingUp, AlertCircle
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { UnileverSyntheticPersona } from '../../types/unileverPersona.types';
+import type { UnileverSyntheticPersona } from '../../types/unileverPersona.types';
 import { unileverLLMService } from '../../services/unileverLLMService';
 
 interface ChatMessage {

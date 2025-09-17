@@ -21,8 +21,8 @@ const QuestionSuggestions: React.FC<QuestionSuggestionsProps> = ({
     'Segmentación y Audiencias': Users,
     'Comportamiento del Consumidor': BarChart,
     'Tendencias y Mercado': TrendingUp,
-    'Competencia y Posicionamiento': Zap,
-    'Innovación y Productos': FlaskConical
+    'Análisis Transversales': FlaskConical,
+    'Insights Estratégicos': Zap
   };
 
   const toggleCategory = (categoryName: string) => {
@@ -109,27 +109,35 @@ const QuestionSuggestions: React.FC<QuestionSuggestionsProps> = ({
             })}
           </div>
 
-          {/* Quick Actions */}
+          {/* Quick Actions - Alto Rendimiento */}
           <div className="mt-6 pt-4 border-t border-gray-100">
-            <p className="text-xs text-gray-500 mb-2">Acciones Rápidas:</p>
+            <p className="text-xs text-gray-500 mb-2">🟢 Preguntas de Alto Rendimiento:</p>
             <div className="flex flex-wrap gap-2">
               <button
-                onClick={() => onQuestionSelect('¿Cuáles son las percepciones principales sobre Dove?')}
+                onClick={() => onQuestionSelect('¿Cómo se posiciona Fruco versus la competencia?')}
+                className="px-3 py-1 text-xs bg-emerald-100 text-emerald-700 rounded-full hover:bg-emerald-200 transition-colors"
+              >
+                Fruco vs Competencia
+              </button>
+              <button
+                onClick={() => onQuestionSelect('¿Cuáles son los segmentos principales de consumidores?')}
                 className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors"
               >
-                Dove Insights
+                Segmentación
               </button>
               <button
-                onClick={() => onQuestionSelect('¿Cómo se compara Unilever versus P&G?')}
+                onClick={() => onQuestionSelect('¿Qué factores influyen en la decisión de compra?')}
                 className="px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200 transition-colors"
               >
-                vs P&G
+                Factores de Compra
               </button>
+            </div>
+            <div className="flex flex-wrap gap-2 mt-2">
               <button
-                onClick={() => onQuestionSelect('¿Cuáles son las tendencias emergentes en cuidado personal?')}
-                className="px-3 py-1 text-xs bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition-colors"
+                onClick={() => onQuestionSelect('¿Cómo las evaluaciones de marca influyen en estrategias de desarrollo de productos a través de diferentes categorías?')}
+                className="px-3 py-1 text-xs bg-gradient-to-r from-orange-100 to-red-100 text-orange-700 rounded-full hover:from-orange-200 hover:to-red-200 transition-colors"
               >
-                Tendencias
+                🔍 Análisis Transversal
               </button>
             </div>
           </div>

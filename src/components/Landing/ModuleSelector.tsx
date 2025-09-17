@@ -3,7 +3,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Bot, Sparkles, Users, LogOut, Settings } from 'lucide-react';
+import { Bot, Sparkles, Users, LogOut, Settings, Lightbulb, Beaker } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 import { cn } from '../../lib/utils';
 import LanguageSelector from '../Language/LanguageSelector';
@@ -46,17 +46,24 @@ const ModuleSelector: React.FC<ModuleSelectorProps> = ({ className }) => {
       button: t('modules.creative.button')
     },
     {
-      id: 'synthetic',
-      title: t('modules.synthetic.title'),
-      subtitle: t('modules.synthetic.subtitle'),
-      description: t('modules.synthetic.description'),
+      id: 'innovation-lab',
+      title: 'Personas Sintéticas RAG',
+      subtitle: 'Sistema avanzado estilo SyntheticUsers',
+      description: 'Evalúa conceptos con personas sintéticas basadas en conocimiento RAG y genera informes ejecutivos completos',
       icon: Users,
-      color: 'emerald',
-      features: t('modules.synthetic.features', { returnObjects: true }) as string[],
-      route: '/synthetic',
-      gradient: 'from-emerald-500 to-green-600',
-      badge: t('modules.synthetic.badge'),
-      button: t('modules.synthetic.button')
+      color: 'violet',
+      features: [
+        'Personas sintéticas con 80+ variables del RAG',
+        'Evaluación cualitativa profunda de conceptos',
+        'Informes ejecutivos tipo SyntheticUsers.com',
+        'Entrevistas conversacionales detalladas',
+        'Insights basados en datos reales Unilever',
+        'Exportación JSON y visualización de resultados'
+      ],
+      route: '/innovation-lab',
+      gradient: 'from-violet-500 to-purple-600',
+      badge: 'AVANZADO',
+      button: 'Evaluar con Personas RAG'
     }
   ];
 

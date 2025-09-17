@@ -29,13 +29,7 @@ const CreativeModule: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [creativityLevel, setCreativityLevel] = useState(75);
-  const [imageGenerationEnabled, setImageGenerationEnabled] = useState(false);
-  const [dailyImageCount, setDailyImageCount] = useState(0);
-  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-  
-  // Daily limits
-  const DAILY_USER_LIMIT = 10;
-  const DAILY_SYSTEM_LIMIT = 50;
+  const [currentQuery, setCurrentQuery] = useState('');
   
   // Referencias
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -52,31 +46,12 @@ const CreativeModule: React.FC = () => {
   }, []); // Dependencias vacías para evitar loop
 
   useEffect(() => {
-    scrollToBottom();
+    const timeoutId = setTimeout(() => {
+      scrollToBottom();
+    }, 100);
+    
+    return () => clearTimeout(timeoutId);
   }, [messages]);
-
-  // Load daily image count on component mount
-  useEffect(() => {
-    loadDailyImageCount();
-  }, []);
-
-  const loadDailyImageCount = () => {
-    const today = new Date().toDateString();
-    const stored = localStorage.getItem(`unilever_daily_images_${today}`);
-    const count = stored ? parseInt(stored) : 0;
-    setDailyImageCount(count);
-  };
-
-  const incrementImageCount = () => {
-    const today = new Date().toDateString();
-    const newCount = dailyImageCount + 1;
-    setDailyImageCount(newCount);
-    localStorage.setItem(`unilever_daily_images_${today}`, newCount.toString());
-  };
-
-  const canGenerateImage = () => {
-    return dailyImageCount < DAILY_USER_LIMIT;
-  };
 
   const loadMessages = () => {
     const savedMessages = chatStorage.getMessages('creative');
@@ -101,108 +76,95 @@ const CreativeModule: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!input.trim() || isLoading) return;
+
+    const query = input.trim();
     
-    const userMessage = input.trim();
-    setInput('');
-    setError(null);
-    
-    // Agregar mensaje del usuario
-    addMessage({
+    const userMessage = addMessage({
       role: 'user',
-      content: userMessage,
-      mode: 'creative',
+      content: query,
     });
-    
-    // Agregar mensaje del asistente
-    addMessage({
-      role: 'assistant',
-      content: t('chat.generatingCreativeInsights'),
-      mode: 'creative',
-    });
-    
+
+    setCurrentQuery(query);
+    setInput('');
     setIsLoading(true);
-    
+    setError(null);
+
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/chat`, {
+      // Construir prompt creativo específico que leveragee datos RAG reales
+      const creativePrompt = `MODO CREATIVO ACTIVADO - Nivel ${creativityLevel}%
+
+INSTRUCCIONES ESPECIALES PARA CREATIVIDAD:
+Como consultor creativo de Unilever Colombia, necesito que generes ideas innovadoras, conceptos de campaña y propuestas estratégicas basándote EXCLUSIVAMENTE en los datos reales de investigación disponibles en el contexto.
+
+NIVEL DE CREATIVIDAD: ${creativityLevel}% (donde 100% = máxima innovación y disrupción)
+
+SOLICITUD ORIGINAL: ${query}
+
+ESTRUCTURA DE RESPUESTA REQUERIDA:
+1. **💡 INSIGHT CLAVE** (basado en datos reales)
+2. **🎯 CONCEPTO CREATIVO** (innovador pero sustentado)
+3. **📊 FUNDAMENTACIÓN** (citas específicas de datos)
+4. **🚀 PROPUESTA DE EJECUCIÓN** (tactical y específica)
+5. **📈 IMPACTO ESPERADO** (métricas y KPIs)
+
+IMPORTANTE: Todas las ideas deben estar fundamentadas en insights reales del consumidor colombiano de Unilever, no en conocimiento general.`;
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/rag-hybrid`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('unilever_auth_token')}`,
         },
         body: JSON.stringify({
-          messages: [{ role: 'user', content: userMessage }],
-          mode: 'creative',
-          creativity_level: creativityLevel / 100,
+          text: creativePrompt,
+          metadata_filter: null,
+          output_types: ["text", "chart", "table"],
+          response_customization: {
+            extension_level: 'detallado',
+            response_style: 'creativo_ejecutivo',
+            detail_level: 15,
+            language: 'español',
+            target_audience: 'marketing_creatives',
+            include_citations: true,
+            temporal_context: 'completo',
+            analysis_type: 'creativo_innovador',
+            output_format: 'estructurado',
+            creativity_boost: creativityLevel / 100,
+            similarity_threshold: 0.018
+          },
+          search_configuration: {
+            similarity_threshold: 0.018,
+            max_chunks: 15
+          }
         }),
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      
+
       const data: RAGResponse = await response.json();
       
-      // Actualizar último mensaje con la respuesta completa
-      const updates: Partial<ChatMessage> = {
-        content: processRAGResponse(data.answer || data.content || 'Respuesta recibida'),
+      const cleanedAnswer = processRAGResponse(data.answer || 'No se pudo generar una respuesta creativa.');
+      
+      addMessage({
+        role: 'assistant',
+        content: cleanedAnswer,
         citations: data.citations || [],
-        metadata: data.metadata || {},
-        visualization: data.visualization || generateMockVisualization(data.answer || data.content || '')
-      };
-
-      const updatedMessages = chatStorage.updateLastMessage('creative', updates);
-      setMessages(updatedMessages);
-      
-      // Auto-generate image if user requested one
-      const imageKeywords = ['imagen', 'imágenes', 'visual', 'gráfico', 'diseño', 'foto', 'ilustración', 'banner', 'post', 'redes sociales', 'infografía'];
-      const shouldGenerateImage = imageKeywords.some(keyword => 
-        userMessage.toLowerCase().includes(keyword)
-      );
-      
-      if (shouldGenerateImage && canGenerateImage()) {
-        // Add a message indicating image generation will start
-        const imageNoticeMessage: ChatMessage = {
-          id: generateId(),
-          role: 'assistant',
-          content: t('chat.detectingImageNeed'),
-          mode: 'creative',
-          timestamp: new Date(),
-        };
-        
-        const noticeMessages = chatStorage.addMessage('creative', imageNoticeMessage);
-        setMessages(noticeMessages);
-        
-        // Generate a more specific prompt based on the response
-        let imagePrompt = userMessage;
-        
-        // Extract key concepts from the response for better image generation
-        if (userMessage.toLowerCase().includes('redes sociales')) {
-          imagePrompt = `Crear un post profesional para redes sociales de Unilever Colombia con diseño moderno, colores azul (#1E40AF) y blanco, incluir productos de cuidado personal y belleza`;
-        } else if (userMessage.toLowerCase().includes('campaña')) {
-          imagePrompt = `Diseño de campaña publicitaria para Unilever Colombia con visual impactante, branding corporativo azul y blanco, elementos de productos FMCG y cuidado personal`;
-        } else if (userMessage.toLowerCase().includes('infografía')) {
-          imagePrompt = `Infografía profesional para Unilever Colombia con datos y estadísticas, diseño limpio y moderno en azul y blanco, iconos de productos de consumo`;
-        }
-        
-        // Wait a moment for the text response to render, then generate image
-        setTimeout(() => {
-          generateImage(imagePrompt);
-        }, 2000);
-      }
-      
-    } catch (error: any) {
-      console.error('❌ Chat error:', error);
-      
-      const errorMessage = t('errors.connectionError');
-      
-      const updatedMessages = chatStorage.updateLastMessage('creative', {
-        content: errorMessage,
+        metadata: data.metadata,
+        visualizations: data.visualizations
       });
-      setMessages(updatedMessages);
+
+    } catch (error: any) {
+      console.error('Creative RAG Error:', error);
+      setError(`Error en la consulta creativa: ${error.message}`);
       
-      setError(errorMessage);
+      addMessage({
+        role: 'assistant',
+        content: `❌ **Error en el Módulo Creativo**\n\n${error.message}\n\nIntenta reformular tu solicitud creativa o contacta al administrador si el problema persiste.`,
+        citations: [],
+        metadata: { error: true }
+      });
     } finally {
       setIsLoading(false);
     }
@@ -215,63 +177,6 @@ const CreativeModule: React.FC = () => {
     }
   };
 
-  const generateImage = async (prompt: string) => {
-    if (!canGenerateImage()) {
-      setError(t('errors.dailyImageLimit', { limit: DAILY_USER_LIMIT }));
-      return;
-    }
-
-    setIsGeneratingImage(true);
-    setError(null);
-
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/generate-image`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('unilever_auth_token')}`,
-        },
-        body: JSON.stringify({
-          prompt: `${prompt}. Estilo profesional corporativo para Unilever Colombia, colores azul y blanco, alta calidad.`,
-          size: "1024x1024",
-          quality: "hd",
-          style: "vivid",
-          brand_context: "Unilever Colombia FMCG and personal care"
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error HTTP: ${response.status}`);
-      }
-
-      const data = await response.json();
-      
-      if (data.image_url) {
-        // Add image message to chat
-        const imageMessage: ChatMessage = {
-          id: generateId(),
-          role: 'assistant',
-          content: t('chat.imageGenerated', { prompt }),
-          mode: 'creative',
-          timestamp: new Date(),
-          imageUrl: data.image_url,
-          imagePrompt: prompt
-        };
-
-        const updatedMessages = chatStorage.addMessage('creative', imageMessage);
-        setMessages(updatedMessages);
-        
-        // Increment daily count
-        incrementImageCount();
-      }
-
-    } catch (error: any) {
-      console.error('Error generando imagen:', error);
-      setError(t('errors.imageGenerationError'));
-    } finally {
-      setIsGeneratingImage(false);
-    }
-  };
 
   const exportConversation = () => {
     const data = {
@@ -280,7 +185,6 @@ const CreativeModule: React.FC = () => {
       user: user?.username,
       messages_count: messages.length,
       creativity_level: creativityLevel,
-      daily_images_used: dailyImageCount,
       messages: messages
     };
     
@@ -318,15 +222,13 @@ const CreativeModule: React.FC = () => {
                   <p className="text-sm text-gray-500">
                     {t('chat.creativitySubtitle')} • {user?.username || t('common.user')}
                   </p>
-                  <div className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                  <div className="flex items-center gap-1 px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium">
                     <Shield className="h-3 w-3" />
-                    {t('common.transparent')}
+                    Datos Reales RAG
                   </div>
-                  <div className="flex items-center gap-2 px-2 py-1 bg-purple-100 rounded-full">
-                    <ImageIcon className="h-3 w-3 text-purple-600" />
-                    <span className="text-xs text-purple-700 font-medium">
-                      {dailyImageCount}/{DAILY_USER_LIMIT} {t('chat.imagesToday')}
-                    </span>
+                  <div className="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
+                    <Sparkles className="h-3 w-3" />
+                    Creatividad: {creativityLevel}%
                   </div>
                 </div>
               </div>
@@ -404,80 +306,66 @@ const CreativeModule: React.FC = () => {
               {t('chat.creativeWelcomeDescription')}
             </p>
             
-            {/* Creative Prompts */}
+            {/* Creative Prompts basados en insights reales */}
             <div className="grid gap-3 md:grid-cols-2 max-w-4xl mx-auto">
               {[
                 {
                   icon: Lightbulb,
-                  title: t('chat.creativePrompts.innovativeDove.title'),
-                  prompt: t('chat.creativePrompts.innovativeDove.prompt')
+                  title: "🏆 Campaña Revolucionaria Dove",
+                  prompt: "Basándote en las percepciones actuales de Dove sobre hidratación y beneficios para la piel, diseña una campaña disruptiva que conecte con mujeres colombianas millennials y posicione Dove como el líder absoluto en self-care auténtico. La campaña debe leveragear el aroma como diferenciador clave.",
+                  category: "Campaña"
                 },
                 {
                   icon: Zap,
-                  title: t('chat.creativePrompts.disruptiveMaizena.title'),
-                  prompt: t('chat.creativePrompts.disruptiveMaizena.prompt'),
-                  hasImageOption: true
+                  title: "🔥 Innovación Disruptiva Fruco",
+                  prompt: "Considerando el liderazgo de Fruco en salsa de tomate y su ventaja competitiva en sabor, propón 3 innovaciones revolucionarias de producto que mantengan la preferencia de sabor tradicional pero conquisten completamente nuevos momentos de consumo y nuevas audiencias.",
+                  category: "Producto"
                 },
                 {
                   icon: TrendingUp,
-                  title: t('chat.creativePrompts.innovationSedal.title'),
-                  prompt: t('chat.creativePrompts.innovationSedal.prompt')
+                  title: "💎 Estrategia Premium Pond's",
+                  prompt: "Basándote en los datos de tracking post-lanzamiento de Pond's y los insights sobre calidad percibida, desarrolla una estrategia completa para posicionar Pond's como la marca premium #1 en cuidado facial, superando a la competencia en diferenciación y propuesta de valor.",
+                  category: "Premium"
                 },
                 {
                   icon: BarChart3,
-                  title: t('chat.creativePrompts.disruptionSavital.title'),
-                  prompt: t('chat.creativePrompts.disruptionSavital.prompt'),
-                  hasImageOption: true
+                  title: "🎯 Cross-Brand Synergy",
+                  prompt: "Analiza las fortalezas de marca entre Dove, Fruco y Pond's en diferentes segmentos demográficos y diseña una estrategia de cross-selling innovadora que genere sinergias únicas entre estas marcas del portfolio Unilever. Incluye activaciones específicas por NSE.",
+                  category: "Portfolio"
                 }
               ].map((prompt, index) => (
-                <div key={index} className="bg-white/80 backdrop-blur border border-purple-200 rounded-xl hover:border-purple-300 hover:bg-white/90 transition-all hover:scale-105">
+                <div key={index} className="bg-white/90 backdrop-blur border border-purple-200 rounded-xl hover:border-purple-300 hover:bg-white/95 transition-all hover:scale-[1.02] shadow-sm hover:shadow-md">
                   <button
                     onClick={() => setInput(prompt.prompt)}
-                    className="w-full p-4 text-left"
+                    className="w-full p-5 text-left"
                   >
-                    <prompt.icon className="h-5 w-5 text-purple-600 mb-3" />
-                    <h4 className="font-medium text-gray-900 mb-1">{prompt.title}</h4>
-                    <p className="text-sm text-gray-600">{prompt.prompt}</p>
+                    <div className="flex items-center gap-2 mb-3">
+                      <prompt.icon className="h-5 w-5 text-purple-600" />
+                      <span className="text-xs text-purple-500 font-medium bg-purple-100 px-2 py-1 rounded-full">
+                        {prompt.category}
+                      </span>
+                    </div>
+                    <h4 className="font-semibold text-gray-900 mb-2 text-sm">{prompt.title}</h4>
+                    <p className="text-xs text-gray-600 leading-relaxed">{prompt.prompt}</p>
                   </button>
                   
-                  {/* Image generation button for visual prompts */}
-                  {prompt.hasImageOption && (
-                    <div className="px-4 pb-3">
-                      <button
-                        onClick={() => generateImage(prompt.prompt)}
-                        disabled={!canGenerateImage() || isGeneratingImage}
-                        className={cn(
-                          "w-full flex items-center justify-center gap-2 px-3 py-2 text-xs rounded-lg transition-colors",
-                          canGenerateImage() && !isGeneratingImage
-                            ? "bg-purple-100 text-purple-700 hover:bg-purple-200"
-                            : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        )}
-                      >
-                        {isGeneratingImage ? (
-                          <>
-                            <div className="w-3 h-3 border border-purple-300 border-t-transparent rounded-full animate-spin" />
-                            Generando imagen...
-                          </>
-                        ) : (
-                          <>
-                            <ImageIcon className="h-3 w-3" />
-                            {canGenerateImage() ? t('chat.generateVisualImage') : t('chat.dailyLimitReached')}
-                          </>
-                        )}
-                      </button>
+                  <div className="px-5 pb-3">
+                    <div className="flex items-center gap-1 text-xs text-purple-600">
+                      <Shield className="h-3 w-3" />
+                      <span>Basado en datos RAG reales</span>
                     </div>
-                  )}
+                  </div>
                 </div>
               ))}
             </div>
 
             <div className="mt-8 p-4 bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl border border-purple-200 max-w-2xl mx-auto">
               <div className="flex items-center gap-2 mb-2">
-                <Palette className="h-4 w-4 text-purple-600" />
-                <span className="text-sm font-medium text-purple-800">{t('chat.creativeModeActive')}</span>
+                <Sparkles className="h-4 w-4 text-purple-600" />
+                <span className="text-sm font-medium text-purple-800">Modo Creativo Activado - Basado en RAG Real</span>
               </div>
               <p className="text-xs text-purple-700">
-                {t('chat.creativeModeDescription')}
+                Genera conceptos, campañas e ideas innovadoras fundamentadas en insights reales del consumidor colombiano y datos específicos de Unilever. Superior a ChatGPT genérico por usar conocimiento propietario real y GPT-4 optimizado.
               </p>
             </div>
           </div>
@@ -492,60 +380,41 @@ const CreativeModule: React.FC = () => {
                 }`}>
                   {message.role === 'assistant' ? (
                     <div>
-                      <TransparentRenderer 
-                        content={message.content}
-                        citations={message.citations || []}
-                        metadata={message.metadata}
-                      />
+                      <MarkdownRenderer content={message.content} />
                       
-                      {/* Generated Image */}
-                      {(message as any).imageUrl && (
+                      {message.visualizations && (
                         <div className="mt-4">
-                          <div className="flex items-center gap-2 mb-3">
-                            <ImageIcon className="h-4 w-4 text-purple-600" />
-                            <span className="text-sm font-medium text-purple-800">{t('chat.imageGeneratedWithDallE')}</span>
-                          </div>
-                          <div className="rounded-xl overflow-hidden border border-purple-200 shadow-lg">
-                            <img 
-                              src={(message as any).imageUrl} 
-                              alt={(message as any).imagePrompt || 'Imagen generada'}
-                              className="w-full h-auto"
-                              loading="lazy"
-                            />
-                          </div>
-                          {(message as any).imagePrompt && (
-                            <div className="mt-2 p-2 bg-purple-50 rounded-lg">
-                              <p className="text-xs text-purple-700">
-                                <strong>{t('chat.prompt')}:</strong> {(message as any).imagePrompt}
-                              </p>
-                            </div>
-                          )}
-                          <div className="mt-2 flex gap-2">
-                            <button
-                              onClick={() => {
-                                const link = document.createElement('a');
-                                link.href = (message as any).imageUrl;
-                                link.download = `unilever-generated-${Date.now()}.png`;
-                                link.click();
-                              }}
-                              className="px-3 py-1 bg-purple-100 text-purple-700 text-xs rounded-lg hover:bg-purple-200 transition-colors flex items-center gap-1"
-                            >
-                              <Download className="h-3 w-3" />
-                              {t('common.download')}
-                            </button>
-                          </div>
+                          <VisualizationRenderer 
+                            visualizations={message.visualizations} 
+                            query={currentQuery}
+                          />
                         </div>
                       )}
-                      
-                      {/* Visualización mejorada */}
-                      {message.visualization && (
-                        <div className="mt-4">
-                          <VisualizationRenderer visualization={message.visualization} />
-                        </div>
-                      )}
-                      
+
                       {message.citations && message.citations.length > 0 && (
-                        <CitationsList citations={message.citations} />
+                        <div className="mt-4">
+                          <CitationsList citations={message.citations} />
+                        </div>
+                      )}
+
+                      {/* Metadata info */}
+                      {message.metadata && (
+                        <div className="mt-4 pt-4 border-t border-purple-100">
+                          <div className="flex items-center gap-4 text-xs text-purple-600">
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {message.metadata.processing_time_seconds?.toFixed(1)}s
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <BarChart3 className="h-3 w-3" />
+                              {message.metadata.chunks_retrieved} chunks
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Sparkles className="h-3 w-3" />
+                              Creatividad: {creativityLevel}%
+                            </div>
+                          </div>
+                        </div>
                       )}
                     </div>
                   ) : (
@@ -570,7 +439,7 @@ const CreativeModule: React.FC = () => {
                         {message.metadata.chunks_retrieved && (
                           <span>📄 {message.metadata.chunks_retrieved}</span>
                         )}
-                        {message.visualization && (
+                        {message.visualizations && (
                           <span className="text-purple-600">🎨 Visual</span>
                         )}
                       </div>
@@ -609,61 +478,39 @@ const CreativeModule: React.FC = () => {
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={t('chat.creativePlaceholder')}
-              className="flex-1 px-4 py-2 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/80"
+              placeholder="Describe tu concepto creativo (ej: campaña innovadora para Dove, estrategia premium para Pond's...)..."
+              className="flex-1 px-4 py-3 pr-12 border border-purple-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/80 placeholder-gray-500"
               disabled={isLoading}
               maxLength={5000}
             />
-            
-            {/* Image Generation Button - only show when there's input and can generate */}
-            {input.trim() && messages.length > 0 && (
-              <button
-                type="button"
-                onClick={() => generateImage(input)}
-                disabled={!canGenerateImage() || isGeneratingImage}
-                className={cn(
-                  "flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors",
-                  canGenerateImage() && !isGeneratingImage
-                    ? "bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-300"
-                    : "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-300"
-                )}
-                title={canGenerateImage() ? t('chat.generateImageDallE') : t('chat.dailyLimitReachedCount', { current: dailyImageCount, limit: DAILY_USER_LIMIT })}
-              >
-                {isGeneratingImage ? (
-                  <>
-                    <div className="w-3 h-3 border border-purple-300 border-t-transparent rounded-full animate-spin" />
-                    <span className="hidden sm:inline">{t('chat.generating')}</span>
-                  </>
-                ) : (
-                  <>
-                    <ImageIcon className="h-3 w-3" />
-                    <span className="hidden sm:inline">{t('chat.image')}</span>
-                  </>
-                )}
-              </button>
-            )}
 
             <button
               type="submit"
               disabled={!input.trim() || isLoading}
               className={cn(
-                'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-2',
-                (!input.trim() || isLoading) && 'opacity-50 cursor-not-allowed'
+                "px-6 py-3 rounded-xl font-medium transition-all flex items-center gap-2",
+                (!input.trim() || isLoading)
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl"
               )}
             >
-              <Sparkles className="h-4 w-4" />
-              {t('common.create')}
+              {isLoading ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <Sparkles className="h-4 w-4" />
+              )}
+              {isLoading ? 'Creando...' : 'Crear'}
             </button>
           </div>
           
           {/* Creative Stats */}
-          <div className="flex justify-between items-center mt-2 text-xs text-purple-600">
+          <div className="flex justify-between items-center mt-3 text-xs text-purple-600">
             <span className="flex items-center gap-2">
-              <Palette className="h-3 w-3" />
-              {t('chat.creativeModeLevel', { level: creativityLevel })}
+              <Sparkles className="h-3 w-3" />
+              Creatividad: {creativityLevel}% • RAG Real
             </span>
             <span>
-              {input.length}/5000
+              {input.length}/5000 chars
             </span>
           </div>
         </form>

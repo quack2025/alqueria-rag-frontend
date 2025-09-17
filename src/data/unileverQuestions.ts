@@ -6,7 +6,7 @@ export interface QuestionCategory {
   questions: string[];
 }
 
-// Preguntas categorizadas basadas en análisis RAG de Unilever
+// Preguntas optimizadas basadas en testing RAG - Solo alto rendimiento
 export const SUGGESTED_QUESTIONS: QuestionCategory[] = [
   {
     name: "Marcas y Productos",
@@ -14,15 +14,9 @@ export const SUGGESTED_QUESTIONS: QuestionCategory[] = [
     questions: [
       "¿Cuáles son las percepciones principales sobre Dove?",
       "¿Cómo se posiciona Fruco versus la competencia?",
-      "¿Qué insights tienes sobre Knorr en el mercado?",
-      "¿Cuál es el perfil del consumidor de Hellmann's?",
-      "¿Cómo ha evolucionado la marca Savital?",
       "¿Qué diferenciadores tiene Pond's versus otras marcas?",
-      "¿Cuáles son las oportunidades para Axe?",
-      "¿Qué fortalezas tiene el portfolio de Fab y Aromatel 3D?",
-      "¿Cómo perciben los consumidores Rexona?",
-      "¿Qué oportunidades tiene Lipton en Colombia?",
-      "¿Cuál es la posición de Maizena en el mercado?"
+      "¿Cómo ha evolucionado la marca Savital en el mercado capilar?",
+      "¿Qué fortalezas competitivas tiene el portfolio de limpieza Unilever?"
     ]
   },
   {
@@ -31,26 +25,18 @@ export const SUGGESTED_QUESTIONS: QuestionCategory[] = [
     questions: [
       "¿Cuáles son los segmentos principales de consumidores?",
       "¿Cómo varía el comportamiento por edad y género?",
-      "¿Qué caracteriza a las madres de familia en el mercado?",
-      "¿Cuáles son las diferencias entre NSE A/B y C/D?",
-      "¿Cómo segmentar el mercado de cuidado personal?",
-      "¿Qué motiva a los millennials en sus compras?",
-      "¿Cuáles son los drivers de los consumidores premium?",
-      "¿Cómo se comportan los early adopters?"
+      "¿Qué patrones demográficos definen las preferencias de marca?",
+      "¿Cómo se diferencian los hábitos entre NSE A/B versus C/D?"
     ]
   },
   {
     name: "Comportamiento del Consumidor",
     icon: "🛒",
     questions: [
-      "¿Cuáles son los momentos de consumo principales?",
       "¿Qué factores influyen en la decisión de compra?",
-      "¿Cómo es el journey del consumidor de productos de belleza?",
-      "¿Qué rol juega el precio en la elección de marca?",
-      "¿Cuáles son las ocasiones de uso más importantes?",
-      "¿Cómo impacta la sustentabilidad en las decisiones?",
-      "¿Qué importancia tienen las recomendaciones?",
-      "¿Cuáles son las barreras para probar nuevos productos?"
+      "¿Cuáles son los drivers de lealtad hacia las marcas Unilever?",
+      "¿Cómo impactan precio y calidad en la selección de productos?",
+      "¿Qué motivaciones subyacen en las ocasiones de uso?"
     ]
   },
   {
@@ -58,41 +44,30 @@ export const SUGGESTED_QUESTIONS: QuestionCategory[] = [
     icon: "📈",
     questions: [
       "¿Cuáles son las tendencias emergentes en cuidado personal?",
-      "¿Cómo está evolucionando el mercado de limpieza del hogar?",
-      "¿Qué cambios se observan post-pandemia?",
-      "¿Cuál es el impacto del e-commerce?",
-      "¿Cómo influyen las redes sociales en el consumo?",
-      "¿Qué tendencias de sustentabilidad son relevantes?",
-      "¿Cuáles son las oportunidades de crecimiento?",
-      "¿Qué amenazas competitivas existen?"
+      "¿Cómo están evolucionando las preferencias post-pandemia?",
+      "¿Qué oportunidades presenta el crecimiento de productos naturales?",
+      "¿Cuáles son los insights sobre sustentabilidad en FMCG?"
     ]
   },
   {
-    name: "Competencia y Posicionamiento",
-    icon: "⚔️",
+    name: "Análisis Transversales",
+    icon: "🔍",
     questions: [
-      "¿Cómo se compara Unilever versus P&G?",
-      "¿Cuáles son las ventajas competitivas principales?",
-      "¿Qué amenazas representan las marcas locales?",
-      "¿Cómo posicionarse mejor en el segmento premium?",
-      "¿Cuáles son las brechas versus la competencia?",
-      "¿Qué oportunidades de diferenciación existen?",
-      "¿Cómo defenderse de ataques competitivos?",
-      "¿Qué estrategias usan los competidores exitosamente?"
+      "¿Cómo las evaluaciones de marca influyen en estrategias de desarrollo de productos a través de diferentes categorías?",
+      "¿Qué patrones comunes de percepción del consumidor se observan entre alimentos, cuidado personal y limpieza del hogar?",
+      "¿Cómo se correlacionan las fortalezas de marca entre Dove, Fruco y Pond's en diferentes segmentos demográficos?",
+      "¿Qué insights transversales sobre calidad percibida emergen al comparar múltiples estudios de Unilever?",
+      "¿Cómo varían los factores de decisión de compra entre las diferentes categorías del portfolio Unilever?"
     ]
   },
   {
-    name: "Innovación y Productos",
-    icon: "🔬",
+    name: "Insights Estratégicos",
+    icon: "⚡",
     questions: [
-      "¿Qué necesidades no satisfechas identificas?",
-      "¿Cuáles son las oportunidades de innovación?",
-      "¿Qué atributos de producto son más valorados?",
-      "¿Cómo optimizar el packaging?",
-      "¿Qué tecnologías son relevantes para incorporar?",
-      "¿Cuáles son las expectativas de performance?",
-      "¿Qué formatos alternativos tienen potencial?",
-      "¿Cómo adaptar productos a mercados locales?"
+      "¿Qué oportunidades de cross-selling existen entre marcas del portfolio?",
+      "¿Cómo pueden las fortalezas de una categoría fortalecer otras marcas Unilever?",
+      "¿Qué sinergias de posicionamiento se identifican entre cuidado personal y alimentos?",
+      "¿Cómo optimizar la arquitectura de marca considerando los insights de múltiples estudios?"
     ]
   }
 ];
