@@ -1,5 +1,5 @@
 // App.tsx - Sistema Alquería RAG con estructura completa como Unilever
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './lib/auth';
 import LoginPage from './components/Auth/AlqueriaLoginPage';
@@ -41,6 +41,7 @@ const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
 
 const App: React.FC = () => {
   const { isAuthenticated } = useAuth();
+  const [authState, setAuthState] = useState(isAuthenticated());
 
   useEffect(() => {
     // Log de inicialización
@@ -53,10 +54,22 @@ const App: React.FC = () => {
     // Agregar clase al body para estilos globales
     document.body.classList.add('alqueria-rag-app');
 
+    // Detectar cambios en el estado de autenticación
+    const checkAuthState = () => {
+      const currentAuthState = isAuthenticated();
+      if (currentAuthState !== authState) {
+        setAuthState(currentAuthState);
+      }
+    };
+
+    // Verificar cada 500ms si el estado de auth cambió
+    const authInterval = setInterval(checkAuthState, 500);
+
     return () => {
       document.body.classList.remove('alqueria-rag-app');
+      clearInterval(authInterval);
     };
-  }, [isAuthenticated]);
+  }, [authState, isAuthenticated]);
 
   return (
     <div className={cn('min-h-screen bg-gradient-to-br from-alqueria-50 to-white font-sans antialiased')}>
@@ -66,7 +79,7 @@ const App: React.FC = () => {
           <Route
             path="/"
             element={
-              isAuthenticated() ? (
+              authState ? (
                 <ProtectedRoute>
                   <AlqueriaModuleSelector />
                 </ProtectedRoute>

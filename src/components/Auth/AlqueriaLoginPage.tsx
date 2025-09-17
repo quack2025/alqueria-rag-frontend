@@ -18,11 +18,15 @@ const AlqueriaLoginPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Validación simple para Alquería
-      if (username === 'alqueria' && password === 'lacteos2025') {
-        login(username);
-        navigate('/', { replace: true });
-      } else if (username === 'demo' && password === 'demo') {
+      // Usuarios autorizados del sistema
+      const validUsers = {
+        'juan@genius-labs.com.co': 'genius2025',
+        'daniela.correa@alqueria.com.co': 'alqueria2025',
+        'juan.motta@alqueria.com.co': 'alqueria2025',
+        'pruebas@genius-labs.com.co': 'genius2025'
+      };
+
+      if (validUsers[username] === password) {
         login(username);
         navigate('/', { replace: true });
       } else {
@@ -118,20 +122,6 @@ const AlqueriaLoginPage: React.FC = () => {
             </div>
           </form>
 
-          {/* Credenciales de prueba */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-xs text-gray-500 text-center">
-              Credenciales de prueba:
-            </p>
-            <div className="mt-2 space-y-1 text-center">
-              <p className="text-xs text-gray-600">
-                <span className="font-medium">Usuario:</span> demo | <span className="font-medium">Contraseña:</span> demo
-              </p>
-              <p className="text-xs text-gray-600">
-                <span className="font-medium">Usuario:</span> alqueria | <span className="font-medium">Contraseña:</span> lacteos2025
-              </p>
-            </div>
-          </div>
         </div>
 
         {/* Footer */}

@@ -242,7 +242,7 @@ const AlqueriaModuleSelector: React.FC<AlqueriaModuleSelectorProps> = ({ classNa
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between text-sm text-gray-600">
             <p>© 2025 Alquería - Sistema RAG Inteligente</p>
-            <p>Powered by Azure OpenAI • 734 documentos lácteos indexados</p>
+            <p>Powered by Genius Bot by Insight Genius • 734 documentos lácteos indexados</p>
           </div>
         </div>
       </footer>

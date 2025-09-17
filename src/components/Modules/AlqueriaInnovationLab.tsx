@@ -10,9 +10,22 @@ import ConceptEditor from '../InnovationLab/ConceptEditor';
 // import { ReportGenerator } from '../InnovationLab/ReportGenerator';
 
 // Importar tipos desde archivo separado para evitar dependencia circular
-import type { DairyConcept, DairyPersona, EvaluationResult } from '../../types/dairy.types';
+import type {
+  DairyConcept,
+  DairyPersona,
+  EvaluationResult,
+  ConsolidatedStudyResult,
+  EvaluationProgress
+} from '../../types/dairy.types';
 // Importar servicio de evaluación SYNTHETICUSERS con Railway backend
 import { generateConversationalEvaluation, type ConversationalEvaluation } from '../../services/claudeEvaluationService';
+// Importar sistema de personas sintéticas de Alquería
+import { alqueriaPersonas } from '../../data/alqueriaPersonaSystem';
+// Importar nuevo servicio de evaluación consolidada
+import { ConsolidatedEvaluationService } from '../../services/consolidatedEvaluationService';
+// Importar componentes para el nuevo sistema
+import EvaluationProgress from '../InnovationLab/EvaluationProgress';
+import ConsolidatedResults from '../InnovationLab/ConsolidatedResults';
 
 const AlqueriaInnovationLab: React.FC = () => {
   const navigate = useNavigate();
@@ -28,10 +41,14 @@ const AlqueriaInnovationLab: React.FC = () => {
   const [selectedPersonas, setSelectedPersonas] = useState<DairyPersona[]>([]);
   const [editingPersona, setEditingPersona] = useState<DairyPersona | null>(null);
 
-  // Estado para evaluaciones
+  // Estado para evaluaciones (legacy)
   const [evaluations, setEvaluations] = useState<EvaluationResult[]>([]);
+
+  // Estado para nuevo sistema consolidado
+  const [consolidatedStudies, setConsolidatedStudies] = useState<ConsolidatedStudyResult[]>([]);
   const [isEvaluating, setIsEvaluating] = useState(false);
-  const [currentEvaluation, setCurrentEvaluation] = useState<EvaluationResult | null>(null);
+  const [evaluationProgress, setEvaluationProgress] = useState<EvaluationProgress | null>(null);
+  const [currentStudy, setCurrentStudy] = useState<ConsolidatedStudyResult | null>(null);
 
   // Cargar datos del localStorage al iniciar
   useEffect(() => {
@@ -43,6 +60,7 @@ const AlqueriaInnovationLab: React.FC = () => {
       const storedConcepts = localStorage.getItem('alqueria-innovation-concepts');
       const storedPersonas = localStorage.getItem('alqueria-innovation-personas');
       const storedEvaluations = localStorage.getItem('alqueria-innovation-evaluations');
+      const storedConsolidatedStudies = localStorage.getItem('alqueria-consolidated-studies');
 
       // Si no hay conceptos, precargar concepto de ejemplo
       if (!storedConcepts) {
@@ -91,78 +109,30 @@ const AlqueriaInnovationLab: React.FC = () => {
         setConcepts(JSON.parse(storedConcepts));
       }
 
-      // Si no hay personas, precargar personas de ejemplo
+      // Si no hay personas, cargar el sistema completo de 7 personas sintéticas de Alquería
       if (!storedPersonas) {
-        const samplePersonas: DairyPersona[] = [
-          {
-            id: `persona-${Date.now()}-carmen`,
-            name: 'Carmen Patricia Martínez',
-            archetype: 'Madre Nutricional Bogotana',
-            baseProfile: {
-              age: 42,
-              gender: 'Femenino',
-              location: 'Bogotá, Colombia',
-              income: 3500000,
-              lifestyle: 'Familia tradicional, orientada al bienestar',
-              occupation: 'Contadora'
-            },
-            dairyConsumption: {
-              frequency: 'Diario',
-              preferences: ['Productos con beneficios nutricionales', 'Marcas colombianas', 'Para toda la familia'],
-              concerns: ['Calidad nutricional', 'Precio justo', 'Beneficios para los hijos'],
-              purchaseBehavior: 'Planificada, compara marcas'
-            },
-            variables: [
-              { key: 'extroversion', value: 4 },
-              { key: 'conscientiousness', value: 5 },
-              { key: 'agreeableness', value: 5 },
-              { key: 'neuroticism', value: 3 },
-              { key: 'opennessToExperience', value: 3 },
-              { key: 'sensibilidad_precio', value: 7 },
-              { key: 'lealtad_marca', value: 6 }
-            ],
-            createdAt: new Date()
-          },
-          {
-            id: `persona-${Date.now()}-daniela`,
-            name: 'Daniela Fitness Medellín',
-            archetype: 'Joven Fitness Paisa',
-            baseProfile: {
-              age: 28,
-              gender: 'Femenino',
-              location: 'Medellín, Colombia',
-              income: 4200000,
-              lifestyle: 'Activa, fitness-oriented, moderna',
-              occupation: 'UX Designer'
-            },
-            dairyConsumption: {
-              frequency: 'Diario',
-              preferences: ['Alto en proteína', 'Bajo en azúcar', 'Productos funcionales'],
-              concerns: ['Contenido de proteína', 'Azúcar añadido', 'Beneficios para rendimiento'],
-              purchaseBehavior: 'Premium, busca calidad'
-            },
-            variables: [
-              { key: 'extroversion', value: 6 },
-              { key: 'conscientiousness', value: 5 },
-              { key: 'agreeableness', value: 4 },
-              { key: 'neuroticism', value: 2 },
-              { key: 'opennessToExperience', value: 6 },
-              { key: 'sensibilidad_precio', value: 4 },
-              { key: 'lealtad_marca', value: 3 }
-            ],
-            createdAt: new Date()
-          }
-        ];
-
-        setPersonas(samplePersonas);
-        localStorage.setItem('alqueria-innovation-personas', JSON.stringify(samplePersonas));
-        console.log('👥 Personas de ejemplo precargadas');
+        setPersonas(alqueriaPersonas);
+        localStorage.setItem('alqueria-innovation-personas', JSON.stringify(alqueriaPersonas));
+        console.log('👥 Sistema completo de 7 personas sintéticas de Alquería cargado');
       } else {
-        setPersonas(JSON.parse(storedPersonas));
+        const parsedPersonas = JSON.parse(storedPersonas);
+        // Si hay personas guardadas pero son menos de 7, actualizar con el sistema completo
+        if (parsedPersonas.length < 7) {
+          setPersonas(alqueriaPersonas);
+          localStorage.setItem('alqueria-innovation-personas', JSON.stringify(alqueriaPersonas));
+          console.log('👥 Sistema actualizado a 7 personas sintéticas completas de Alquería');
+        } else {
+          setPersonas(parsedPersonas);
+        }
       }
 
       if (storedEvaluations) {
         setEvaluations(JSON.parse(storedEvaluations));
+      }
+
+      // Cargar estudios consolidados
+      if (storedConsolidatedStudies) {
+        setConsolidatedStudies(JSON.parse(storedConsolidatedStudies));
       }
     } catch (error) {
       console.error('Error loading stored data:', error);
@@ -181,114 +151,66 @@ const AlqueriaInnovationLab: React.FC = () => {
     localStorage.setItem('alqueria-innovation-personas', JSON.stringify(newPersonas));
   };
 
-  // Guardar evaluaciones
+  // Guardar evaluaciones (legacy)
   const saveEvaluations = (newEvaluations: EvaluationResult[]) => {
     setEvaluations(newEvaluations);
     localStorage.setItem('alqueria-innovation-evaluations', JSON.stringify(newEvaluations));
   };
 
-  // Función para ejecutar evaluación SYNTHETICUSERS con Railway backend
-  const runEvaluation = async () => {
+  // Guardar estudios consolidados
+  const saveConsolidatedStudies = (newStudies: ConsolidatedStudyResult[]) => {
+    setConsolidatedStudies(newStudies);
+    localStorage.setItem('alqueria-consolidated-studies', JSON.stringify(newStudies));
+  };
+
+  // Nueva función para ejecutar evaluación consolidada de 2 fases
+  const runConsolidatedEvaluation = async () => {
     if (!selectedConcept || selectedPersonas.length === 0) {
       alert('Por favor selecciona un concepto y al menos una persona para evaluar.');
       return;
     }
 
     setIsEvaluating(true);
+    setEvaluationProgress(null);
+
     try {
-      const newEvaluations: EvaluationResult[] = [];
+      // Crear servicio de evaluación con callback de progreso
+      const evaluationService = new ConsolidatedEvaluationService((progress) => {
+        setEvaluationProgress(progress);
+      });
 
-      for (const persona of selectedPersonas) {
-        console.log(`🎯 Iniciando entrevista SyntheticUsers: ${selectedConcept.name} × ${persona.name}...`);
+      console.log(`🚀 Iniciando evaluación consolidada: ${selectedConcept.name} con ${selectedPersonas.length} personas`);
 
-        try {
-          // Convertir DairyPersona y DairyConcept al formato esperado por el servicio
-          const conceptForService = {
-            id: selectedConcept.id,
-            name: selectedConcept.name,
-            brand: selectedConcept.brand || 'Alquería',
-            description: selectedConcept.description,
-            benefits: selectedConcept.benefits || [],
-            targetAudience: selectedConcept.targetAudience || ''
-          };
+      // Ejecutar evaluación de 2 fases
+      const study = await evaluationService.runConsolidatedEvaluation(
+        selectedConcept,
+        selectedPersonas
+      );
 
-          const personaForService = {
-            id: persona.id,
-            name: persona.name,
-            archetype: persona.archetype,
-            baseProfile: {
-              age: persona.baseProfile.age,
-              gender: persona.baseProfile.gender,
-              location: persona.baseProfile.location,
-              income: persona.baseProfile.income,
-              lifestyle: persona.baseProfile.lifestyle,
-              occupation: persona.baseProfile.occupation || 'Consumidor colombiano'
-            },
-            dairyConsumption: {
-              preferences: persona.dairyConsumption.preferences || [],
-              concerns: persona.dairyConsumption.concerns || [],
-              frequency: persona.dairyConsumption.frequency || 'Ocasional',
-              purchaseBehavior: persona.dairyConsumption.purchaseBehavior || 'Tradicional'
-            },
-            variables: persona.variables || []
-          };
+      // Guardar el estudio
+      const updatedStudies = [...consolidatedStudies, study];
+      saveConsolidatedStudies(updatedStudies);
 
-          // Llamar al servicio SYNTHETICUSERS de evaluación
-          const conversationalEval: ConversationalEvaluation = await generateConversationalEvaluation(
-            conceptForService as any,
-            personaForService as any,
-            { industry: 'lácteos', market: 'Colombia' }
-          );
+      // Mostrar resultados
+      setCurrentStudy(study);
+      setActiveTab('history');
 
-          // Convertir ConversationalEvaluation a EvaluationResult para UI legacy
-          const evaluation: EvaluationResult = {
-            id: `synth_eval_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            conceptId: selectedConcept.id,
-            personaId: persona.id,
-            conceptName: selectedConcept.name,
-            personaName: persona.name,
-            // Calcular scores basados en el executive summary
-            overallAcceptance: calculateOverallAcceptance(conversationalEval),
-            aspects: calculateAspectScores(conversationalEval),
-            qualitativeInsights: {
-              quote: extractMainQuote(conversationalEval),
-              keyDrivers: conversationalEval.executiveSummary.thematicAnalysis.flatMap(t =>
-                t.keyInsights.map(ki => ki.title)
-              ).slice(0, 5),
-              concerns: extractConcerns(conversationalEval),
-              suggestions: conversationalEval.executiveSummary.thematicAnalysis.flatMap(t =>
-                t.keyTakeaways
-              ).slice(0, 3)
-            },
-            purchaseIntent: calculatePurchaseIntent(conversationalEval),
-            recommendationLikelihood: calculateRecommendationScore(conversationalEval),
-            createdAt: new Date()
-          };
-
-          newEvaluations.push(evaluation);
-          console.log(`✅ Entrevista SyntheticUsers completada para ${persona.name} (${conversationalEval.conversation.length} preguntas)`);
-
-        } catch (personaError) {
-          console.error(`❌ Error en entrevista SyntheticUsers con ${persona.name}:`, personaError);
-          // Continuar con la siguiente persona
-        }
-      }
-
-      if (newEvaluations.length > 0) {
-        const updatedEvaluations = [...evaluations, ...newEvaluations];
-        saveEvaluations(updatedEvaluations);
-        setActiveTab('history');
-        alert(`✅ Evaluación SyntheticUsers completada: ${newEvaluations.length} entrevistas profundas generadas`);
-      } else {
-        alert('⚠️ No se pudieron generar evaluaciones. Verifica la conexión con Railway backend.');
-      }
+      console.log(`✅ Estudio consolidado completado: ${study.interviews.length} entrevistas + reporte ejecutivo`);
 
     } catch (error) {
-      console.error('Error durante evaluación SyntheticUsers:', error);
-      alert('Error al ejecutar la evaluación SyntheticUsers. Por favor verifica la conexión con Railway backend.');
+      console.error('❌ Error durante evaluación consolidada:', error);
+      alert('Error al ejecutar la evaluación consolidada. Por favor verifica la conexión con Railway backend.');
     } finally {
       setIsEvaluating(false);
+      setEvaluationProgress(null);
     }
+  };
+
+  // Función para cancelar evaluación
+  const cancelEvaluation = () => {
+    setIsEvaluating(false);
+    setEvaluationProgress(null);
+    console.log('🚫 Evaluación cancelada por el usuario');
   };
 
   // Funciones auxiliares para convertir ConversationalEvaluation a scores numéricos
@@ -393,6 +315,14 @@ const AlqueriaInnovationLab: React.FC = () => {
         </div>
       </div>
 
+      {/* Mostrar progreso de evaluación */}
+      {evaluationProgress && (
+        <EvaluationProgress
+          progress={evaluationProgress}
+          onCancel={cancelEvaluation}
+        />
+      )}
+
       {/* Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         {activeTab === 'evaluate' && (
@@ -463,10 +393,10 @@ const AlqueriaInnovationLab: React.FC = () => {
                 )}
               </div>
 
-              {/* Botón de evaluación */}
+              {/* Botón de evaluación consolidada */}
               <div className="flex justify-center">
                 <button
-                  onClick={runEvaluation}
+                  onClick={runConsolidatedEvaluation}
                   disabled={!selectedConcept || selectedPersonas.length === 0 || isEvaluating}
                   className={`px-8 py-3 rounded-lg font-medium flex items-center space-x-2 ${
                     !selectedConcept || selectedPersonas.length === 0 || isEvaluating
@@ -475,7 +405,7 @@ const AlqueriaInnovationLab: React.FC = () => {
                   }`}
                 >
                   <Play className="h-5 w-5" />
-                  <span>{isEvaluating ? 'Evaluando...' : 'Ejecutar Evaluación'}</span>
+                  <span>{isEvaluating ? 'Evaluando...' : 'Ejecutar Evaluación SyntheticUsers'}</span>
                 </button>
               </div>
             </div>
@@ -503,7 +433,7 @@ const AlqueriaInnovationLab: React.FC = () => {
         {activeTab === 'history' && (
           <div className="bg-white rounded-xl shadow-lg p-8">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">📊 Historial de Evaluaciones</h2>
+              <h2 className="text-xl font-bold text-gray-900">📊 Historial de Estudios</h2>
               <div className="flex space-x-2">
                 <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center space-x-2">
                   <Download className="h-4 w-4" />
@@ -512,26 +442,46 @@ const AlqueriaInnovationLab: React.FC = () => {
               </div>
             </div>
 
-            {evaluations.length === 0 ? (
+            {/* Mostrar estudio actual si está seleccionado */}
+            {currentStudy && (
+              <div className="mb-8">
+                <ConsolidatedResults
+                  study={currentStudy}
+                  onClose={() => setCurrentStudy(null)}
+                />
+              </div>
+            )}
+
+            {/* Lista de estudios consolidados */}
+            {consolidatedStudies.length === 0 && !currentStudy ? (
               <p className="text-gray-500 text-center py-8">
-                No hay evaluaciones aún. Ejecuta una evaluación desde la pestaña Evaluar.
+                No hay estudios aún. Ejecuta una evaluación SyntheticUsers desde la pestaña Evaluar.
               </p>
             ) : (
               <div className="space-y-4">
-                {evaluations.map((evaluation) => (
-                  <div key={evaluation.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Estudios Consolidados ({consolidatedStudies.length})</h3>
+                {consolidatedStudies.map((study) => (
+                  <div key={study.id} className="border rounded-lg p-4 hover:bg-gray-50">
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="font-semibold text-gray-900">
-                          {evaluation.conceptName} × {evaluation.personaName}
+                          {study.conceptName}
                         </h3>
                         <p className="text-sm text-gray-600">
-                          Aceptación: {evaluation.overallAcceptance}% |
-                          Intención de compra: {evaluation.purchaseIntent}%
+                          {study.metadata.totalInterviews} entrevistas |
+                          {Math.round(study.metadata.evaluationTime / 60)} min de duración
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {new Date(study.metadata.completedAt).toLocaleDateString()} -
+                          Personas: {study.metadata.personas.join(', ')}
                         </p>
                       </div>
                       <div className="flex space-x-2">
-                        <button className="p-2 text-gray-400 hover:text-green-600">
+                        <button
+                          onClick={() => setCurrentStudy(study)}
+                          className="p-2 text-gray-400 hover:text-green-600"
+                          title="Ver resultados"
+                        >
                           <Eye className="h-4 w-4" />
                         </button>
                         <button className="p-2 text-gray-400 hover:text-green-600">
@@ -539,11 +489,41 @@ const AlqueriaInnovationLab: React.FC = () => {
                         </button>
                       </div>
                     </div>
-                    <p className="text-sm text-gray-500 italic mt-2">
-                      "{evaluation.qualitativeInsights.quote}"
-                    </p>
                   </div>
                 ))}
+
+                {/* Evaluaciones legacy si existen */}
+                {evaluations.length > 0 && (
+                  <div className="mt-8">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Evaluaciones Individuales ({evaluations.length})</h3>
+                    {evaluations.map((evaluation) => (
+                      <div key={evaluation.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="font-semibold text-gray-900">
+                              {evaluation.conceptName} × {evaluation.personaName}
+                            </h3>
+                            <p className="text-sm text-gray-600">
+                              Aceptación: {evaluation.overallAcceptance}% |
+                              Intención de compra: {evaluation.purchaseIntent}%
+                            </p>
+                          </div>
+                          <div className="flex space-x-2">
+                            <button className="p-2 text-gray-400 hover:text-green-600">
+                              <Eye className="h-4 w-4" />
+                            </button>
+                            <button className="p-2 text-gray-400 hover:text-green-600">
+                              <Download className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                        <p className="text-sm text-gray-500 italic mt-2">
+                          "{evaluation.qualitativeInsights.quote}"
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

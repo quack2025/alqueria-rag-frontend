@@ -8,6 +8,7 @@
  */
 
 import type { Concept, SyntheticPersona } from '../components/InnovationLab/InnovationLabContainer';
+import type { ResponseAnalysis, DynamicFollowUp, AdaptiveInterviewConfig } from '../types/dairy.types';
 
 // Configuración de Azure OpenAI
 const AZURE_OPENAI_CONFIG = {
@@ -165,6 +166,313 @@ const CONVERSATION_SCRIPT = [
 ];
 
 /**
+ * Función para revisar y mejorar preguntas usando un moderador experto
+ */
+async function reviewQuestionsWithExpert(concept: Concept, questions: any[]): Promise<any[]> {
+  console.log('🔍 Iniciando revisión de preguntas con moderador experto...');
+
+  const moderatorPrompt = `Eres un moderador experto en estudios cualitativos del sector lácteo en Colombia con 15+ años de experiencia en investigación de mercados para marcas como Alquería, Alpina, Colanta.
+
+CONCEPTO A EVALUAR:
+- Nombre: ${concept.name}
+- Descripción: ${concept.description}
+- Categoría: ${concept.category}
+- Beneficios: ${concept.benefits?.join(', ')}
+
+PREGUNTAS ACTUALES QUE NECESITAN REVISIÓN:
+${questions.map((q, i) => `${i + 1}. ${q.base.replace('[CONCEPTO]', concept.name)}`).join('\n')}
+
+TAREAS DEL MODERADOR EXPERTO:
+1. Revisa cada pregunta para asegurar que suene NATURAL y CONVERSACIONAL en Colombia
+2. Elimina lenguaje académico o forzado que no usaría un consumidor real
+3. Ajusta preguntas para fluir naturalmente en una conversación casual
+4. Asegúrate de que las preguntas se sientan auténticas al contexto lácteo colombiano
+5. Mantén la esencia investigativa pero con lenguaje cotidiano
+
+CRITERIOS DE CALIDAD:
+- ¿Sonaría natural en una conversación informal con un amigo?
+- ¿Usaría un colombiano promedio estas palabras y estructura?
+- ¿La pregunta fluye naturalmente del tema lácteo?
+- ¿Se siente auténtica, no como de cuestionario académico?
+
+FORMATO DE RESPUESTA:
+Devuelve SOLO un JSON array con las preguntas mejoradas manteniendo esta estructura:
+[
+  {
+    "base": "Pregunta mejorada en lenguaje natural colombiano...",
+    "followUpPositive": "Seguimiento positivo natural...",
+    "followUpNegative": "Seguimiento negativo natural..."
+  }
+]
+
+EJEMPLO DE MEJORA:
+❌ ANTES: "¿Qué preguntas específicas harías sobre Alquería Vital+ Digestive si estuvieras genuinamente interesado/a versus si solo estuvieras siendo educado/a - y cómo cambiaría tu forma de evaluarlo?"
+
+✅ DESPUÉS: "Cuéntame, si realmente te interesara probar este Alquería Vital+ Digestive, ¿qué le preguntarías a alguien que ya lo haya probado? ¿Sería diferente a si solo quisieras ser amable en la conversación?"
+
+RESPONDE SOLO EL JSON, SIN TEXTO ADICIONAL.`;
+
+  try {
+    const response = await fetch('/api/claude-evaluation', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 2000,
+        temperature: 0.3,
+        systemPrompt: 'Eres un moderador experto en investigación cualitativa láctea en Colombia. Mejoras preguntas para que suenen naturales y conversacionales.',
+        messages: [
+          {
+            role: 'user',
+            content: moderatorPrompt
+          }
+        ]
+      })
+    });
+
+    if (!response.ok) {
+      console.warn('⚠️ Error en revisión de moderador, usando preguntas originales');
+      return questions;
+    }
+
+    const data = await response.json();
+    let cleanContent = data.content || '';
+
+    // Limpiar markdown si está presente
+    if (cleanContent.includes('```json')) {
+      cleanContent = cleanContent.replace(/```json\s*/g, '').replace(/```\s*$/g, '');
+    }
+    if (cleanContent.includes('```')) {
+      cleanContent = cleanContent.replace(/```[^`]*```/g, '');
+    }
+
+    const reviewedQuestions = JSON.parse(cleanContent.trim());
+    console.log('✅ Preguntas mejoradas por moderador experto');
+    return reviewedQuestions;
+
+  } catch (error) {
+    console.warn('⚠️ Error procesando revisión del moderador:', error);
+    console.log('📝 Usando preguntas originales como fallback');
+    return questions;
+  }
+}
+
+/**
+ * FASE 1: Entrevistas Adaptativas Dinámicas
+ * Analiza respuesta en tiempo real para generar preguntas de seguimiento
+ */
+async function analyzeResponseForAdaptiveFollowup(
+  response: string,
+  persona: SyntheticPersona,
+  concept: Concept,
+  conversationContext: string
+): Promise<ResponseAnalysis> {
+  console.log('🧠 Analizando respuesta para seguimiento adaptativo...');
+
+  const analysisPrompt = `Eres un analista experto en investigación cualitativa láctea en Colombia. Analiza esta respuesta de consumidor para detectar oportunidades de profundización.
+
+CONTEXTO DE LA ENTREVISTA:
+- Persona: ${persona.name}, ${persona.baseProfile.age} años, ${persona.baseProfile.location}
+- Concepto evaluado: ${concept.name} - ${concept.description}
+- Arquetipo: ${persona.archetype}
+
+RESPUESTA DEL CONSUMIDOR:
+"${response}"
+
+CONTEXTO CONVERSACIÓN PREVIA:
+${conversationContext}
+
+ANALIZA LA RESPUESTA DETECTANDO:
+
+1. TRIGGERS EMOCIONALES:
+   - precio_barrera: Menciona precio como preocupación
+   - entusiasmo_probioticos: Muestra interés en beneficios digestivos
+   - influencia_familiar: Referencia familia/niños/tradiciones
+   - escepticismo_marketing: Duda de claims publicitarios
+   - curiosidad_sabor: Pregunta por aspectos sensoriales
+   - experiencia_previa: Menciona productos similares
+   - salud_personal: Conecta con necesidades de salud propias
+
+2. EMOCIONES DETECTADAS:
+   - ansiedad, entusiasmo, curiosidad, escepticismo, nostalgia, preocupación
+
+3. OPORTUNIDADES DE PROFUNDIZACIÓN:
+   - Áreas donde el consumidor mostró interés pero no profundizó
+   - Contradicciones en su discurso
+   - Aspectos que mencionó superficialmente
+
+4. BARRERAS IDENTIFICADAS:
+   - Obstáculos para la adopción del producto
+   - Preocupaciones no resueltas
+
+FORMATO DE RESPUESTA JSON:
+{
+  "needsDeepDive": boolean,
+  "triggers": ["trigger1", "trigger2"],
+  "emotion": "emoción_principal",
+  "opportunities": ["oportunidad1", "oportunidad2"],
+  "barriers": ["barrera1", "barrera2"],
+  "surprisingElements": ["elemento_sorprendente1"]
+}
+
+RESPONDE SOLO EL JSON, SIN TEXTO ADICIONAL.`;
+
+  try {
+    const response = await fetch('/api/claude-evaluation', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 1000,
+        temperature: 0.3,
+        systemPrompt: 'Eres un analista experto en investigación cualitativa láctea que detecta oportunidades de profundización.',
+        messages: [
+          {
+            role: 'user',
+            content: analysisPrompt
+          }
+        ]
+      })
+    });
+
+    if (!response.ok) {
+      return {
+        needsDeepDive: false,
+        triggers: [],
+        emotion: 'neutral',
+        opportunities: [],
+        barriers: [],
+        surprisingElements: []
+      };
+    }
+
+    const data = await response.json();
+    let cleanContent = data.content || '';
+
+    // Limpiar markdown si está presente
+    if (cleanContent.includes('```json')) {
+      cleanContent = cleanContent.replace(/```json\s*/g, '').replace(/```\s*$/g, '');
+    }
+
+    const analysis: ResponseAnalysis = JSON.parse(cleanContent.trim());
+    console.log('✅ Análisis adaptativo completado:', analysis);
+    return analysis;
+
+  } catch (error) {
+    console.warn('⚠️ Error en análisis adaptativo:', error);
+    return {
+      needsDeepDive: false,
+      triggers: [],
+      emotion: 'neutral',
+      opportunities: [],
+      barriers: [],
+      surprisingElements: []
+    };
+  }
+}
+
+/**
+ * Genera preguntas de seguimiento dinámicas basadas en el análisis
+ */
+async function generateDynamicFollowUps(
+  analysis: ResponseAnalysis,
+  persona: SyntheticPersona,
+  concept: Concept,
+  config: AdaptiveInterviewConfig
+): Promise<DynamicFollowUp[]> {
+  if (!analysis.needsDeepDive || analysis.triggers.length === 0) {
+    return [];
+  }
+
+  console.log('🎯 Generando preguntas de seguimiento dinámicas...');
+
+  const followUpPrompt = `Eres un moderador experto que genera preguntas de seguimiento naturales para profundizar en insights lácteos.
+
+ANÁLISIS DETECTADO:
+- Triggers: ${analysis.triggers.join(', ')}
+- Emoción: ${analysis.emotion}
+- Oportunidades: ${analysis.opportunities.join(', ')}
+- Barreras: ${analysis.barriers.join(', ')}
+
+CONTEXTO:
+- Persona: ${persona.name} (${persona.archetype})
+- Concepto: ${concept.name}
+- Configuración: ${config.adaptiveMode} (máx ${config.maxDynamicQuestions} preguntas)
+
+GENERA PREGUNTAS DE SEGUIMIENTO que:
+1. Suenen naturales y conversacionales (no académicas)
+2. Profundicen en los triggers detectados
+3. Exploren las oportunidades identificadas
+4. Aborden las barreras encontradas
+
+EJEMPLOS POR TRIGGER:
+- precio_barrera → "¿Cuánto estarías dispuesta a pagar por algo así? ¿Qué te haría sentir que vale la pena?"
+- entusiasmo_probioticos → "Cuéntame más sobre eso, ¿has probado otros productos para la digestión antes?"
+- influencia_familiar → "¿Qué dirían en tu casa si llegaras con esto? ¿Les importaría?"
+
+FORMATO JSON:
+[
+  {
+    "trigger": "trigger_que_dispara",
+    "question": "Pregunta natural en español colombiano",
+    "reasoning": "Por qué se generó esta pregunta",
+    "priority": "high|medium|low"
+  }
+]
+
+RESPONDE SOLO EL JSON, SIN TEXTO ADICIONAL.`;
+
+  try {
+    const response = await fetch('/api/claude-evaluation', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 1500,
+        temperature: 0.4,
+        systemPrompt: 'Eres un moderador experto que genera preguntas de seguimiento conversacionales.',
+        messages: [
+          {
+            role: 'user',
+            content: followUpPrompt
+          }
+        ]
+      })
+    });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const data = await response.json();
+    let cleanContent = data.content || '';
+
+    // Limpiar markdown si está presente
+    if (cleanContent.includes('```json')) {
+      cleanContent = cleanContent.replace(/```json\s*/g, '').replace(/```\s*$/g, '');
+    }
+
+    const followUps: DynamicFollowUp[] = JSON.parse(cleanContent.trim());
+
+    // Limitar según configuración
+    const limitedFollowUps = followUps.slice(0, config.maxDynamicQuestions);
+
+    console.log(`✅ ${limitedFollowUps.length} preguntas de seguimiento generadas`);
+    return limitedFollowUps;
+
+  } catch (error) {
+    console.warn('⚠️ Error generando preguntas dinámicas:', error);
+    return [];
+  }
+}
+
+/**
  * Genera el prompt del sistema para GPT-4 basado en la persona
  */
 function generateSystemPrompt(persona: SyntheticPersona): string {
@@ -223,18 +531,32 @@ INSTRUCCIONES PARA RESPONDER:
 export async function generateConversationalEvaluation(
   concept: Concept,
   persona: SyntheticPersona,
-  ragContext?: any
+  ragContext?: any,
+  adaptiveConfig?: AdaptiveInterviewConfig
 ): Promise<ConversationalEvaluation> {
   const conversation: ConversationalEvaluation['conversation'] = [];
   const systemPrompt = generateSystemPrompt(persona);
-  
-  // Reemplazar placeholders en las preguntas
-  const personalizedQuestions = CONVERSATION_SCRIPT.map(script => ({
+
+  // Configuración adaptativa por defecto
+  const config: AdaptiveInterviewConfig = adaptiveConfig || {
+    maxDynamicQuestions: 2,
+    emotionThreshold: 6,
+    adaptiveMode: 'moderate'
+  };
+
+  console.log(`🚀 Iniciando entrevista adaptativa en modo ${config.adaptiveMode} para ${persona.name}`);
+
+  // PASO 1: Revisar preguntas con moderador experto
+  console.log('📋 Enviando preguntas para revisión del moderador experto...');
+  let reviewedQuestions = await reviewQuestionsWithExpert(concept, CONVERSATION_SCRIPT);
+
+  // PASO 2: Reemplazar placeholders en las preguntas revisadas
+  const personalizedQuestions = reviewedQuestions.map(script => ({
     ...script,
     base: script.base
       .replace('[CONCEPTO]', concept.name)
       .replace('[MARCA]', concept.brand)
-      .replace('[BENEFICIOS]', concept.benefits.join(', '))
+      .replace('[BENEFICIOS]', concept.benefits?.join(', ') || '')
   }));
 
   // Generar conversación pregunta por pregunta con progress tracking
@@ -270,38 +592,63 @@ Responde de manera natural y conversacional, entre 120-200 palabras, manteniénd
         onProgress
       });
 
-      // Agregar a la conversación con wordCount
-      conversation.push({
+      // FASE 1: Análisis adaptativo de la respuesta
+      console.log(`🧠 Analizando respuesta de ${persona.name} para seguimientos dinámicos...`);
+
+      const responseAnalysis = await analyzeResponseForAdaptiveFollowup(
+        response.content,
+        persona,
+        concept,
+        previousContext
+      );
+
+      // Generar preguntas de seguimiento dinámicas si es necesario
+      let dynamicFollowUps: DynamicFollowUp[] = [];
+      if (responseAnalysis.needsDeepDive) {
+        dynamicFollowUps = await generateDynamicFollowUps(
+          responseAnalysis,
+          persona,
+          concept,
+          config
+        );
+      }
+
+      // Agregar respuesta principal a la conversación
+      const conversationExchange: any = {
         question: questionScript.base,
         response: response.content,
-        wordCount: response.content.split(' ').length
-      });
+        wordCount: response.content.split(' ').length,
+        emotionalTone: responseAnalysis.emotion,
+        keyThemes: responseAnalysis.triggers,
+        dynamicFollowUps: []
+      };
 
-      // Sistema inteligente de follow-up basado en sentiment y length
-      const sentiment = analyzeResponseSentiment(response.content);
-      const responseLength = response.content.split(' ').length;
-      
-      // Solo hacer follow-up si la respuesta es rica y hay sentimiento claro
-      if (sentiment !== 'neutral' && responseLength > 80 && Math.random() > 0.6) {
-        const followUpQuestion = sentiment === 'positive' 
-          ? questionScript.followUpPositive 
-          : questionScript.followUpNegative;
+      // Procesar preguntas de seguimiento dinámicas
+      for (const followUp of dynamicFollowUps) {
+        try {
+          console.log(`🎯 Seguimiento dinámico: ${followUp.trigger} - ${followUp.question}`);
 
-        if (followUpQuestion) {
-          console.log(`💬 Generando follow-up ${sentiment} para pregunta ${index + 1}`);
-          
           const followUpResponse = await callClaudeAPI({
             systemPrompt,
-            userPrompt: followUpQuestion,
-            conversationContext: `${previousContext}\n\nÚltima Pregunta: ${questionScript.base}\nÚltima Respuesta: ${response.content}`,
+            userPrompt: followUp.question,
+            conversationContext: `${previousContext}\n\nÚltima Pregunta: ${questionScript.base}\nÚltima Respuesta: ${response.content}\n\nRazón del seguimiento: ${followUp.reasoning}`,
             passNumber: 1,
             totalPasses: 1,
-            onProgress: (msg) => console.log(`[${persona.name}] Follow-up ${index + 1}: ${msg}`)
+            onProgress: (msg) => console.log(`[${persona.name}] Follow-up dinámico: ${msg}`)
           });
 
-          conversation[conversation.length - 1].followUp = followUpResponse.content;
+          // Agregar seguimiento a la conversación
+          conversationExchange.dynamicFollowUps.push({
+            ...followUp,
+            response: followUpResponse.content
+          });
+
+        } catch (error) {
+          console.warn(`⚠️ Error en seguimiento dinámico:`, error);
         }
       }
+
+      conversation.push(conversationExchange);
 
     } catch (error) {
       console.error(`❌ Error en pregunta ${index + 1} para ${persona.name}:`, error);
@@ -407,15 +754,17 @@ PREGUNTA: ${userPrompt}
 RESPONDE COMO LA PERSONA DEL PERFIL, CON AL MENOS 150-200 PALABRAS:`;
 
   try {
-    // Determinar si usar Vercel Functions o API directa
-    const useVercelFunctions = import.meta.env.VITE_USE_VERCEL_FUNCTIONS === 'true';
-    const isProduction = import.meta.env.PROD || window.location.hostname !== 'localhost';
+    // Siempre usar Vercel Functions en producción (dominio vercel.app)
+    const isProduction = window.location.hostname.includes('vercel.app') || import.meta.env.PROD;
+    const useVercelFunctions = import.meta.env.VITE_USE_VERCEL_FUNCTIONS === 'true' || isProduction;
 
     let apiUrl: string;
     let requestBody: any;
     let headers: HeadersInit;
 
-    if (useVercelFunctions || isProduction) {
+    console.log(`🔍 Detection: hostname=${window.location.hostname}, isProduction=${isProduction}, useVercelFunctions=${useVercelFunctions}`);
+
+    if (useVercelFunctions) {
       // Usar Vercel Functions en producción
       console.log('🔐 Usando Vercel Functions para Claude API...');
       apiUrl = '/api/claude-evaluation';
@@ -657,24 +1006,85 @@ IMPORTANTE: Basa tu análisis SOLO en lo que esta persona específica expresó. 
 `;
 
   try {
-    const claudeApiKey = import.meta.env.VITE_CLAUDE_API_KEY;
-    const claudeApiUrl = import.meta.env.VITE_CLAUDE_API_URL || 'https://api.anthropic.com/v1';
+    // Siempre usar Vercel Functions en producción
+    const isProduction = window.location.hostname.includes('vercel.app') || import.meta.env.PROD;
+    const useVercelFunctions = import.meta.env.VITE_USE_VERCEL_FUNCTIONS === 'true' || isProduction;
 
-    if (!claudeApiKey) {
-      console.warn('⚠️ VITE_CLAUDE_API_KEY no configurada, usando fallback');
-      return generateFallbackSummary(conversation, concept, persona);
-    }
+    console.log(`🔍 Executive Analysis Detection: hostname=${window.location.hostname}, isProduction=${isProduction}, useVercelFunctions=${useVercelFunctions}`);
 
-    console.log('🤖 Generando Executive Summary con Claude API...');
+    if (useVercelFunctions) {
+      // Usar Vercel Functions
+      console.log('🔐 Usando Vercel Functions para Executive Analysis...');
 
-    const response = await fetch(`${claudeApiUrl}/messages`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': claudeApiKey,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
+      const response = await fetch('/api/claude-evaluation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          systemPrompt: `Eres un experto en investigación de mercados cualitativa especializado en análisis de insights ejecutivos para la industria láctea.`,
+          userPrompt: executivePrompt,
+          maxTokens: 1500,
+          temperature: 0.3
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      // Limpiar la respuesta de Claude - remover markdown si está presente
+      let cleanContent = data.content || '';
+      if (cleanContent.includes('```json')) {
+        cleanContent = cleanContent.replace(/```json\s*/g, '').replace(/```\s*$/g, '');
+      }
+      if (cleanContent.includes('```')) {
+        cleanContent = cleanContent.replace(/```[^`]*```/g, '');
+      }
+
+      console.log('🧹 Cleaned content for parsing:', cleanContent.substring(0, 200) + '...');
+
+      const analysisResult = JSON.parse(cleanContent.trim());
+
+      return {
+        thematicAnalysis: analysisResult.keyThemes?.map((theme: any) => ({
+          theme: theme.title || theme,
+          keyInsights: [
+            {
+              title: theme.insight || theme,
+              summary: theme.summary || 'Insight extraído de la conversación',
+              impact: theme.impact || 'Impacto en la marca Alquería'
+            }
+          ],
+          relevantQuotes: analysisResult.quotes || []
+        })) || [],
+        surprisingInsight: {
+          insight: analysisResult.surprisingInsight || 'Insight inesperado identificado',
+          implication: 'Implicación para la estrategia de Alquería'
+        }
+      };
+
+    } else {
+      // Desarrollo local - usar API directa
+      const claudeApiKey = import.meta.env.VITE_CLAUDE_API_KEY;
+      const claudeApiUrl = import.meta.env.VITE_CLAUDE_API_URL || 'https://api.anthropic.com/v1';
+
+      if (!claudeApiKey) {
+        console.warn('⚠️ VITE_CLAUDE_API_KEY no configurada, usando fallback');
+        return generateFallbackSummary(conversation, concept, persona);
+      }
+
+      console.log('🤖 Generando Executive Summary con Claude API directa...');
+
+      const response = await fetch(`${claudeApiUrl}/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': claudeApiKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
         model: 'claude-4-sonnet-20250514',
         max_tokens: 2000,
         temperature: 0.3,
@@ -772,9 +1182,10 @@ IMPORTANTE: Basa tu análisis SOLO en lo que esta persona específica expresó. 
       console.log('✅ Executive Summary SyntheticUsers generado:', summaryData);
       return summaryData;
 
-    } catch (parseError) {
-      console.error('Error parsing executive summary:', parseError);
-      return generateFallbackSummary(conversation, concept, persona);
+      } catch (parseError) {
+        console.error('Error parsing executive summary:', parseError);
+        return generateFallbackSummary(conversation, concept, persona);
+      }
     }
 
   } catch (error) {

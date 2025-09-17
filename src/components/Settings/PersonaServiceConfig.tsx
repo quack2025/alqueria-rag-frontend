@@ -91,9 +91,9 @@ export const PersonaServiceConfig: React.FC<PersonaServiceConfigProps> = ({ onCl
                 <div className="flex items-center gap-3">
                   <Cloud className="h-5 w-5 text-blue-600" />
                   <div>
-                    <h4 className="font-medium">Azure OpenAI Directo</h4>
+                    <h4 className="font-medium">Genius Bot by Insight Genius</h4>
                     <p className="text-sm text-gray-600">
-                      Conexión directa a Azure OpenAI con system prompts personalizados
+                      Conexión directa a Genius Bot con system prompts personalizados
                     </p>
                   </div>
                 </div>
@@ -114,14 +114,14 @@ export const PersonaServiceConfig: React.FC<PersonaServiceConfigProps> = ({ onCl
               {config.useAzureDirect && (
                 <div className="border-t border-gray-100 pt-3">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    API Key de Azure OpenAI
+                    API Key de Genius Bot
                   </label>
                   <div className="flex gap-2">
                     <input
                       type="password"
                       value={azureApiKey}
                       onChange={(e) => setAzureApiKey(e.target.value)}
-                      placeholder="Ingresa tu API key de Azure OpenAI"
+                      placeholder="Ingresa tu API key de Genius Bot"
                       className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
                     />
                     <button
@@ -232,7 +232,7 @@ export const PersonaServiceConfig: React.FC<PersonaServiceConfigProps> = ({ onCl
             <div className="bg-gray-50 rounded-lg p-4">
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span>Azure OpenAI Directo:</span>
+                  <span>Genius Bot by Insight Genius:</span>
                   <span className={`font-medium ${config.useAzureDirect ? 'text-blue-600' : 'text-gray-500'}`}>
                     {config.useAzureDirect ? 'ACTIVO' : 'INACTIVO'}
                   </span>
