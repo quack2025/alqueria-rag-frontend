@@ -12,6 +12,7 @@ import type {
   ConversationExchange,
   AdaptiveInterviewConfig
 } from '../types/dairy.types';
+import { callClaudeWithRetry } from '../utils/retryWithBackoff';
 
 // Función helper para limpiar respuestas de Claude
 function cleanClaudeResponse(content: string): string {
@@ -279,25 +280,28 @@ SOLO JSON, sin markdown ni texto adicional. Máximo 1 insight y 1 cita por secci
 `;
 
     try {
-      // Usar el servicio Claude para generar el reporte consolidado
-      const response = await fetch('/api/claude-evaluation', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'claude-3-5-sonnet-20241022',
-          max_tokens: 32000, // Máximo para evitar truncamiento
-          temperature: 0.2, // Más determinístico para JSON estructurado
-          systemPrompt: 'Eres un experto en investigación de mercados lácteos que genera reportes ejecutivos consolidados. SIEMPRE respondes con JSON válido sin markdown ni texto adicional.',
-          messages: [
-            {
-              role: 'user',
-              content: consolidationPrompt
-            }
-          ]
-        })
-      });
+      // Usar el servicio Claude con retry automático
+      const response = await callClaudeWithRetry(
+        () => fetch('/api/claude-evaluation', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'claude-3-5-sonnet-20241022',
+            max_tokens: 32000, // Máximo para evitar truncamiento
+            temperature: 0.2, // Más determinístico para JSON estructurado
+            systemPrompt: 'Eres un experto en investigación de mercados lácteos que genera reportes ejecutivos consolidados. SIEMPRE respondes con JSON válido sin markdown ni texto adicional.',
+            messages: [
+              {
+                role: 'user',
+                content: consolidationPrompt
+              }
+            ]
+          })
+        }),
+        'Consolidación de reporte ejecutivo'
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -405,17 +409,20 @@ Genera exactamente estas 4 secciones:
 `;
 
     try {
-      const response = await fetch('/api/claude-evaluation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-3-5-sonnet-20241022',
-          max_tokens: 4000, // Menos tokens para prompt más simple
-          temperature: 0.1,
-          systemPrompt: 'Responde SOLO con JSON válido, sin markdown ni texto adicional.',
-          messages: [{ role: 'user', content: compactPrompt }]
-        })
-      });
+      const response = await callClaudeWithRetry(
+        () => fetch('/api/claude-evaluation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-3-5-sonnet-20241022',
+            max_tokens: 4000, // Menos tokens para prompt más simple
+            temperature: 0.1,
+            systemPrompt: 'Responde SOLO con JSON válido, sin markdown ni texto adicional.',
+            messages: [{ role: 'user', content: compactPrompt }]
+          })
+        }),
+        'Reporte compacto de respaldo'
+      );
 
       const data = await response.json();
       let content = data.content?.[0]?.text || data.message || data.response || '';

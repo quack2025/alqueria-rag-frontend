@@ -813,21 +813,14 @@ RESPONDE COMO LA PERSONA DEL PERFIL, CON AL MENOS 150-200 PALABRAS:`;
         'Content-Type': 'application/json'
       };
     } else {
-      // Desarrollo local - intentar API directa (puede fallar por CORS)
-      const claudeApiKey = import.meta.env.VITE_CLAUDE_API_KEY;
-      const claudeApiUrl = import.meta.env.VITE_CLAUDE_API_URL || 'https://api.anthropic.com/v1';
-
-      if (!claudeApiKey) {
-        throw new Error('VITE_CLAUDE_API_KEY no está configurada');
-      }
-
-      console.log('🤖 Conectando directamente a Claude API...');
-      apiUrl = `${claudeApiUrl}/messages`;
+      // SIEMPRE usar Vercel Functions para proteger API keys
+      console.log('🔒 Usando proxy seguro de Vercel Functions...');
+      apiUrl = '/api/claude-evaluation';
       requestBody = {
         model: 'claude-4-sonnet-20250514',
         max_tokens: 600,
         temperature: 0.8,
-        system: systemPrompt,
+        systemPrompt: systemPrompt,
         messages: [
           {
             role: 'user',
@@ -836,10 +829,13 @@ RESPONDE COMO LA PERSONA DEL PERFIL, CON AL MENOS 150-200 PALABRAS:`;
         ]
       };
       headers = {
-        'Content-Type': 'application/json',
-        'x-api-key': claudeApiKey,
-        'anthropic-version': '2023-06-01'
+        'Content-Type': 'application/json'
       };
+
+      // Log de advertencia si detectamos API key en frontend
+      if (import.meta.env.VITE_CLAUDE_API_KEY) {
+        console.warn('⚠️ ADVERTENCIA: API key detectada en frontend. Por seguridad, siempre usamos Vercel Functions.');
+      }
     }
 
     const response = await fetch(apiUrl, {
