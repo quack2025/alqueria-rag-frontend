@@ -25,7 +25,15 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { systemPrompt, userPrompt, messages, maxTokens = 600, temperature = 0.8 } = req.body;
+    const {
+      systemPrompt,
+      userPrompt,
+      messages,
+      model = 'claude-4-sonnet-20250514', // Default model
+      max_tokens = 600, // Support both naming conventions
+      maxTokens = max_tokens,
+      temperature = 0.8
+    } = req.body;
 
     // Validate required fields
     if (!userPrompt && !messages) {
@@ -57,8 +65,8 @@ export default async function handler(req, res) {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-4-sonnet-20250514',
-        max_tokens: maxTokens,
+        model: model,
+        max_tokens: Math.min(maxTokens, 32000), // Cap at max supported
         temperature: temperature,
         system: systemPrompt || 'You are a helpful assistant that provides detailed, thoughtful responses.',
         messages: claudeMessages
@@ -76,12 +84,17 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    // Return the Claude response
+    // Return the Claude response with full data structure
     res.status(200).json({
-      content: data.content?.[0]?.text || '',
+      content: data.content || [{text: ''}], // Maintain array structure
+      message: data.content?.[0]?.text || '', // For backward compatibility
+      response: data.content?.[0]?.text || '', // Alternative field
       usage: data.usage,
       model: data.model,
-      stop_reason: data.stop_reason
+      stop_reason: data.stop_reason,
+      stop_sequence: data.stop_sequence,
+      // Flag if response was truncated
+      truncated: data.stop_reason === 'max_tokens'
     });
 
   } catch (error) {
