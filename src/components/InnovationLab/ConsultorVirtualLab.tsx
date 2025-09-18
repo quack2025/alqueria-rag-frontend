@@ -48,6 +48,10 @@ const ConsultorVirtualLab: React.FC = () => {
     pricing: 'Premium (+20% vs yogurt regular)'
   });
 
+  // Selección de personas para evaluación
+  const [selectedPersonas, setSelectedPersonas] = useState<string[]>([]);
+  const [isAutoSelection, setIsAutoSelection] = useState(true);
+
   // Conceptos predefinidos para pruebas rápidas
   const predefinedConcepts: DairyConcept[] = [
     {
@@ -158,7 +162,10 @@ const ConsultorVirtualLab: React.FC = () => {
         pricing: conceptForm.pricing || 'Precio estándar'
       };
 
-      const result = await service.evaluateConcept(concept);
+      // Obtener personas seleccionadas para evaluar
+      const personasToEvaluate = isAutoSelection ? undefined : selectedPersonas;
+
+      const result = await service.evaluateConcept(concept, personasToEvaluate);
       setEvaluation(result);
 
     } catch (error) {
@@ -372,11 +379,98 @@ const ConsultorVirtualLab: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Selección de Personas para Evaluación */}
+                <div className="bg-gray-50 rounded-lg p-4 border-2 border-dashed border-gray-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                      <Users className="w-5 h-5 mr-2 text-green-600" />
+                      Selección de Personas para Evaluar
+                    </h3>
+
+                    <div className="flex items-center space-x-3">
+                      <label className="flex items-center cursor-pointer">
+                        <input
+                          type="radio"
+                          checked={isAutoSelection}
+                          onChange={() => setIsAutoSelection(true)}
+                          className="mr-2 text-green-600"
+                        />
+                        <span className="text-sm text-gray-700">Automático (5 personas)</span>
+                      </label>
+                      <label className="flex items-center cursor-pointer">
+                        <input
+                          type="radio"
+                          checked={!isAutoSelection}
+                          onChange={() => setIsAutoSelection(false)}
+                          className="mr-2 text-green-600"
+                        />
+                        <span className="text-sm text-gray-700">Manual</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {!isAutoSelection && (
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                      <p className="text-sm text-gray-600 mb-2">
+                        Selecciona entre 3 y 8 personas (Actual: {selectedPersonas.length})
+                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {personas.slice(0, 15).map((persona) => (
+                          <label key={persona.id} className="flex items-start space-x-2 p-2 border rounded cursor-pointer hover:bg-white transition-colors">
+                            <input
+                              type="checkbox"
+                              checked={selectedPersonas.includes(persona.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  if (selectedPersonas.length < 8) {
+                                    setSelectedPersonas([...selectedPersonas, persona.id]);
+                                  }
+                                } else {
+                                  setSelectedPersonas(selectedPersonas.filter(id => id !== persona.id));
+                                }
+                              }}
+                              className="mt-1 text-green-600"
+                              disabled={!selectedPersonas.includes(persona.id) && selectedPersonas.length >= 8}
+                            />
+                            <div className="flex-1">
+                              <div className="font-medium text-sm text-gray-800">{persona.name}</div>
+                              <div className="text-xs text-gray-600">
+                                {persona.baseProfile.age} años, {persona.baseProfile.location}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {persona.dairyConsumption.frequency}
+                              </div>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+
+                      {selectedPersonas.length < 3 && (
+                        <p className="text-sm text-red-600 mt-2">
+                          ⚠️ Selecciona al menos 3 personas para una evaluación representativa
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {isAutoSelection && (
+                    <div className="text-sm text-gray-600 bg-white p-3 rounded border">
+                      <p className="font-medium mb-1">✨ Selección Automática</p>
+                      <p>El sistema seleccionará automáticamente 5 personas representativas del mercado lácteo colombiano con diversidad de edades, NSE y regiones.</p>
+                    </div>
+                  )}
+                </div>
+
                 {/* Botón de Evaluación */}
                 <div className="text-center">
                   <button
                     onClick={handleEvaluate}
-                    disabled={isEvaluating || !conceptForm.name || !conceptForm.description}
+                    disabled={
+                      isEvaluating ||
+                      !conceptForm.name ||
+                      !conceptForm.description ||
+                      (!isAutoSelection && selectedPersonas.length < 3)
+                    }
                     className="px-8 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg font-semibold
                              hover:from-green-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed
                              transition-all duration-200 flex items-center space-x-2 mx-auto"

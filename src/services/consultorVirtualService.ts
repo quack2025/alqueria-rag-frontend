@@ -26,6 +26,38 @@ export interface ConsultorEvaluation {
     riskFactors: string[];
   };
 
+  // Análisis Competitivo Detallado
+  competitiveAnalysis: {
+    mainCompetitor: string;
+    competitiveAdvantages: string[];
+    competitiveWeaknesses: string[];
+    differentiationStrategy: string;
+    marketPositioning: string;
+  };
+
+  // Journey de Adopción
+  adoptionJourney: {
+    awarenessStrategy: string;
+    trialDrivers: string[];
+    repeatPurchaseFactors: string[];
+    potentialBlockers: string[];
+  };
+
+  // Ocasiones de Consumo
+  consumptionOccasions: {
+    primary: string[];
+    secondary: string[];
+    unexploredOpportunities: string[];
+  };
+
+  // Proyección de Mercado
+  marketProjection: {
+    targetMarketSize: string;
+    estimatedPenetration: string;
+    growthPotential: string;
+    timeToMarket: string;
+  };
+
   // Métricas
   processingTime: number;
   confidence: number; // 1-10
@@ -43,8 +75,17 @@ export interface SegmentInsight {
   competitorComparison: string;
   purchaseIntent: number; // 1-10
 
+  // Insights Profundos
+  emotionalDrivers: string[];
+  frictionPoints: string[];
+  decisionInfluencers: string[];
+  consumptionContext: string;
+
   // Cita representativa
   representativeQuote: string;
+
+  // Quote adicional sobre momento de consumo
+  consumptionMomentQuote?: string;
 }
 
 export class ConsultorVirtualService {
@@ -57,15 +98,18 @@ export class ConsultorVirtualService {
   /**
    * Evaluación principal del consultor virtual
    */
-  async evaluateConcept(concept: DairyConcept): Promise<ConsultorEvaluation> {
+  async evaluateConcept(
+    concept: DairyConcept,
+    selectedPersonaIds?: string[]
+  ): Promise<ConsultorEvaluation> {
     const startTime = Date.now();
 
     try {
       // Progress update
       this.updateProgress('🧠 Consultor Virtual analizando concepto...');
 
-      // Seleccionar 5 personas más representativas
-      const selectedPersonas = this.selectRepresentativePersonas();
+      // Seleccionar personas (manual o automático)
+      const selectedPersonas = this.selectRepresentativePersonas(selectedPersonaIds);
 
       // Generar análisis con Claude en una sola llamada
       this.updateProgress('⚡ Generando insights por segmento...');
@@ -89,9 +133,20 @@ export class ConsultorVirtualService {
   /**
    * Seleccionar personas más representativas del mercado lácteo colombiano
    */
-  private selectRepresentativePersonas() {
-    // Seleccionar mix representativo: NSE A/B/C, edades variadas, ciudades principales
-    return alqueriaPersonas.slice(0, 5).map(p => ({
+  private selectRepresentativePersonas(selectedIds?: string[]) {
+    // Si hay selección manual, usar esas personas
+    let personasToUse = alqueriaPersonas;
+
+    if (selectedIds && selectedIds.length > 0) {
+      personasToUse = alqueriaPersonas.filter(p =>
+        selectedIds.includes(p.id)
+      );
+    } else {
+      // Selección automática: mix representativo (5 personas)
+      personasToUse = alqueriaPersonas.slice(0, 5);
+    }
+
+    return personasToUse.map(p => ({
       name: p.name,
       profile: `${p.baseProfile.age} años, ${p.baseProfile.occupation || p.baseProfile.profession || 'Profesional'}, ${p.baseProfile.location}`,
       dairyHabits: p.dairyConsumption.frequency,
@@ -108,7 +163,7 @@ export class ConsultorVirtualService {
     const analysisPrompt = `
 Eres un consultor senior especializado en consumer insights lácteos en Colombia con 15+ años de experiencia.
 
-Acabas de realizar entrevistas profundas con 5 consumidores representativos sobre el concepto lácteo "${concept.name}".
+Acabas de realizar entrevistas profundas IN-DEPTH de 90 minutos con ${personas.length} consumidores sobre el concepto lácteo "${concept.name}".
 
 CONCEPTO A EVALUAR:
 Nombre: ${concept.name}
@@ -116,6 +171,7 @@ Descripción: ${concept.description}
 Categoría: ${concept.category}
 Beneficios: ${concept.benefits?.join(', ') || 'N/A'}
 Marca: ${concept.brand || 'Alquería'}
+Precio: ${concept.pricing || 'No definido'}
 
 PERFILES ENTREVISTADOS:
 ${personas.map((p, i) => `
@@ -127,44 +183,75 @@ ${i + 1}. ${p.name}
    - Valores: ${p.concerns}
 `).join('')}
 
-Como consultor experto, basándote en lo que REALMENTE pensarían estos consumidores colombianos, genera un análisis detallado en formato JSON:
+Como consultor experto, basándote en lo que REALMENTE pensarían estos consumidores colombianos tras una ENTREVISTA PROFUNDA, genera un análisis detallado en formato JSON:
 
 {
   "overallRecommendation": "GO|REFINE|NO-GO",
   "overallScore": 1-10,
   "confidence": 1-10,
   "keyFindings": {
-    "topBarriers": ["barrera específica 1", "barrera específica 2", "barrera específica 3"],
-    "topOpportunities": ["oportunidad 1", "oportunidad 2", "oportunidad 3"],
-    "keyRecommendations": ["recomendación accionable 1", "recomendación accionable 2"],
-    "riskFactors": ["riesgo general 1", "riesgo general 2"]
+    "topBarriers": ["3-4 barreras críticas muy específicas del concepto"],
+    "topOpportunities": ["3-4 oportunidades concretas y accionables"],
+    "keyRecommendations": ["3-4 recomendaciones detalladas y específicas"],
+    "riskFactors": ["2-3 riesgos estratégicos principales"]
+  },
+  "competitiveAnalysis": {
+    "mainCompetitor": "Principal competidor directo",
+    "competitiveAdvantages": ["2-3 ventajas claras vs competencia"],
+    "competitiveWeaknesses": ["2-3 debilidades vs competencia"],
+    "differentiationStrategy": "Estrategia clara de diferenciación",
+    "marketPositioning": "Posicionamiento recomendado en el mercado"
+  },
+  "adoptionJourney": {
+    "awarenessStrategy": "Cómo generar conocimiento del producto",
+    "trialDrivers": ["3 motivadores principales para primera compra"],
+    "repeatPurchaseFactors": ["3 factores para recompra"],
+    "potentialBlockers": ["2-3 bloqueadores en el journey"]
+  },
+  "consumptionOccasions": {
+    "primary": ["2-3 ocasiones principales de consumo"],
+    "secondary": ["2-3 ocasiones secundarias"],
+    "unexploredOpportunities": ["2 oportunidades no exploradas"]
+  },
+  "marketProjection": {
+    "targetMarketSize": "Tamaño del mercado objetivo (descriptivo)",
+    "estimatedPenetration": "Penetración esperada (bajo/medio/alto)",
+    "growthPotential": "Potencial de crecimiento (descriptivo)",
+    "timeToMarket": "Tiempo sugerido para lanzamiento"
   },
   "segmentInsights": [
     {
-      "personaName": "${personas[0].name}",
-      "personaProfile": "${personas[0].profile}",
+      "personaName": "${personas[0]?.name || 'Persona 1'}",
+      "personaProfile": "${personas[0]?.profile || 'Perfil'}",
       "overallReaction": "Positiva|Neutral|Negativa",
-      "keyBarriers": ["barrera específica para este perfil"],
-      "keyOpportunities": ["oportunidad específica"],
-      "priceReaction": "percepción general sobre posicionamiento de precio",
-      "competitorComparison": "comparación general vs categoría existente",
+      "keyBarriers": ["2-3 barreras específicas profundas"],
+      "keyOpportunities": ["2-3 oportunidades específicas"],
+      "priceReaction": "Percepción detallada sobre precio",
+      "competitorComparison": "Comparación específica vs sus marcas preferidas",
       "purchaseIntent": 1-10,
-      "representativeQuote": "Lo que diría este consumidor sobre el concepto"
+      "emotionalDrivers": ["2-3 motivadores emocionales profundos"],
+      "frictionPoints": ["2-3 puntos de fricción específicos"],
+      "decisionInfluencers": ["2-3 influenciadores clave en su decisión"],
+      "consumptionContext": "Contexto detallado de consumo",
+      "representativeQuote": "Quote auténtico y detallado sobre el concepto",
+      "consumptionMomentQuote": "Quote sobre cuándo/cómo lo consumiría"
     }
   ]
 }
 
 INSTRUCCIONES CRÍTICAS:
-- Basarte en comportamiento REAL de consumidores colombianos típicos
+- Basarte en comportamiento REAL de consumidores colombianos
 - NO menciones precios específicos, porcentajes exactos o cantidades de dinero
 - NO incluyas fechas específicas, trimestres o años
 - NO inventes lanzamientos específicos de competencia
-- Enfócate en PERCEPCIONES y ACTITUDES generales hacia el concepto
-- Incluir comparaciones generales vs competencia conocida (Alpina, Colanta, Parmalat)
-- Ser específico en insights de comportamiento y motivaciones (no generalidades)
-- Quotes deben sonar auténticos al perfil colombiano
-- Considerar patrones de consumo lácteo típicos en Colombia
-- Factores de riesgo deben ser categorías generales, no eventos específicos
+- PROFUNDIDAD: Cada insight debe ser específico y detallado, como si vinieras de una entrevista de 90 minutos
+- Incluir comparaciones detalladas vs Alpina, Colanta, Parmalat, Nestlé
+- Los quotes deben ser largos (2-3 oraciones) y revelar insights profundos
+- Considerar aspectos culturales, sociales y emocionales del consumo lácteo
+- Analizar fricciones psicológicas y barreras culturales
+- Identificar tensiones entre lo aspiracional y lo práctico
+- Explorar dinámicas familiares en decisiones de compra
+- Considerar influencia del canal tradicional vs moderno
 
 RESPONDE SOLO EL JSON, SIN TEXTO ADICIONAL.
 `;
@@ -256,7 +343,12 @@ RESPONDE SOLO EL JSON, SIN TEXTO ADICIONAL.
         priceReaction: insight.priceReaction || 'Neutral',
         competitorComparison: insight.competitorComparison || 'N/A',
         purchaseIntent: insight.purchaseIntent || 5,
-        representativeQuote: insight.representativeQuote || 'Sin comentario específico'
+        emotionalDrivers: insight.emotionalDrivers || [],
+        frictionPoints: insight.frictionPoints || [],
+        decisionInfluencers: insight.decisionInfluencers || [],
+        consumptionContext: insight.consumptionContext || 'No especificado',
+        representativeQuote: insight.representativeQuote || 'Sin comentario específico',
+        consumptionMomentQuote: insight.consumptionMomentQuote
       })) || [],
 
       executiveSummary: {
@@ -264,6 +356,34 @@ RESPONDE SOLO EL JSON, SIN TEXTO ADICIONAL.
         topOpportunities: analysis.keyFindings?.topOpportunities || ['No identificadas'],
         keyRecommendations: analysis.keyFindings?.keyRecommendations || ['Requiere más análisis'],
         riskFactors: analysis.keyFindings?.riskFactors || ['Sin riesgos identificados']
+      },
+
+      competitiveAnalysis: analysis.competitiveAnalysis || {
+        mainCompetitor: 'No identificado',
+        competitiveAdvantages: [],
+        competitiveWeaknesses: [],
+        differentiationStrategy: 'Por definir',
+        marketPositioning: 'Por definir'
+      },
+
+      adoptionJourney: analysis.adoptionJourney || {
+        awarenessStrategy: 'Por desarrollar',
+        trialDrivers: [],
+        repeatPurchaseFactors: [],
+        potentialBlockers: []
+      },
+
+      consumptionOccasions: analysis.consumptionOccasions || {
+        primary: [],
+        secondary: [],
+        unexploredOpportunities: []
+      },
+
+      marketProjection: analysis.marketProjection || {
+        targetMarketSize: 'Por evaluar',
+        estimatedPenetration: 'Por determinar',
+        growthPotential: 'Por analizar',
+        timeToMarket: 'Por definir'
       },
 
       processingTime,

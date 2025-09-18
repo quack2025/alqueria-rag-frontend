@@ -115,9 +115,169 @@ export const ConsultorVirtualResults: React.FC<ConsultorVirtualResultsProps> = (
         )}
       </div>
 
+      {/* Análisis Competitivo */}
+      <div className="bg-white rounded-lg shadow-sm border p-6">
+        <h3 className="text-xl font-semibold mb-4 text-gray-800">🏆 Análisis Competitivo</h3>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          <div>
+            <div className="mb-4">
+              <h4 className="font-semibold text-purple-600 mb-2">Principal Competidor</h4>
+              <p className="text-gray-700">{evaluation.competitiveAnalysis.mainCompetitor}</p>
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-green-600 mb-2">✨ Ventajas Competitivas</h4>
+              <ul className="space-y-1">
+                {evaluation.competitiveAnalysis.competitiveAdvantages.map((advantage, i) => (
+                  <li key={i} className="text-sm text-gray-700 pl-2 border-l-2 border-green-200">
+                    {advantage}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div>
+            <div className="mb-4">
+              <h4 className="font-semibold text-red-600 mb-2">⚠️ Debilidades vs Competencia</h4>
+              <ul className="space-y-1">
+                {evaluation.competitiveAnalysis.competitiveWeaknesses.map((weakness, i) => (
+                  <li key={i} className="text-sm text-gray-700 pl-2 border-l-2 border-red-200">
+                    {weakness}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-blue-600 mb-2">🎯 Estrategia de Diferenciación</h4>
+              <p className="text-sm text-gray-700">{evaluation.competitiveAnalysis.differentiationStrategy}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 bg-gray-50 p-4 rounded">
+          <h4 className="font-semibold text-gray-800 mb-2">📊 Posicionamiento Recomendado</h4>
+          <p className="text-gray-700">{evaluation.competitiveAnalysis.marketPositioning}</p>
+        </div>
+      </div>
+
+      {/* Journey de Adopción */}
+      <div className="bg-white rounded-lg shadow-sm border p-6">
+        <h3 className="text-xl font-semibold mb-4 text-gray-800">🚀 Journey de Adopción</h3>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          <div>
+            <h4 className="font-semibold text-blue-600 mb-2">📢 Estrategia de Awareness</h4>
+            <p className="text-sm text-gray-700 mb-4">{evaluation.adoptionJourney.awarenessStrategy}</p>
+
+            <h4 className="font-semibold text-green-600 mb-2">🎯 Motivadores de Primera Compra</h4>
+            <ul className="space-y-1">
+              {evaluation.adoptionJourney.trialDrivers.map((driver, i) => (
+                <li key={i} className="text-sm text-gray-700 pl-2 border-l-2 border-green-200">
+                  {driver}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-purple-600 mb-2">🔁 Factores de Recompra</h4>
+            <ul className="space-y-1 mb-4">
+              {evaluation.adoptionJourney.repeatPurchaseFactors.map((factor, i) => (
+                <li key={i} className="text-sm text-gray-700 pl-2 border-l-2 border-purple-200">
+                  {factor}
+                </li>
+              ))}
+            </ul>
+
+            <h4 className="font-semibold text-red-600 mb-2">🚫 Bloqueadores Potenciales</h4>
+            <ul className="space-y-1">
+              {evaluation.adoptionJourney.potentialBlockers.map((blocker, i) => (
+                <li key={i} className="text-sm text-gray-700 pl-2 border-l-2 border-red-200">
+                  {blocker}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Ocasiones de Consumo */}
+      <div className="bg-white rounded-lg shadow-sm border p-6">
+        <h3 className="text-xl font-semibold mb-4 text-gray-800">⏰ Ocasiones de Consumo</h3>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          <div>
+            <h4 className="font-semibold text-green-600 mb-2">🎯 Primarias</h4>
+            <ul className="space-y-1">
+              {evaluation.consumptionOccasions.primary.map((occasion, i) => (
+                <li key={i} className="text-sm text-gray-700 pl-2 border-l-2 border-green-200">
+                  {occasion}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-blue-600 mb-2">🔹 Secundarias</h4>
+            <ul className="space-y-1">
+              {evaluation.consumptionOccasions.secondary.map((occasion, i) => (
+                <li key={i} className="text-sm text-gray-700 pl-2 border-l-2 border-blue-200">
+                  {occasion}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-purple-600 mb-2">🔍 Oportunidades No Exploradas</h4>
+            <ul className="space-y-1">
+              {evaluation.consumptionOccasions.unexploredOpportunities.map((opp, i) => (
+                <li key={i} className="text-sm text-gray-700 pl-2 border-l-2 border-purple-200">
+                  {opp}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Proyección de Mercado */}
+      <div className="bg-white rounded-lg shadow-sm border p-6">
+        <h3 className="text-xl font-semibold mb-4 text-gray-800">📈 Proyección de Mercado</h3>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          <div>
+            <div className="mb-4">
+              <h4 className="font-semibold text-blue-600 mb-2">Mercado Objetivo</h4>
+              <p className="text-sm text-gray-700">{evaluation.marketProjection.targetMarketSize}</p>
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-green-600 mb-2">Penetración Estimada</h4>
+              <p className="text-sm text-gray-700">{evaluation.marketProjection.estimatedPenetration}</p>
+            </div>
+          </div>
+
+          <div>
+            <div className="mb-4">
+              <h4 className="font-semibold text-purple-600 mb-2">Potencial de Crecimiento</h4>
+              <p className="text-sm text-gray-700">{evaluation.marketProjection.growthPotential}</p>
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-orange-600 mb-2">Time to Market</h4>
+              <p className="text-sm text-gray-700">{evaluation.marketProjection.timeToMarket}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Análisis por Segmento */}
       <div className="bg-white rounded-lg shadow-sm border p-6">
-        <h3 className="text-xl font-semibold mb-4 text-gray-800">👥 Análisis por Segmento</h3>
+        <h3 className="text-xl font-semibold mb-4 text-gray-800">👥 Análisis por Segmento ({evaluation.segmentAnalysis.length} personas)</h3>
 
         <div className="space-y-4">
           {evaluation.segmentAnalysis.map((segment, i) => (
@@ -139,11 +299,58 @@ export const ConsultorVirtualResults: React.FC<ConsultorVirtualResultsProps> = (
                 </div>
               </div>
 
-              {/* Quote representativa */}
-              <blockquote className="italic text-gray-700 bg-gray-50 p-3 rounded border-l-4 border-gray-300 mb-3">
-                "{segment.representativeQuote}"
-              </blockquote>
+              {/* Quotes representativas */}
+              <div className="space-y-2 mb-4">
+                <blockquote className="italic text-gray-700 bg-gray-50 p-3 rounded border-l-4 border-gray-300">
+                  "{segment.representativeQuote}"
+                </blockquote>
+                {segment.consumptionMomentQuote && (
+                  <blockquote className="italic text-blue-700 bg-blue-50 p-3 rounded border-l-4 border-blue-300 text-sm">
+                    <span className="font-medium">Momento de consumo:</span> "{segment.consumptionMomentQuote}"
+                  </blockquote>
+                )}
+              </div>
 
+              {/* Análisis Profundo */}
+              <div className="bg-gray-50 p-4 rounded mb-4">
+                <div className="grid md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium text-purple-600">💭 Motivadores Emocionales:</span>
+                    <ul className="mt-1 space-y-1">
+                      {segment.emotionalDrivers?.map((driver, k) => (
+                        <li key={k} className="text-gray-700">• {driver}</li>
+                      )) || <li className="text-gray-500 italic">No identificados</li>}
+                    </ul>
+                  </div>
+
+                  <div>
+                    <span className="font-medium text-orange-600">⚡ Puntos de Fricción:</span>
+                    <ul className="mt-1 space-y-1">
+                      {segment.frictionPoints?.map((friction, k) => (
+                        <li key={k} className="text-gray-700">• {friction}</li>
+                      )) || <li className="text-gray-500 italic">No identificados</li>}
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4 text-sm mt-3">
+                  <div>
+                    <span className="font-medium text-green-600">👨‍👩‍👧‍👦 Influenciadores de Decisión:</span>
+                    <ul className="mt-1 space-y-1">
+                      {segment.decisionInfluencers?.map((influencer, k) => (
+                        <li key={k} className="text-gray-700">• {influencer}</li>
+                      )) || <li className="text-gray-500 italic">No identificados</li>}
+                    </ul>
+                  </div>
+
+                  <div>
+                    <span className="font-medium text-indigo-600">🕐 Contexto de Consumo:</span>
+                    <p className="mt-1 text-gray-700">{segment.consumptionContext || 'No especificado'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Insights Básicos */}
               <div className="grid md:grid-cols-3 gap-4 text-sm">
                 <div>
                   <span className="font-medium text-red-600">Barreras:</span>
