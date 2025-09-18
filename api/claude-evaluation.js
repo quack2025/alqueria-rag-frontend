@@ -37,7 +37,15 @@ export default async function handler(req, res) {
 
     // Validate required fields
     if (!userPrompt && !messages) {
-      return res.status(400).json({ error: 'Missing required prompt or messages' });
+      console.error('❌ Missing required fields. Body:', JSON.stringify(req.body, null, 2));
+      return res.status(400).json({
+        error: 'Missing required prompt or messages',
+        received: {
+          hasUserPrompt: !!userPrompt,
+          hasMessages: !!messages,
+          hasSystemPrompt: !!systemPrompt
+        }
+      });
     }
 
     // Get API key from environment variable (secure)

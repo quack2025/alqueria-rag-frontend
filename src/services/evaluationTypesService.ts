@@ -204,12 +204,12 @@ Responde en formato JSON con esta estructura exacta, enfocándote en RAZONES esp
   "quote": "Tu reacción personal completa sobre el concepto en primera persona (mínimo 2 oraciones)",
   "overall_feeling": "positiva|neutral|negativa",
   "aspects": {
-    ${typeConfig.outputStructure.map((structure, i) => `
+    ${typeConfig.outputStructure?.filter(structure => structure && typeof structure === 'string').map((structure, i) => `
     "${structure.toLowerCase().replace(/\s+/g, '_').replace(/ñ/g, 'n')}": {
       "positives": ["razón positiva específica 1", "razón positiva específica 2"],
-      "negatives": ["razón negativa específica 1", "razón negativa específica 2"],  
+      "negatives": ["razón negativa específica 1", "razón negativa específica 2"],
       "recommendations": ["recomendación específica 1", "recomendación específica 2"]
-    }${i < typeConfig.outputStructure.length - 1 ? ',' : ''}`).join('')}
+    }${i < (typeConfig.outputStructure?.filter(s => s && typeof s === 'string').length || 0) - 1 ? ',' : ''}`).join('') || ''}
   },
   "key_drivers": ["driver de decisión 1", "driver de decisión 2", "driver de decisión 3"],
   "suggestions": ["mejora específica 1", "mejora específica 2"]
@@ -472,9 +472,9 @@ ${isSpanish ?
       // Fallback to old format if new format not found
       if (Object.keys(aspects).length === 0 && parsed.aspects) {
         Object.entries(parsed.aspects).forEach(([key, value]: [string, any]) => {
-          const friendlyKey = typeConfig.outputStructure.find(s => 
-            s.toLowerCase().replace(/\s+/g, '_').replace(/ñ/g, 'n') === key
-          ) || key.replace(/_/g, ' ');
+          const friendlyKey = typeConfig.outputStructure?.find(s =>
+            s && typeof s === 'string' && s.toLowerCase().replace(/\s+/g, '_').replace(/ñ/g, 'n') === key
+          ) || (key ? key.replace(/_/g, ' ') : 'aspecto_desconocido');
           
           aspects[friendlyKey] = {
             positives: Array.isArray(value.positives) ? value.positives : [],
