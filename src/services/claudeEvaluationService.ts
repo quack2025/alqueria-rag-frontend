@@ -247,7 +247,7 @@ CONCEPTO A EVALUAR:
 - Beneficios: ${concept.benefits?.join(', ')}
 
 PREGUNTAS ACTUALES QUE NECESITAN REVISIÓN:
-${questions.map((q, i) => `${i + 1}. ${q.base.replace('[CONCEPTO]', concept.name)}`).join('\n')}
+${questions.filter(q => q && q.base && typeof q.base === 'string').map((q, i) => `${i + 1}. ${q.base.replace('[CONCEPTO]', concept.name)}`).join('\n')}
 
 TAREAS DEL MODERADOR EXPERTO:
 1. Revisa cada pregunta para asegurar que suene NATURAL y CONVERSACIONAL en Colombia
@@ -639,14 +639,16 @@ export async function generateConversationalEvaluation(
   if (onProgressUpdate) onProgressUpdate(moderatorMessage);
   let reviewedQuestions = await reviewQuestionsWithExpert(concept, CONVERSATION_SCRIPT);
 
-  // PASO 2: Reemplazar placeholders en las preguntas revisadas
-  const personalizedQuestions = reviewedQuestions.map(script => ({
-    ...script,
-    base: script.base
-      .replace('[CONCEPTO]', concept.name)
-      .replace('[MARCA]', concept.brand)
-      .replace('[BENEFICIOS]', concept.benefits?.join(', ') || '')
-  }));
+  // PASO 2: Reemplazar placeholders en las preguntas revisadas (con validación)
+  const personalizedQuestions = reviewedQuestions
+    .filter(script => script && script.base && typeof script.base === 'string')
+    .map(script => ({
+      ...script,
+      base: script.base
+        .replace('[CONCEPTO]', concept.name || '')
+        .replace('[MARCA]', concept.brand || 'Alquería')
+        .replace('[BENEFICIOS]', concept.benefits?.join(', ') || '')
+    }));
 
   // Generar conversación pregunta por pregunta con progress tracking
   for (const [index, questionScript] of personalizedQuestions.entries()) {
