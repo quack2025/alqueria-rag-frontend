@@ -137,7 +137,7 @@ Como consultor experto, basándote en lo que REALMENTE pensarían estos consumid
     "topBarriers": ["barrera específica 1", "barrera específica 2", "barrera específica 3"],
     "topOpportunities": ["oportunidad 1", "oportunidad 2", "oportunidad 3"],
     "keyRecommendations": ["recomendación accionable 1", "recomendación accionable 2"],
-    "riskFactors": ["riesgo 1", "riesgo 2"]
+    "riskFactors": ["riesgo general 1", "riesgo general 2"]
   },
   "segmentInsights": [
     {
@@ -146,8 +146,8 @@ Como consultor experto, basándote en lo que REALMENTE pensarían estos consumid
       "overallReaction": "Positiva|Neutral|Negativa",
       "keyBarriers": ["barrera específica para este perfil"],
       "keyOpportunities": ["oportunidad específica"],
-      "priceReaction": "reacción al precio del concepto",
-      "competitorComparison": "cómo lo compara vs competencia",
+      "priceReaction": "percepción general sobre posicionamiento de precio",
+      "competitorComparison": "comparación general vs categoría existente",
       "purchaseIntent": 1-10,
       "representativeQuote": "Lo que diría este consumidor sobre el concepto"
     }
@@ -155,12 +155,16 @@ Como consultor experto, basándote en lo que REALMENTE pensarían estos consumid
 }
 
 INSTRUCCIONES CRÍTICAS:
-- Basarte en comportamiento REAL de consumidores colombianos
-- Considerar contexto económico actual (inflación, poder adquisitivo)
-- Incluir comparaciones vs competencia (Alpina, Colanta, Parmalat)
-- Ser específico en barreras y oportunidades (no generalidades)
+- Basarte en comportamiento REAL de consumidores colombianos típicos
+- NO menciones precios específicos, porcentajes exactos o cantidades de dinero
+- NO incluyas fechas específicas, trimestres o años
+- NO inventes lanzamientos específicos de competencia
+- Enfócate en PERCEPCIONES y ACTITUDES generales hacia el concepto
+- Incluir comparaciones generales vs competencia conocida (Alpina, Colanta, Parmalat)
+- Ser específico en insights de comportamiento y motivaciones (no generalidades)
 - Quotes deben sonar auténticos al perfil colombiano
-- Considerar canales de distribución típicos (tiendas vs supermercados)
+- Considerar patrones de consumo lácteo típicos en Colombia
+- Factores de riesgo deben ser categorías generales, no eventos específicos
 
 RESPONDE SOLO EL JSON, SIN TEXTO ADICIONAL.
 `;
