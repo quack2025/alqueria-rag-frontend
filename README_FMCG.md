@@ -32,7 +32,7 @@ Sistema RAG adaptado para productos de consumo masivo con 25 nuevas variables es
 
 ## 🚀 Enlaces
 - **Backend**: https://web-production-68331.up.railway.app/
-- **GitHub**: https://github.com/quack2025/unilever-rag-frontend
+- **GitHub**: https://github.com/quack2025/alqueria-rag-frontend
 - **Estado**: Backend ✅ | Frontend 🟡 (listo para Vercel)
 
 ## 📋 Casos de Uso Unilever

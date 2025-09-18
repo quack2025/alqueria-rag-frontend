@@ -55,11 +55,26 @@
 - Cambiado de "Azure OpenAI/Claude" a "Genius Bot by Insight Genius"
 - Actualizado en toda la aplicación
 
+### 6. ✅ **Mejoras Críticas de Seguridad y Robustez**
+**Problema**: API keys expuestas en frontend, fallos por rate limits, tokens truncados.
+
+**Soluciones Implementadas**:
+- Eliminado uso directo de API keys en frontend
+- Forzado uso de Vercel Functions como proxy seguro
+- Implementado retry automático con exponential backoff
+- Sistema de fallback mejorado de 3 niveles
+- Aumentado límite de tokens a 32K
+- Creada documentación crítica en CRITICAL_CONFIG.md
+
+**Archivos Añadidos**:
+- `src/utils/retryWithBackoff.ts` - Sistema de reintentos inteligente
+- `CRITICAL_CONFIG.md` - Guía de configuración crítica
+
 ## 📁 Estado del Repositorio
 
 **Repositorio GitHub**: https://github.com/quack2025/alqueria-rag-frontend.git
 **Branch**: master
-**Último Commit**: `42c6954` - "🐛 Fix: Soluciona problemas críticos de evaluación y navegación"
+**Último Commit**: `1d75a5d` - "🔒 Critical: Mejoras de seguridad, robustez y performance"
 **Estado**: ✅ Sincronizado con remoto
 
 ## 🚀 Sistema Actual Funcionando
@@ -103,10 +118,17 @@ VITE_CLAUDE_API_KEY=[configurada localmente]
 
 ## 📝 Pendientes y Consideraciones
 
+### **⚠️ CONFIGURACIÓN CRÍTICA PARA PRODUCCIÓN**
+1. **NUNCA** poner `VITE_CLAUDE_API_KEY` en frontend
+2. **SIEMPRE** usar `VITE_USE_VERCEL_FUNCTIONS=true`
+3. **VERIFICAR** que API keys solo están en Vercel Dashboard
+4. **MONITOREAR** logs buscando "FALLBACK REPORT" o "rate limit"
+
 ### **Optimizaciones Sugeridas**
 1. Code splitting para reducir bundle size (actualmente 780KB)
 2. Implementar caché para respuestas de Claude
 3. Añadir tests unitarios para servicios críticos
+4. Considerar sistema de queue para evaluaciones largas
 
 ### **Features en Pipeline**
 1. Dashboard de analytics para evaluaciones
@@ -147,7 +169,7 @@ ARCHIVOS CLAVE:
 ESTADO ACTUAL:
 - Sistema funcionando correctamente en desarrollo
 - Sin errores de compilación
-- Último commit: 42c6954
+- Último commit: 1d75a5d
 
 NECESITO CONTINUAR CON: [describe tu siguiente tarea aquí]
 ```
