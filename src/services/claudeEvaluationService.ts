@@ -13,8 +13,31 @@ import type { ResponseAnalysis, DynamicFollowUp, AdaptiveInterviewConfig } from 
 /**
  * Función robusta para limpiar respuestas de Claude que pueden tener markdown
  */
-function cleanClaudeResponse(content: string): string {
-  let cleaned = content.trim();
+function cleanClaudeResponse(content: any): string {
+  // Validar entrada y convertir a string
+  if (!content) {
+    console.warn('⚠️ cleanClaudeResponse recibió contenido vacío');
+    return '{}';
+  }
+
+  // Convertir a string según el tipo
+  let contentStr: string;
+  if (typeof content === 'string') {
+    contentStr = content;
+  } else if (typeof content === 'object') {
+    // Si es un objeto o array, intentar convertir a JSON
+    try {
+      contentStr = JSON.stringify(content);
+    } catch (e) {
+      console.error('❌ Error convirtiendo objeto a string:', e);
+      return '{}';
+    }
+  } else {
+    console.warn('⚠️ Tipo inesperado en cleanClaudeResponse:', typeof content);
+    contentStr = String(content);
+  }
+
+  let cleaned = contentStr.trim();
 
   // 1. Remover bloques de código markdown completos
   cleaned = cleaned.replace(/```json\s*[\s\S]*?\s*```/g, (match) => {
@@ -30,12 +53,25 @@ function cleanClaudeResponse(content: string): string {
   // 4. Limpiar caracteres de control y espacios
   cleaned = cleaned.replace(/[\r\n\t]/g, ' ').replace(/\s+/g, ' ').trim();
 
-  // 5. Verificar que empiece y termine con llaves
-  if (!cleaned.startsWith('{') && cleaned.includes('{')) {
-    cleaned = cleaned.substring(cleaned.indexOf('{'));
+  // 5. Verificar que empiece y termine con llaves o corchetes
+  if (!cleaned.startsWith('{') && !cleaned.startsWith('[')) {
+    if (cleaned.includes('{')) {
+      const idx = cleaned.indexOf('{');
+      if (idx !== -1) cleaned = cleaned.substring(idx);
+    } else if (cleaned.includes('[')) {
+      const idx = cleaned.indexOf('[');
+      if (idx !== -1) cleaned = cleaned.substring(idx);
+    }
   }
-  if (!cleaned.endsWith('}') && cleaned.includes('}')) {
-    cleaned = cleaned.substring(0, cleaned.lastIndexOf('}') + 1);
+
+  if (!cleaned.endsWith('}') && !cleaned.endsWith(']')) {
+    if (cleaned.includes('}')) {
+      const idx = cleaned.lastIndexOf('}');
+      if (idx !== -1) cleaned = cleaned.substring(0, idx + 1);
+    } else if (cleaned.includes(']')) {
+      const idx = cleaned.lastIndexOf(']');
+      if (idx !== -1) cleaned = cleaned.substring(0, idx + 1);
+    }
   }
 
   return cleaned;
@@ -377,14 +413,25 @@ RESPONDE SOLO EL JSON, SIN TEXTO ADICIONAL.`;
     }
 
     const data = await response.json();
-    let cleanContent = data.content || '';
 
-    // Limpiar markdown si está presente
-    if (cleanContent.includes('```json')) {
-      cleanContent = cleanContent.replace(/```json\s*/g, '').replace(/```\s*$/g, '');
+    // Extraer contenido según estructura de respuesta
+    let cleanContent = '';
+    if (data.content && Array.isArray(data.content) && data.content[0]?.text) {
+      cleanContent = data.content[0].text;
+    } else if (data.message) {
+      cleanContent = data.message;
+    } else if (data.response) {
+      cleanContent = data.response;
+    } else if (typeof data === 'string') {
+      cleanContent = data;
+    } else {
+      console.warn('⚠️ Estructura inesperada en análisis adaptativo:', data);
+      cleanContent = '{"needsDeepDive": false, "triggers": [], "emotion": "neutral", "opportunities": [], "barriers": [], "surprisingElements": []}';
     }
 
-    const analysis: ResponseAnalysis = JSON.parse(cleanClaudeResponse(cleanContent));
+    // Limpiar y parsear
+    cleanContent = cleanClaudeResponse(cleanContent);
+    const analysis: ResponseAnalysis = JSON.parse(cleanContent);
     console.log('✅ Análisis adaptativo completado:', analysis);
     return analysis;
 
@@ -477,14 +524,25 @@ RESPONDE SOLO EL JSON, SIN TEXTO ADICIONAL.`;
     }
 
     const data = await response.json();
-    let cleanContent = data.content || '';
 
-    // Limpiar markdown si está presente
-    if (cleanContent.includes('```json')) {
-      cleanContent = cleanContent.replace(/```json\s*/g, '').replace(/```\s*$/g, '');
+    // Extraer contenido según estructura de respuesta
+    let cleanContent = '';
+    if (data.content && Array.isArray(data.content) && data.content[0]?.text) {
+      cleanContent = data.content[0].text;
+    } else if (data.message) {
+      cleanContent = data.message;
+    } else if (data.response) {
+      cleanContent = data.response;
+    } else if (typeof data === 'string') {
+      cleanContent = data;
+    } else {
+      console.warn('⚠️ Estructura inesperada en followUps:', data);
+      return [];
     }
 
-    const followUps: DynamicFollowUp[] = JSON.parse(cleanClaudeResponse(cleanContent));
+    // Limpiar y parsear
+    cleanContent = cleanClaudeResponse(cleanContent);
+    const followUps: DynamicFollowUp[] = JSON.parse(cleanContent);
 
     // Limitar según configuración
     const limitedFollowUps = followUps.slice(0, config.maxDynamicQuestions);
@@ -1065,18 +1123,33 @@ IMPORTANTE: Basa tu análisis SOLO en lo que esta persona específica expresó. 
       }
 
       const data = await response.json();
-      // Limpiar la respuesta de Claude - remover markdown si está presente
-      let cleanContent = data.content || '';
-      if (cleanContent.includes('```json')) {
-        cleanContent = cleanContent.replace(/```json\s*/g, '').replace(/```\s*$/g, '');
-      }
-      if (cleanContent.includes('```')) {
-        cleanContent = cleanContent.replace(/```[^`]*```/g, '');
+
+      // Extraer contenido según estructura de respuesta
+      let cleanContent = '';
+      if (data.content && Array.isArray(data.content) && data.content[0]?.text) {
+        cleanContent = data.content[0].text;
+      } else if (data.message) {
+        cleanContent = data.message;
+      } else if (data.response) {
+        cleanContent = data.response;
+      } else if (typeof data === 'string') {
+        cleanContent = data;
+      } else {
+        console.warn('⚠️ Estructura inesperada en Executive Analysis:', data);
+        throw new Error('Respuesta inválida de Claude API');
       }
 
-      console.log('🧹 Cleaned content for parsing:', cleanContent.substring(0, 200) + '...');
+      // Limpiar y parsear (solo una vez)
+      cleanContent = cleanClaudeResponse(cleanContent);
 
-      const analysisResult = JSON.parse(cleanClaudeResponse(cleanContent));
+      // Validar que es un string antes de substring
+      if (typeof cleanContent === 'string' && cleanContent.length > 200) {
+        console.log('🧹 Cleaned content for parsing:', cleanContent.substring(0, 200) + '...');
+      } else {
+        console.log('🧹 Cleaned content for parsing:', cleanContent);
+      }
+
+      const analysisResult = JSON.parse(cleanContent);
 
       return {
         thematicAnalysis: analysisResult.keyThemes?.map((theme: any) => ({
@@ -1155,16 +1228,10 @@ IMPORTANTE: Basa tu análisis SOLO en lo que esta persona específica expresó. 
       // Intentar parsear como JSON primero
       let summaryData;
       try {
-        // Limpiar texto antes de parsear JSON
-        let cleanedText = responseText.trim();
-        // Remover posibles prefijos/sufijos no-JSON
-        if (cleanedText.includes('{')) {
-          const jsonStart = cleanedText.indexOf('{');
-          const jsonEnd = cleanedText.lastIndexOf('}') + 1;
-          cleanedText = cleanedText.substring(jsonStart, jsonEnd);
-        }
+        // Limpiar texto antes de parsear JSON usando función robusta
+        let cleanedText = cleanClaudeResponse(responseText);
 
-        summaryData = JSON.parse(cleanClaudeResponse(cleanedText));
+        summaryData = JSON.parse(cleanedText);
         console.log('✅ JSON parseable exitosamente');
       } catch (parseError) {
         console.log('⚠️ No es JSON válido, generando estructura manualmente');

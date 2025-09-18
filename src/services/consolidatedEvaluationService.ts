@@ -14,9 +14,32 @@ import type {
 } from '../types/dairy.types';
 import { callClaudeWithRetry } from '../utils/retryWithBackoff';
 
-// Función helper para limpiar respuestas de Claude
-function cleanClaudeResponse(content: string): string {
-  let cleaned = content.trim();
+// Función helper para limpiar respuestas de Claude con validación de tipos
+function cleanClaudeResponse(content: any): string {
+  // Validar entrada y convertir a string
+  if (!content) {
+    console.warn('⚠️ cleanClaudeResponse recibió contenido vacío');
+    return '[]';
+  }
+
+  // Convertir a string según el tipo
+  let contentStr: string;
+  if (typeof content === 'string') {
+    contentStr = content;
+  } else if (typeof content === 'object') {
+    // Si es un objeto o array, intentar convertir a JSON
+    try {
+      contentStr = JSON.stringify(content);
+    } catch (e) {
+      console.error('❌ Error convirtiendo objeto a string:', e);
+      return '[]';
+    }
+  } else {
+    console.warn('⚠️ Tipo inesperado en cleanClaudeResponse:', typeof content);
+    contentStr = String(content);
+  }
+
+  let cleaned = contentStr.trim();
 
   // 1. Remover bloques de código markdown completos
   cleaned = cleaned.replace(/```json\s*[\s\S]*?\s*```/g, (match) => {
@@ -31,10 +54,12 @@ function cleanClaudeResponse(content: string): string {
 
   // 4. Si empieza/termina con corchetes, es un array
   if (!cleaned.startsWith('[') && cleaned.includes('[')) {
-    cleaned = cleaned.substring(cleaned.indexOf('['));
+    const idx = cleaned.indexOf('[');
+    if (idx !== -1) cleaned = cleaned.substring(idx);
   }
   if (!cleaned.endsWith(']') && cleaned.includes(']')) {
-    cleaned = cleaned.substring(0, cleaned.lastIndexOf(']') + 1);
+    const idx = cleaned.lastIndexOf(']');
+    if (idx !== -1) cleaned = cleaned.substring(0, idx + 1);
   }
 
   return cleaned;
@@ -319,11 +344,13 @@ SOLO JSON, sin markdown ni texto adicional. Máximo 1 insight y 1 cita por secci
       // Manejo robusto de diferentes formatos de respuesta de Claude
       let reportContent: string;
       if (data.content && Array.isArray(data.content) && data.content[0]?.text) {
-        reportContent = data.content[0].text.trim();
-      } else if (data.message || data.response) {
-        reportContent = (data.message || data.response).trim();
+        reportContent = data.content[0].text;
+      } else if (data.message) {
+        reportContent = data.message;
+      } else if (data.response) {
+        reportContent = data.response;
       } else if (typeof data === 'string') {
-        reportContent = data.trim();
+        reportContent = data;
       } else {
         console.log('❌ Estructura de respuesta inesperada:', data);
         throw new Error('Formato de respuesta no reconocido de Claude API');
@@ -425,7 +452,22 @@ Genera exactamente estas 4 secciones:
       );
 
       const data = await response.json();
-      let content = data.content?.[0]?.text || data.message || data.response || '';
+
+      // Extraer contenido según estructura de respuesta
+      let content = '';
+      if (data.content && Array.isArray(data.content) && data.content[0]?.text) {
+        content = data.content[0].text;
+      } else if (data.message) {
+        content = data.message;
+      } else if (data.response) {
+        content = data.response;
+      } else if (typeof data === 'string') {
+        content = data;
+      } else {
+        console.warn('⚠️ Estructura inesperada en reporte compacto:', data);
+        content = '[]';
+      }
+
       content = cleanClaudeResponse(content);
 
       return JSON.parse(content);
@@ -512,14 +554,17 @@ Genera exactamente estas 4 secciones:
     ];
   }
 
-  // Fallback wrapper para compatibilidad
+  // NUNCA usar fallback local para evitar decisiones erróneas
   private generateFallbackReport(
     concept: DairyConcept,
     interviews: ConversationalEvaluation[],
     detailedInterviews: DetailedInterview[]
   ): StudySection[] {
-    console.error('❌ FALLBACK REPORT ACTIVADO - Usando fallback local');
-    return this.generateLocalFallbackReport(concept, interviews, detailedInterviews);
+    console.error('❌ FALLBACK REPORT ACTIVADO - ESTO ES CRÍTICO');
+    console.error('🚫 NO SE PUEDE GENERAR REPORTE DE CALIDAD SIN CLAUDE API');
+    console.error('🚨 EL CLIENTE NO DEBE TOMAR DECISIONES BASADAS EN FALLBACK LOCAL');
+
+    throw new Error(`FALLO CRÍTICO: No se pudo generar reporte consolidado para "${concept.name}". \n\n🚫 EL SISTEMA NO PERMITE FALLBACK LOCAL PARA EVITAR DECISIONES ERRÓNEAS.\n\n🔧 Verificar:\n- Conexión a Claude API\n- Configuración de Vercel Functions\n- Límites de tokens y timeouts\n\n📞 Contactar soporte técnico si persiste el problema.`);
   }
 
   // Método alternativo que podría usarse solo para debugging (NO para producción)
