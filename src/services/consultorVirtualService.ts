@@ -1,12 +1,32 @@
 /**
- * Consultor Virtual Service - Evaluación rápida de conceptos lácteos
- * Reemplaza el sistema complejo de entrevistas múltiples con análisis directo
+ * Consultor Virtual Service - Advanced Dairy Concept Evaluation System
+ *
+ * @description Single-call evaluation system that simulates in-depth consumer interviews
+ *              for dairy product concepts. Replaces complex multi-interview systems
+ *              with efficient Claude-powered analysis.
+ *
+ * @features
+ * - Automatic (5 people) or Manual (3-8 people) persona selection
+ * - Deep psychological insights and behavioral analysis
+ * - Competitive analysis and market positioning
+ * - Consumer adoption journey mapping
+ * - Market projection and growth potential assessment
+ *
+ * @author Jorge with Claude Code assistance
+ * @version 2.0 - Enhanced with deep insights (Sept 2024)
  */
 
 import type { DairyConcept } from '../types/dairy.types';
 import { alqueriaPersonas } from '../data/alqueriaPersonaSystem';
 
-// Tipos específicos para Consultor Virtual
+// ============================================================================
+// TYPE DEFINITIONS - Enhanced Evaluation Interfaces
+// ============================================================================
+
+/**
+ * Complete evaluation result from Consultor Virtual
+ * Contains all analysis sections for comprehensive concept assessment
+ */
 export interface ConsultorEvaluation {
   conceptId: string;
   conceptName: string;
@@ -15,79 +35,97 @@ export interface ConsultorEvaluation {
   recommendation: 'GO' | 'REFINE' | 'NO-GO';
   overallScore: number; // 1-10
 
-  // Análisis por segmento
-  segmentAnalysis: SegmentInsight[];
+  // Core Analysis Sections
+  segmentAnalysis: SegmentInsight[];              // Individual persona insights
+  executiveSummary: ExecutiveSummary;             // High-level recommendations
 
-  // Resumen ejecutivo
-  executiveSummary: {
-    topBarriers: string[];
-    topOpportunities: string[];
-    keyRecommendations: string[];
-    riskFactors: string[];
-  };
-
-  // Análisis Competitivo Detallado
-  competitiveAnalysis: {
-    mainCompetitor: string;
-    competitiveAdvantages: string[];
-    competitiveWeaknesses: string[];
-    differentiationStrategy: string;
-    marketPositioning: string;
-  };
-
-  // Journey de Adopción
-  adoptionJourney: {
-    awarenessStrategy: string;
-    trialDrivers: string[];
-    repeatPurchaseFactors: string[];
-    potentialBlockers: string[];
-  };
-
-  // Ocasiones de Consumo
-  consumptionOccasions: {
-    primary: string[];
-    secondary: string[];
-    unexploredOpportunities: string[];
-  };
-
-  // Proyección de Mercado
-  marketProjection: {
-    targetMarketSize: string;
-    estimatedPenetration: string;
-    growthPotential: string;
-    timeToMarket: string;
-  };
+  // Deep Analysis Sections (Enhanced in v2.0)
+  competitiveAnalysis: CompetitiveAnalysis;       // Market positioning vs competitors
+  adoptionJourney: AdoptionJourney;               // Consumer adoption path
+  consumptionOccasions: ConsumptionOccasions;     // Usage context mapping
+  marketProjection: MarketProjection;             // Business potential assessment
 
   // Métricas
   processingTime: number;
   confidence: number; // 1-10
 }
 
+/**
+ * Individual persona analysis with deep psychological insights
+ */
 export interface SegmentInsight {
+  // Basic Profile
   personaName: string;
-  personaProfile: string; // "28 años, profesional, Medellín, NSE B"
+  personaProfile: string;                         // "28 años, profesional, Medellín, NSE B"
   overallReaction: 'Positiva' | 'Neutral' | 'Negativa';
+  purchaseIntent: number;                         // 1-10 scale
 
-  // Insights específicos
+  // Traditional Insights
   keyBarriers: string[];
   keyOpportunities: string[];
   priceReaction: string;
   competitorComparison: string;
-  purchaseIntent: number; // 1-10
 
-  // Insights Profundos
-  emotionalDrivers: string[];
-  frictionPoints: string[];
-  decisionInfluencers: string[];
-  consumptionContext: string;
+  // Deep Psychological Insights (v2.0 Enhancement)
+  emotionalDrivers: string[];                     // Emotional motivators
+  frictionPoints: string[];                       // Specific obstacles
+  decisionInfluencers: string[];                  // Who/what influences purchase
+  consumptionContext: string;                     // When/how/where they'd consume
 
-  // Cita representativa
-  representativeQuote: string;
-
-  // Quote adicional sobre momento de consumo
-  consumptionMomentQuote?: string;
+  // Authentic Voice
+  representativeQuote: string;                    // Main reaction quote
+  consumptionMomentQuote?: string;                // Usage context quote
 }
 
+// Supporting Interface Definitions
+interface ExecutiveSummary {
+  topBarriers: string[];
+  topOpportunities: string[];
+  keyRecommendations: string[];
+  riskFactors: string[];
+}
+
+interface CompetitiveAnalysis {
+  mainCompetitor: string;
+  competitiveAdvantages: string[];
+  competitiveWeaknesses: string[];
+  differentiationStrategy: string;
+  marketPositioning: string;
+}
+
+interface AdoptionJourney {
+  awarenessStrategy: string;
+  trialDrivers: string[];
+  repeatPurchaseFactors: string[];
+  potentialBlockers: string[];
+}
+
+interface ConsumptionOccasions {
+  primary: string[];
+  secondary: string[];
+  unexploredOpportunities: string[];
+}
+
+interface MarketProjection {
+  targetMarketSize: string;
+  estimatedPenetration: string;
+  growthPotential: string;
+  timeToMarket: string;
+}
+
+// ============================================================================
+// MAIN SERVICE CLASS
+// ============================================================================
+
+/**
+ * Consultor Virtual Service - Single-call concept evaluation system
+ *
+ * @example
+ * ```typescript
+ * const service = new ConsultorVirtualService((progress) => console.log(progress));
+ * const result = await service.evaluateConcept(concept, ['persona1', 'persona2']);
+ * ```
+ */
 export class ConsultorVirtualService {
   private progressCallback?: (message: string) => void;
 
@@ -95,8 +133,19 @@ export class ConsultorVirtualService {
     this.progressCallback = progressCallback;
   }
 
+  // ========================================================================
+  // PUBLIC METHODS
+  // ========================================================================
+
   /**
-   * Evaluación principal del consultor virtual
+   * Main evaluation method - Analyzes dairy concept using selected personas
+   *
+   * @param concept - The dairy concept to evaluate
+   * @param selectedPersonaIds - Optional array of persona IDs for manual selection
+   *                           If undefined, uses automatic selection (5 representative personas)
+   * @returns Complete evaluation with all analysis sections
+   *
+   * @throws Error if Claude API fails (returns emergency evaluation as fallback)
    */
   async evaluateConcept(
     concept: DairyConcept,
@@ -130,19 +179,28 @@ export class ConsultorVirtualService {
     }
   }
 
+  // ========================================================================
+  // PRIVATE METHODS
+  // ========================================================================
+
   /**
-   * Seleccionar personas más representativas del mercado lácteo colombiano
+   * Selects personas for evaluation - manual or automatic selection
+   *
+   * @param selectedIds - Optional array of persona IDs for manual selection
+   * @returns Array of selected personas with relevant dairy consumption data
+   *
+   * @strategy
+   * - Manual: Filter by provided IDs
+   * - Automatic: First 5 personas (balanced NSE, age, location mix)
    */
   private selectRepresentativePersonas(selectedIds?: string[]) {
-    // Si hay selección manual, usar esas personas
     let personasToUse = alqueriaPersonas;
 
     if (selectedIds && selectedIds.length > 0) {
-      personasToUse = alqueriaPersonas.filter(p =>
-        selectedIds.includes(p.id)
-      );
+      // Manual selection: use specified personas
+      personasToUse = alqueriaPersonas.filter(p => selectedIds.includes(p.id));
     } else {
-      // Selección automática: mix representativo (5 personas)
+      // Automatic selection: first 5 personas (pre-balanced demographic mix)
       personasToUse = alqueriaPersonas.slice(0, 5);
     }
 
@@ -157,7 +215,17 @@ export class ConsultorVirtualService {
   }
 
   /**
-   * Prompt optimizado para análisis directo
+   * Generates comprehensive analysis using Claude API
+   *
+   * @param concept - Dairy concept to analyze
+   * @param personas - Selected personas for evaluation
+   * @returns Structured analysis object with all insight sections
+   *
+   * @prompt_strategy
+   * - Simulates 90-minute in-depth interviews
+   * - Focuses on psychological drivers and cultural factors
+   * - Avoids specific pricing/dates for realistic insights
+   * - Generates actionable business recommendations
    */
   private async generateAnalysisWithClaude(concept: DairyConcept, personas: any[]): Promise<any> {
     const analysisPrompt = `
@@ -298,7 +366,10 @@ RESPONDE SOLO EL JSON, SIN TEXTO ADICIONAL.
   }
 
   /**
-   * Limpiar respuesta de Claude
+   * Cleans Claude API response to extract valid JSON
+   *
+   * @param content - Raw response from Claude API
+   * @returns Clean JSON string ready for parsing
    */
   private cleanResponse(content: string): string {
     let cleaned = content.trim();
@@ -317,7 +388,12 @@ RESPONDE SOLO EL JSON, SIN TEXTO ADICIONAL.
   }
 
   /**
-   * Procesar análisis de Claude a formato de evaluación
+   * Converts Claude analysis to structured ConsultorEvaluation format
+   *
+   * @param concept - Original concept being evaluated
+   * @param analysis - Parsed analysis from Claude
+   * @param startTime - Evaluation start time for performance metrics
+   * @returns Structured evaluation with all required fields and fallbacks
    */
   private processAnalysisToEvaluation(
     concept: DairyConcept,
@@ -392,7 +468,11 @@ RESPONDE SOLO EL JSON, SIN TEXTO ADICIONAL.
   }
 
   /**
-   * Evaluación de emergencia cuando falla Claude
+   * Fallback evaluation when Claude API fails
+   *
+   * @param concept - Concept being evaluated
+   * @param startTime - Evaluation start time
+   * @returns Basic evaluation structure with system error indicators
    */
   private generateEmergencyEvaluation(concept: DairyConcept, startTime: number): ConsultorEvaluation {
     const processingTime = Date.now() - startTime;
@@ -420,7 +500,9 @@ RESPONDE SOLO EL JSON, SIN TEXTO ADICIONAL.
   }
 
   /**
-   * Callback de progreso
+   * Updates progress callback if provided
+   *
+   * @param message - Progress message to display
    */
   private updateProgress(message: string) {
     if (this.progressCallback) {

@@ -1,6 +1,16 @@
 /**
- * Consultor Virtual Lab - Innovation Lab simplificado con análisis rápido
- * Reemplaza el sistema complejo de entrevistas múltiples
+ * Consultor Virtual Lab - Enhanced Concept Evaluation Interface
+ *
+ * @description Advanced UI for dairy concept evaluation with persona selection
+ *              and comprehensive analysis capabilities
+ *
+ * @features
+ * - Manual/Automatic persona selection
+ * - Real-time evaluation progress
+ * - Comprehensive results display
+ * - Concept and persona management
+ *
+ * @version 2.0 - Enhanced with deep analysis capabilities
  */
 
 import React, { useState, useEffect } from 'react';
@@ -379,12 +389,14 @@ const ConsultorVirtualLab: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Selección de Personas para Evaluación */}
+                {/* ============================================================ */}
+                {/* PERSONA SELECTION SECTION - Enhanced v2.0 Feature          */}
+                {/* ============================================================ */}
                 <div className="bg-gray-50 rounded-lg p-4 border-2 border-dashed border-gray-200">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-lg font-semibold text-gray-800 flex items-center">
                       <Users className="w-5 h-5 mr-2 text-green-600" />
-                      Selección de Personas para Evaluar
+                      Target Audience Selection
                     </h3>
 
                     <div className="flex items-center space-x-3">
@@ -415,7 +427,7 @@ const ConsultorVirtualLab: React.FC = () => {
                         Selecciona entre 3 y 8 personas (Actual: {selectedPersonas.length})
                       </p>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {personas.slice(0, 15).map((persona) => (
+                        {personas.slice(0, 12).map((persona) => (
                           <label key={persona.id} className="flex items-start space-x-2 p-2 border rounded cursor-pointer hover:bg-white transition-colors">
                             <input
                               type="checkbox"

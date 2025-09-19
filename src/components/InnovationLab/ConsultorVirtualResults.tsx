@@ -1,6 +1,18 @@
 /**
- * Componente para mostrar resultados del Consultor Virtual
- * Diseño optimizado para decisiones ejecutivas rápidas
+ * Consultor Virtual Results Display Component
+ *
+ * @description Enhanced results interface for comprehensive concept evaluation
+ *              Displays deep analysis across 6 major sections with executive summary
+ *
+ * @features
+ * - Color-coded recommendations (GO/REFINE/NO-GO)
+ * - Comprehensive competitive analysis
+ * - Consumer adoption journey mapping
+ * - Deep psychological insights per persona
+ * - Market projection and growth assessment
+ * - Export functionality for business presentations
+ *
+ * @version 2.0 - Enhanced with 5 new analysis sections
  */
 
 import React from 'react';
@@ -115,7 +127,9 @@ export const ConsultorVirtualResults: React.FC<ConsultorVirtualResultsProps> = (
         )}
       </div>
 
-      {/* Análisis Competitivo */}
+      {/* ================================================================== */}
+      {/* COMPETITIVE ANALYSIS SECTION - New in v2.0                       */}
+      {/* ================================================================== */}
       <div className="bg-white rounded-lg shadow-sm border p-6">
         <h3 className="text-xl font-semibold mb-4 text-gray-800">🏆 Análisis Competitivo</h3>
 
@@ -163,7 +177,9 @@ export const ConsultorVirtualResults: React.FC<ConsultorVirtualResultsProps> = (
         </div>
       </div>
 
-      {/* Journey de Adopción */}
+      {/* ================================================================== */}
+      {/* ADOPTION JOURNEY SECTION - New in v2.0                           */}
+      {/* ================================================================== */
       <div className="bg-white rounded-lg shadow-sm border p-6">
         <h3 className="text-xl font-semibold mb-4 text-gray-800">🚀 Journey de Adopción</h3>
 
@@ -204,7 +220,9 @@ export const ConsultorVirtualResults: React.FC<ConsultorVirtualResultsProps> = (
         </div>
       </div>
 
-      {/* Ocasiones de Consumo */}
+      {/* ================================================================== */}
+      {/* CONSUMPTION OCCASIONS SECTION - New in v2.0                      */}
+      {/* ================================================================== */
       <div className="bg-white rounded-lg shadow-sm border p-6">
         <h3 className="text-xl font-semibold mb-4 text-gray-800">⏰ Ocasiones de Consumo</h3>
 
@@ -244,7 +262,9 @@ export const ConsultorVirtualResults: React.FC<ConsultorVirtualResultsProps> = (
         </div>
       </div>
 
-      {/* Proyección de Mercado */}
+      {/* ================================================================== */}
+      {/* MARKET PROJECTION SECTION - New in v2.0                          */}
+      {/* ================================================================== */
       <div className="bg-white rounded-lg shadow-sm border p-6">
         <h3 className="text-xl font-semibold mb-4 text-gray-800">📈 Proyección de Mercado</h3>
 
@@ -275,7 +295,9 @@ export const ConsultorVirtualResults: React.FC<ConsultorVirtualResultsProps> = (
         </div>
       </div>
 
-      {/* Análisis por Segmento */}
+      {/* ================================================================== */}
+      {/* SEGMENT ANALYSIS SECTION - Enhanced in v2.0                      */}
+      {/* ================================================================== */
       <div className="bg-white rounded-lg shadow-sm border p-6">
         <h3 className="text-xl font-semibold mb-4 text-gray-800">👥 Análisis por Segmento ({evaluation.segmentAnalysis.length} personas)</h3>
 
